@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class SuperAdminController extends Controller
 {
@@ -14,9 +15,9 @@ class SuperAdminController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        // Fetch any super admin specific data here, e.g. stats, users, events
-        // $data = ...
+       $totalUsers = User::count();            // Total users count
+        $users = User::paginate(15);            // Paginated users list
 
-        return view('admin.dashboard' /*, compact('data') */);
+        return view('admin.dashboard', compact('totalUsers', 'users'));
     }
 }

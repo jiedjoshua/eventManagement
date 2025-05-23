@@ -22,7 +22,7 @@ Route::middleware('auth')->group(function () {
 
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
-    Route::get('/admin/dashboard', [SuperAdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/dashboard/users', [SuperAdminController::class, 'index'])->name('admin.dashboard');
 });
 
 Route::middleware(['auth', 'role:event_manager'])->group(function () {
