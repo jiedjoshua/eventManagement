@@ -63,4 +63,13 @@ class User extends Authenticatable
     return $this->role; 
     }
 
+    public function bookedEvents()
+    {
+        
+    return $this->belongsToMany(Event::class, 'event_user')
+                ->withPivot('status', 'booked_at')
+                ->withTimestamps();
+    }
+
+
 }
