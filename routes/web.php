@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\EventManagerController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -16,5 +19,20 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
+Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    Route::get('/admin/dashboard', [SuperAdminController::class, 'index'])->name('admin.dashboard');
+});
+
+Route::middleware(['auth', 'role:event_manager'])->group(function () {
+    Route::get('/eventmanager/dashboard', [EventManagerController::class, 'index'])->name('manager.dashboard');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/user/dashboard', [UserController::class, 'index'])->name('user.dashboard');
+});
+
+
 
 require __DIR__.'/auth.php';
