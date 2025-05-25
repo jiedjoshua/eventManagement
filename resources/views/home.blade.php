@@ -39,7 +39,7 @@
           <a class="nav-link" href="#">Help</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Login</a>
+          <a class="nav-link" href="{{ route('login') }}">Login</a>
         </li>
      <li class="nav-item">
         <a class="btn btn-custom-quote rounded-pill px-4" href="#">Get Quote</a>
