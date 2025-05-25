@@ -7,7 +7,7 @@ use App\Http\Controllers\EventManagerController;
 use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
-    return view('auth.login');
+    return view('home');
 });
 
 Route::middleware('auth')->group(function () {
