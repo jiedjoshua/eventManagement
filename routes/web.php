@@ -10,10 +10,6 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -22,7 +18,13 @@ Route::middleware('auth')->group(function () {
 
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
-    Route::get('/admin/dashboard', [SuperAdminController::class, 'index'])->name('admin.dashboard');
+    Route::resource('users', SuperAdminController::class);
+    Route::get('/admin/usermanagement', [SuperAdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/users', [SuperAdminController::class, 'listUsers'])->name('admin.listusers');
+    Route::put('/admin/users/{user}', [SuperAdminController::class, 'update'])->name('admin.update');
+    Route::post('admin/users/create', [SuperAdminController::class, 'store'])->name('admin.store');
+
+
 });
 
 Route::middleware(['auth', 'role:event_manager'])->group(function () {

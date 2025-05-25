@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -22,7 +23,7 @@ class User extends Authenticatable
         'phone_number',
         'email',
         'password',
-        'role' => 'regular_user',
+        'role', 
     ];
 
     /**
@@ -55,4 +56,20 @@ class User extends Authenticatable
     {
         return "{$this->first_name} {$this->last_name}";
     }
+
+    
+    public function role()
+    {
+    return $this->role; 
+    }
+
+    public function bookedEvents()
+    {
+        
+    return $this->belongsToMany(Event::class, 'event_user')
+                ->withPivot('status', 'booked_at')
+                ->withTimestamps();
+    }
+
+
 }
