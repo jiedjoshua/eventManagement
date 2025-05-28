@@ -38,8 +38,8 @@
             </a>
             <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
               <li><a href="{{ route('admin.listusers') }}" class="hover:text-indigo-600">List Users</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Create User</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Assign Roles</a></li>
+             <!-- Example link to List Users page that opens modal -->
+                <a href="{{ route('admin.listusers') }}?openModal=addUser" class="hover:text-indigo-600">Create User</a>
               <li><a href="#" class="hover:text-indigo-600">Activity Logs</a></li>
             </ul>
           </li>

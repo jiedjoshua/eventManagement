@@ -39,8 +39,7 @@
             </a>
             <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
               <li><a href="{{ route('admin.listusers') }}" class="hover:text-indigo-600">List Users</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Create User</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Assign Roles</a></li>
+                <a href="{{ route('admin.listusers') }}?openModal=addUser" class="hover:text-indigo-600">Create User</a>
               <li><a href="#" class="hover:text-indigo-600">Activity Logs</a></li>
             </ul>
           </li>
@@ -170,7 +169,7 @@
           <tbody>
             @foreach($users as $user)
             <tr class="border-b hover:bg-indigo-50">
-             <td>{{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</td>
+             <td style="text-align: center;">{{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</td>
               <td class="py-2 px-4">{{ $user->first_name }}</td>
               <td class="py-2 px-4">{{ $user->last_name }}</td>
               <td class="py-2 px-4">{{ $user->phone_number }}</td>
@@ -387,6 +386,27 @@ function closeAddModal() {
   }, 3000);
 </script>
 @endif
+
+<script>
+  // Check for query parameter ?openModal=addUser
+  window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const openModal = urlParams.get('openModal');
+
+    if (openModal === 'addUser') {
+      openAddModal();
+    }
+  });
+
+  // Your existing modal open function
+  function openAddModal() {
+    document.getElementById('addUserModal').classList.remove('hidden');
+  }
+
+  function closeAddModal() {
+    document.getElementById('addUserModal').classList.add('hidden');
+  }
+</script>
 
 
 
