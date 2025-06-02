@@ -18,4 +18,16 @@ class EventManagerController extends Controller
 
         return view('manager.dashboard' /*, compact('events') */);
     }
+
+    public function showEvent()
+    {
+        if (Auth::user()->role !== 'event_manager') {
+            abort(403, 'Unauthorized');
+        }
+
+        // Fetch the event details by ID
+        // $event = Event::findOrFail($id);
+
+        return view('manager.manage-events.events') /*, compact('event') */;
+    }   
 }

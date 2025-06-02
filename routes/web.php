@@ -29,6 +29,7 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
 
 Route::middleware(['auth', 'role:event_manager'])->group(function () {
     Route::get('/eventmanager/dashboard', [EventManagerController::class, 'index'])->name('manager.dashboard');
+    Route::get('/eventmanager/manage/events', [EventManagerController::class, 'showEvent'])->name('manager.showEvent');
 });
 
 Route::middleware(['auth'])->group(function () {
