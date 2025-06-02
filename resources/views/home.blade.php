@@ -49,7 +49,7 @@
             <button type="submit" class="text-gray-700 hover:text-[#EF7C79] px-4 py-2 focus:outline-none">Login</button>
           </form>
         @endauth
-        <a href="book-now.html" class="bg-[#EF7C79] hover:bg-[#D76C69] text-white rounded-full px-4 py-2">Book Now</a>
+        <a href="{{ route('book-now') }}" class="bg-[#EF7C79] hover:bg-[#D76C69] text-white rounded-full px-4 py-2">Book Now</a>
       </div>
     </div>
   </div>
@@ -63,7 +63,7 @@
   <div class="relative z-10">
     <h1 class="text-4xl md:text-5xl font-bold">Celebrate Life's Special Moments</h1>
     <p class="text-lg mt-2">We make your dream events come true — weddings, birthdays, and more!</p>
-    <a href="#" class="inline-block mt-4 bg-[#EF7C79] hover:bg-[#D76C69] text-white rounded-full px-6 py-2">Book Now</a>
+    <a href="{{ route('book-now') }}" class="inline-block mt-4 bg-[#EF7C79] hover:bg-[#D76C69] text-white rounded-full px-6 py-2">Book Now</a>
   </div>
 </section>
 

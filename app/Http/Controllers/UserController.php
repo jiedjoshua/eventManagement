@@ -22,5 +22,15 @@ class UserController extends Controller
         return view('user.dashboard' /*, compact('events') */);
     }
 
-   
+    public function bookEvent(Request $request)
+    {
+        if (Auth::user()->role !== 'regular_user') {
+            abort(403, 'Unauthorized');
+        }
+
+        // Logic to handle event booking
+        // For example, you might fetch available events and allow the user to book one
+
+        return view('user.book' /*, compact('events') */);
+    }
 }

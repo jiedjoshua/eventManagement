@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\EventManagerController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\EventController;
+
 
 Route::get('/', function () {
     return view('home');
@@ -27,7 +29,7 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
 
 });
 
-Route::middleware(['auth', 'role:event_manager'])->group(function () {
+Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group(function () {
     Route::get('/eventmanager/dashboard', [EventManagerController::class, 'index'])->name('manager.dashboard');
     Route::get('/eventmanager/manage/events', [EventManagerController::class, 'showEvent'])->name('manager.showEvent');
 });
@@ -35,6 +37,12 @@ Route::middleware(['auth', 'role:event_manager'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/user/dashboard', [UserController::class, 'index'])->name('user.dashboard');
 });
+
+// routes/web.php
+Route::middleware(['auth'])->group(function () {
+    Route::get('/book-now', [EventController::class, 'create'])->name('book-now');
+});
+
 
 
 
