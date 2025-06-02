@@ -36,9 +36,19 @@
 
       <!-- Right Buttons -->
       <div class="flex space-x-3 items-center">
-        <form action="{{ route('login') }}" method="GET">
-          <button type="submit" class="text-gray-700 hover:text-[#EF7C79] px-4 py-2 focus:outline-none">Login</button>
-        </form>
+        @auth
+          @if(auth()->user()->role === 'super_admin')
+            <a href="{{ route('admin.dashboard') }}" class="text-gray-700 hover:text-[#EF7C79] px-4 py-2 focus:outline-none">Dashboard</a>
+          @elseif(auth()->user()->role === 'event_manager')
+            <a href="{{ route('manager.dashboard') }}" class="text-gray-700 hover:text-[#EF7C79] px-4 py-2 focus:outline-none">Dashboard</a>
+          @else
+            <a href="{{ route('user.dashboard') }}" class="text-gray-700 hover:text-[#EF7C79] px-4 py-2 focus:outline-none">Dashboard</a>
+          @endif
+        @else
+          <form action="{{ route('login') }}" method="GET">
+            <button type="submit" class="text-gray-700 hover:text-[#EF7C79] px-4 py-2 focus:outline-none">Login</button>
+          </form>
+        @endauth
         <a href="book-now.html" class="bg-[#EF7C79] hover:bg-[#D76C69] text-white rounded-full px-4 py-2">Book Now</a>
       </div>
     </div>
@@ -102,7 +112,7 @@
 <section class="py-20 text-center">
   <div class="container mx-auto px-4">
     <h2 class="text-3xl font-bold mb-4">Who We Are</h2>
-    <p class="text-lg text-gray-600">We’re passionate about delivering the best service to our customers with honesty and integrity.</p>
+    <p class="text-lg text-gray-600">We're passionate about delivering the best service to our customers with honesty and integrity.</p>
   </div>
 </section>
 
