@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Event;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -22,15 +24,16 @@ class UserController extends Controller
         return view('user.dashboard' /*, compact('events') */);
     }
 
-    public function bookEvent(Request $request)
-    {
-        if (Auth::user()->role !== 'regular_user') {
-            abort(403, 'Unauthorized');
-        }
+    public function bookedEvent(){
+    if (Auth::user()->role !== 'regular_user') {
+        abort(403, 'Unauthorized');
+    }
 
-        // Logic to handle event booking
-        // For example, you might fetch available events and allow the user to book one
+    $userId = Auth::id(); // logged in user
+       $bookedEvents = Event::where('user_id', $userId)->get(); 
+    
+   
 
-        return view('user.book' /*, compact('events') */);
+    return view('user.book', compact('bookedEvents'));
     }
 }

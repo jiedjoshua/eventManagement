@@ -9,34 +9,34 @@ class Event extends Model
 {
     use HasFactory;
 
-    // Fillable fields based on your migration
     protected $fillable = [
-        'title',
-        'description',
-        'location',
-        'date',
+        'user_id',
+        'event_name',
+        'event_type',
+        'package_type',
+        'event_date',
         'start_time',
         'end_time',
-        'status',
-        'created_by',
+        'venue_name',
+        'event_duration',
+        'guest_count',
+        'guest_list_path',
+        'enable_rsvp',
+        'rsvp_deadline',
+        'allow_plus_one',
+        'reminder_schedule',
+        'total_price',
     ];
 
-    /**
-     * The users who have booked this event (attendees).
-     * Many-to-many relationship with User via pivot table 'event_user'.
-     */
-    public function attendees()
+    public function user()
     {
-        return $this->belongsToMany(User::class, 'event_user')
-                    ->withPivot('status', 'booked_at') // add these if you track booking status/time
-                    ->withTimestamps();
+        return $this->belongsTo(User::class);
     }
 
-    /**
-     * The user who created (manages) the event.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
+    public function events()
+{
+    return $this->hasMany(Event::class);
+}
+
+
 }

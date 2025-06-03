@@ -5,7 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Event;
 
 class User extends Authenticatable
 {
@@ -57,19 +58,31 @@ class User extends Authenticatable
         return "{$this->first_name} {$this->last_name}";
     }
 
-    
-    public function role()
+    /**
+     * Get the user's role value
+     */
+    public function getRoleAttribute(): string
     {
-    return $this->role; 
+        return $this->attributes['role'] ?? 'regular_user';
     }
 
-    public function bookedEvents()
+
+    /**
+     * Boot function from Laravel.
+     */
+    protected static function boot()
     {
+        parent::boot();
         
-    return $this->belongsToMany(Event::class, 'event_user')
-                ->withPivot('status', 'booked_at')
-                ->withTimestamps();
+        static::creating(function ($user) {
+            if (!isset($user->role)) {
+                $user->role = 'regular_user';
+            }
+        });
     }
 
-
+    public function bookings()
+{
+    return $this->hasMany(Event::class);
+}
 }

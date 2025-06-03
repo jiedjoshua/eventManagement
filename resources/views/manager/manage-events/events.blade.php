@@ -175,20 +175,33 @@
       </thead>
 
       <tbody>
-        <tr class="border-b border-gray-200 hover:bg-gray-50">
-          <td class="px-6 py-4 text-sm text-gray-900">Summer Gala</td>
-          <td class="px-6 py-4 text-sm text-gray-900">2025-06-15 18:00</td>
-          <td class="px-6 py-4 text-sm text-gray-900">Grand Hall</td>
-          <td class="px-6 py-4 text-sm text-gray-900">Conference</td>
-          <td class="px-6 py-4 text-sm text-green-600 font-semibold">Confirmed</td>
-          <td class="px-6 py-4 text-sm text-gray-900">
-             <button class="text-indigo-600 hover:underline mr-2">View</button>
-            <button class="text-indigo-600 hover:text-indigo-900">Edit</button>
-            <button class="text-red-600 hover:text-red-900 ml-4">Delete</button>
-          </td>
-        </tr>
-        <!-- More rows here -->
-      </tbody>
+  @forelse ($events as $event)
+    <tr class="border-b border-gray-200 hover:bg-gray-50">
+      <td class="px-6 py-4 text-sm text-gray-900">{{ $event->event_name }}</td>
+      <td class="px-6 py-4 text-sm text-gray-900">{{ $event->event_date }} {{ $event->start_time }}</td>
+      <td class="px-6 py-4 text-sm text-gray-900">{{ $event->venue_name }}</td>
+      <td class="px-6 py-4 text-sm text-gray-900">{{ $event->event_type }}</td>
+      <td class="px-6 py-4 text-sm 
+          @if($event->status == 'Confirmed') text-green-600 font-semibold
+          @elseif($event->status == 'Pending') text-yellow-600 font-semibold
+          @elseif($event->status == 'Cancelled') text-red-600 font-semibold
+          @else text-gray-900
+          @endif">
+          {{ $event->status }}
+      </td>
+      <td class="px-6 py-4 text-sm text-gray-900">
+        <button class="text-indigo-600 hover:underline mr-2">View</button>
+        <button class="text-indigo-600 hover:text-indigo-900">Edit</button>
+        <button class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+      </td>
+    </tr>
+  @empty
+    <tr>
+      <td colspan="6" class="text-center py-4 text-gray-500">No events found.</td>
+    </tr>
+  @endforelse
+</tbody>
+
     </table>
   </main>
 

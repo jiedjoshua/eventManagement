@@ -36,11 +36,13 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/user/dashboard', [UserController::class, 'index'])->name('user.dashboard');
+    Route::get('/user/book/events', [UserController::class, 'bookedEvent'])->name('user.bookedEvents');
 });
 
 // routes/web.php
 Route::middleware(['auth'])->group(function () {
     Route::get('/book-now', [EventController::class, 'create'])->name('book-now');
+    Route::post('/events/store', [EventController::class, 'store'])->name('events.store');
 });
 
 

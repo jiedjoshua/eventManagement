@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Event;
 
 class EventManagerController extends Controller
 {
@@ -21,13 +22,7 @@ class EventManagerController extends Controller
 
     public function showEvent()
     {
-        if (Auth::user()->role !== 'event_manager') {
-            abort(403, 'Unauthorized');
-        }
-
-        // Fetch the event details by ID
-        // $event = Event::findOrFail($id);
-
-        return view('manager.manage-events.events') /*, compact('event') */;
+         $events = Event::all();  // Assuming your event model is Event
+        return view('manager.manage-events.events', compact('events')) /*, compact('event') */;
     }   
 }
