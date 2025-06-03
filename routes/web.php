@@ -5,14 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\EventManagerController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\EventController;
+
 
 Route::get('/', function () {
-    return view('auth.login');
+    return view('home');
 });
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -22,16 +20,31 @@ Route::middleware('auth')->group(function () {
 
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
-    Route::get('/admin/dashboard', [SuperAdminController::class, 'index'])->name('admin.dashboard');
+    Route::resource('users', SuperAdminController::class);
+    Route::get('/admin/usermanagement', [SuperAdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/users', [SuperAdminController::class, 'listUsers'])->name('admin.listusers');
+    Route::put('/admin/users/{user}', [SuperAdminController::class, 'update'])->name('admin.update');
+    Route::post('admin/users/create', [SuperAdminController::class, 'store'])->name('admin.store');
+
+
 });
 
-Route::middleware(['auth', 'role:event_manager'])->group(function () {
+Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group(function () {
     Route::get('/eventmanager/dashboard', [EventManagerController::class, 'index'])->name('manager.dashboard');
+    Route::get('/eventmanager/manage/events', [EventManagerController::class, 'showEvent'])->name('manager.showEvent');
 });
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/user/dashboard', [UserController::class, 'index'])->name('user.dashboard');
+    Route::get('/user/book/events', [UserController::class, 'bookedEvent'])->name('user.bookedEvents');
 });
+
+// routes/web.php
+Route::middleware(['auth'])->group(function () {
+    Route::get('/book-now', [EventController::class, 'create'])->name('book-now');
+    Route::post('/events/store', [EventController::class, 'store'])->name('events.store');
+});
+
 
 
 

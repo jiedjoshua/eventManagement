@@ -1,0 +1,76 @@
+.nav-link {
+  position: relative;
+  transition: color 0.3s;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #EF7C79; /* Bootstrap primary color */
+  transition: width 0.3s;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+nav.navbar {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+
+
+
+.btn.btn-custom-quote {
+  background-color: #EF7C79 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.btn.btn-custom-quote:hover {
+  background-color: #D76C69 !important;
+  color: #fff !important;
+}
+
+/* public/css/home.css */
+
+.hero-image {
+  position: relative;
+  height: 90vh;
+  background: url('/img/car1.jpg') no-repeat center center/cover;
+}
+
+.hero-image .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4); /* optional dark overlay */
+}
+
+.hero-image .content {
+  z-index: 1;
+}
+
+.card-img-top {
+  height: 200px;        /* Fixed height */
+  object-fit: cover;    /* Crop to fill, no distortion */
+  width: 100%;          /* Full width */
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  z-index: 10; /* Make sure it layers above other cards */
+}
+

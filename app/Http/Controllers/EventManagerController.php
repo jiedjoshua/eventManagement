@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Event;
 
 class EventManagerController extends Controller
 {
@@ -18,4 +19,10 @@ class EventManagerController extends Controller
 
         return view('manager.dashboard' /*, compact('events') */);
     }
+
+    public function showEvent()
+    {
+         $events = Event::all();  // Assuming your event model is Event
+        return view('manager.manage-events.events', compact('events')) /*, compact('event') */;
+    }   
 }
