@@ -36,4 +36,14 @@ class UserController extends Controller
 
     return view('user.book', compact('bookedEvents'));
     }
+
+    public function attendingEvents()
+    {
+        $user = Auth::user();
+
+        $acceptedEvents = $user->acceptedEvents()->get();
+
+        return view('user.attending-events', compact('acceptedEvents'));
+    }
+
 }

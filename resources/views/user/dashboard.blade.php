@@ -21,7 +21,7 @@
       <div>
         <p class="mt-4 font-semibold text-gray-900">My Events</p>
         <a href="{{ route('user.bookedEvents') }} " class="block pl-4 py-2 hover:bg-indigo-100 rounded">Booked Events</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Attending Events</a>
+        <a href="{{ route('user.attendingEvents') }} " class="block pl-4 py-2 hover:bg-indigo-100 rounded">Attending Events</a>
         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest List</a>
       </div>
 
