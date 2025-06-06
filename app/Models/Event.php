@@ -31,12 +31,17 @@ class Event extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+        
     }
 
-    public function events()
+public function users()
 {
-    return $this->hasMany(Event::class);
+    return $this->belongsToMany(User::class)
+                ->withPivot('rsvp_status', 'plus_one')
+                ->withTimestamps();
 }
+
+
 
 
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\EventManagerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\InviteController;
 
 
 Route::get('/', function () {
@@ -32,19 +33,25 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
 Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group(function () {
     Route::get('/eventmanager/dashboard', [EventManagerController::class, 'index'])->name('manager.dashboard');
     Route::get('/eventmanager/manage/events', [EventManagerController::class, 'showEvent'])->name('manager.showEvent');
+    Route::get('/events/{event}/dashboard', [EventController::class, 'showDashboard'])->name('events.dashboard');
 });
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/user/dashboard', [UserController::class, 'index'])->name('user.dashboard');
-    Route::get('/user/book/events', [UserController::class, 'bookedEvent'])->name('user.bookedEvents');
-});
+    Route::get('/user/events/booked', [UserController::class, 'bookedEvent'])->name('user.bookedEvents');
+});Route::get('/user/events/attending', [UserController::class, 'attendingEvents'])->name('user.attendingEvents');
 
-// routes/web.php
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/book-now', [EventController::class, 'create'])->name('book-now');
     Route::post('/events/store', [EventController::class, 'store'])->name('events.store');
 });
 
+//Event Invitation
+Route::get('/invite/decline/{eventId}', [InviteController::class, 'decline'])->name('invite.decline');
+Route::get('/invite/{eventId}', [InviteController::class, 'show'])->name('invite.confirm');
+Route::get('/invite/accept/{eventId}', [InviteController::class, 'accept'])->name('invite.accept');
 
 
 

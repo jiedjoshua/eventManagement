@@ -82,7 +82,23 @@ class User extends Authenticatable
     }
 
     public function bookings()
-{
-    return $this->hasMany(Event::class);
-}
+    {
+        return $this->hasMany(Event::class);
+    }
+
+    public function invitedEvents()
+    {
+        return $this->belongsToMany(Event::class)->withPivot('rsvp_status', 'plus_one')->withTimestamps();
+    }
+
+    public function guests()
+    {
+        return $this->belongsToMany(User::class)->withPivot('rsvp_status', 'plus_one')->withTimestamps();
+    }
+
+    public function acceptedEvents()
+    {
+        return $this->invitedEvents()->wherePivot('rsvp_status', 'accepted');
+    }
+
 }

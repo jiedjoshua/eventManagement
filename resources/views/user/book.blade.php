@@ -6,6 +6,8 @@
   <title>Booked Events with Sidebar</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="//unpkg.com/alpinejs" defer></script>
+
 </head>
 <body class="bg-gray-50 min-h-screen flex">
 
@@ -33,10 +35,14 @@
     </nav>
 
    
- <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit">Logout</button>
-    </form>
+ <div class="px-6 py-4 border-t">
+  <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="block text-red-600 font-semibold hover:underline">
+      Logout
+    </button>
+  </form>
+</div>
   </aside>
 
   <!-- Main content -->
@@ -49,54 +55,111 @@
    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
 @isset($bookedEvents)
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-    @forelse ($bookedEvents as $event)
-      @php
-        // Set default status because Event model has no 'status' field
-        $status = $event->status ?? 'Pending';  // or whatever default you want
-        $statusColors = [
-          'Pending' => 'bg-yellow-100 text-yellow-800',
-          'Approved' => 'bg-green-100 text-green-800',
-          'Cancelled' => 'bg-red-100 text-red-800',
-        ];
-        $statusClass = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
-      @endphp
+<div x-data="{
+  showModal: false,
+  inviteLink: '',
+  openModal(eventId) {
+    // Build the invite link dynamically (adjust route as needed)
+    this.inviteLink = '{{ url('/invite') }}/' + eventId;
+    this.showModal = true;
+  },
+  closeModal() {
+    this.showModal = false;
+    this.inviteLink = '';
+  }
+}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
-      <div class="bg-white rounded-lg shadow-md p-5 flex flex-col justify-between">
-        <div>
-          <h3 class="text-xl font-bold mb-1">{{ $event->event_name }}</h3>
-          <p class="text-gray-600 mb-1"><strong>Type:</strong> {{ $event->event_type }}</p>
-          <p class="text-gray-600 mb-1">
-            <strong>Date:</strong> {{ \Carbon\Carbon::parse($event->event_date)->format('F d, Y') }}, 
-            {{ \Carbon\Carbon::parse($event->start_time)->format('g:i A') }}
-          </p>
-          <p class="text-gray-600 mb-2"><strong>Location:</strong> {{ $event->venue_name }}</p>
+  @forelse ($bookedEvents as $event)
+    @php
+      $status = $event->status ?? 'Pending';
+      $statusColors = [
+        'Pending' => 'bg-yellow-100 text-yellow-800',
+        'Approved' => 'bg-green-100 text-green-800',
+        'Cancelled' => 'bg-red-100 text-red-800',
+      ];
+      $statusClass = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
+    @endphp
 
-          <span class="inline-block px-3 py-1 text-sm font-medium rounded-full {{ $statusClass }}">
-            {{ $status }}
-          </span>
-        </div>
+    <div class="bg-white rounded-lg shadow-md p-5 flex flex-col justify-between">
+      <div>
+        <h3 class="text-xl font-bold mb-1">{{ $event->event_name }}</h3>
+        <p class="text-gray-600 mb-1"><strong>Type:</strong> {{ $event->event_type }}</p>
+        <p class="text-gray-600 mb-1">
+          <strong>Date:</strong> {{ \Carbon\Carbon::parse($event->event_date)->format('F d, Y') }}, 
+          {{ \Carbon\Carbon::parse($event->start_time)->format('g:i A') }}
+        </p>
+        <p class="text-gray-600 mb-2"><strong>Location:</strong> {{ $event->venue_name }}</p>
 
-        <div class="mt-4 flex flex-wrap gap-2">
-          <button type="button" class="flex-1 bg-blue-600 text-white text-sm py-2 rounded hover:bg-blue-700 transition">
-            View Details
-          </button>
-          <button type="button" class="flex-1 bg-green-600 text-white text-sm py-2 rounded hover:bg-green-700 transition">
-            Edit Booking
-          </button>
-          <button type="button" class="flex-1 bg-purple-600 text-white text-sm py-2 rounded hover:bg-purple-700 transition">
-            Guest List
-          </button>
-          <button type="button" class="flex-1 bg-indigo-600 text-white text-sm py-2 rounded hover:bg-indigo-700 transition">
-            QR / Invitations
-          </button>
-        </div>
+        <span class="inline-block px-3 py-1 text-sm font-medium rounded-full {{ $statusClass }}">
+          {{ $status }}
+        </span>
       </div>
-    @empty
-      <p class="text-gray-600 col-span-full">You have no booked events at the moment.</p>
-    @endforelse
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button type="button" class="flex-1 bg-blue-600 text-white text-sm py-2 rounded hover:bg-blue-700 transition">
+          View Details
+        </button>
+        <button type="button" class="flex-1 bg-green-600 text-white text-sm py-2 rounded hover:bg-green-700 transition">
+          Edit Booking
+        </button>
+        <button type="button" class="flex-1 bg-purple-600 text-white text-sm py-2 rounded hover:bg-purple-700 transition">
+          Guest List
+        </button>
+        <!-- Here is the updated button -->
+        <button 
+          type="button" 
+          class="flex-1 bg-indigo-600 text-white text-sm py-2 rounded hover:bg-indigo-700 transition"
+          @click="openModal({{ $event->id }})"
+        >
+          QR / Invitations
+        </button>
+      </div>
+    </div>
+  @empty
+    <p class="text-gray-600 col-span-full">You have no booked events at the moment.</p>
+  @endforelse
+
+
+  <!-- Modal -->
+  <div
+    x-show="showModal"
+    x-transition
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    style="display: none;"
+  >
+    <div 
+      @click.away="closeModal()" 
+      class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6"
+      x-trap.noscroll="showModal"
+    >
+      <h2 class="text-xl font-semibold mb-4">Invitation Link</h2>
+      <p class="mb-4">
+        Share this link with your guests. They can log in/register and get their QR code for event entry.
+      </p>
+      <input 
+        type="text" 
+        readonly 
+        class="w-full border border-gray-300 rounded px-3 py-2 mb-4" 
+        :value="inviteLink"
+        @click="$el.select()"
+      />
+      <button
+        @click="navigator.clipboard.writeText(inviteLink).then(() => alert('Link copied to clipboard!'))"
+        class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition mr-2"
+      >
+        Copy Link
+      </button>
+      <button
+        @click="closeModal()"
+        class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition"
+      >
+        Close
+      </button>
+    </div>
   </div>
+</div>
 @endisset
+
 
 
 

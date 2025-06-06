@@ -21,7 +21,7 @@
       <div>
         <p class="mt-4 font-semibold text-gray-900">My Events</p>
         <a href="{{ route('user.bookedEvents') }} " class="block pl-4 py-2 hover:bg-indigo-100 rounded">Booked Events</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Attending Events</a>
+        <a href="{{ route('user.attendingEvents') }} " class="block pl-4 py-2 hover:bg-indigo-100 rounded">Attending Events</a>
         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest List</a>
       </div>
 
@@ -31,10 +31,14 @@
       </div>
     </nav>
 
-     <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit">Logout</button>
-    </form>
+    <div class="px-6 py-4 border-t">
+  <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="block text-red-600 font-semibold hover:underline">
+      Logout
+    </button>
+  </form>
+</div>
 
   </aside>
 

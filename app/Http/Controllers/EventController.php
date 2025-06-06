@@ -68,7 +68,23 @@ class EventController extends Controller
     }
 }
 
+public function showDashboard(Event $event)
+{
+    $totalInvited = $event->users()->count();
+   // $totalAccepted = $event->users()->wherePivot('rsvp_status', 'accepted')->count();
+  //  $totalDeclined = $event->users()->wherePivot('rsvp_status', 'declined')->count();
+   // $checkedInCount = $event->users()->wherePivot('checked_in', true)->count(); // If you track check-in
+   // $notCheckedIn = $totalAccepted - $checkedInCount;
 
+    return view('manager.manage-events.view.eventDashboard', [
+        'event' => $event,
+        'total_invited' => $totalInvited,
+      //  'total_accepted' => $totalAccepted,
+       // 'total_declined' => $totalDeclined,
+      //  'checked_in_count' => $checkedInCount,
+      //  'not_checked_in' => $notCheckedIn,
+    ]);
+}
 
   
 }
