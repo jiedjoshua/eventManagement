@@ -30,7 +30,7 @@ class InviteController extends Controller
             'timestamp' => now()->toIso8601String(),
         ]);
 
-        $qrCode = QrCode::size(300)->generate($qrData);
+        $qrCode = QrCode::size(132)->generate($qrData);
 
         // Show invite page with QR code directly
         return view('invite', compact('event', 'qrCode'));

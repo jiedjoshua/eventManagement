@@ -190,7 +190,7 @@
           {{ $event->status }}
       </td>
       <td class="px-6 py-4 text-sm text-gray-900">
-        <button class="text-indigo-600 hover:underline mr-2">View</button>
+        <a href="{{ route('events.dashboard', $event->id) }}" class="text-indigo-600 hover:underline mr-2">View</a>
         <button class="text-indigo-600 hover:text-indigo-900">Edit</button>
         <button class="text-red-600 hover:text-red-900 ml-4">Delete</button>
       </td>
