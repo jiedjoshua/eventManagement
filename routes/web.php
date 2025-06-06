@@ -49,9 +49,10 @@ Route::middleware(['auth'])->group(function () {
 });
 
 //Event Invitation
+Route::get('/invite/decline/{eventId}', [InviteController::class, 'decline'])->name('invite.decline');
 Route::get('/invite/{eventId}', [InviteController::class, 'show'])->name('invite.confirm');
 Route::get('/invite/accept/{eventId}', [InviteController::class, 'accept'])->name('invite.accept');
-Route::get('/invite/decline', [InviteController::class, 'decline'])->name('invite.decline');
+
 
 
 require __DIR__.'/auth.php';

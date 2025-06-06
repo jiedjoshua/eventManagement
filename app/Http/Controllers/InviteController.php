@@ -49,27 +49,19 @@ class InviteController extends Controller
 
     $event = Event::findOrFail($eventId);
     $userId = Auth::id();
-
-    // Log the RSVP action
-    Log::info('RSVP accept attempt', [
-        'event_id' => $event->id,
-        'user_id' => $userId,
-        'timestamp' => now()->toDateTimeString()
-    ]);
-
+    
     // Get RSVP status if exists
     $pivot = $event->users()->where('user_id', $userId)->first();
 
     if ($pivot && $pivot->pivot->rsvp_status === 'accepted') {
-        Log::info('User already accepted. Showing QR code only.');
+       
     } else if ($pivot) {
-        Log::info('Updating existing RSVP to accepted.');
+        
         $event->users()->updateExistingPivot($userId, [
             'rsvp_status' => 'accepted',
             'updated_at' => now()
         ]);
     } else {
-        Log::info('No RSVP found. Attaching new RSVP as accepted.');
         $event->users()->attach($userId, [
             'rsvp_status' => 'accepted',
             'plus_one' => false,

@@ -15,6 +15,12 @@ use Carbon\Carbon;
     * {
       font-family: 'Inter', sans-serif;
     }
+
+    .qr-wrapper svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+
     
     .glass-effect {
       background: rgba(255, 255, 255, 0.25);
@@ -195,9 +201,9 @@ use Carbon\Carbon;
     <!-- QR Code Section -->
   <div class="mb-8">
   <div class="qr-container inline-block">
-    <div class="w-32 h-32 mx-auto">
-      {!! $qrCode !!}
-    </div>
+    <div class="qr-wrapper" style="width: 150px; height: 150px; overflow: hidden;">
+  {!! $qrCode !!}
+</div>
   </div>
 </div>
 

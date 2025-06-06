@@ -32,11 +32,15 @@
       </div>
     </nav>
 
-    <form method="POST" action="{{ route('logout') }}" class="p-4">
-      @csrf
-      <button type="submit" class="w-full text-left text-red-600 hover:underline">Logout</button>
-    </form>
-  </aside>
+<div class="px-6 py-4 border-t">
+  <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="block text-red-600 font-semibold hover:underline">
+      Logout
+    </button>
+  </form>
+</div>
+    </aside>
 
   <!-- Main content -->
   <main class="flex-1 p-6 overflow-y-auto">
