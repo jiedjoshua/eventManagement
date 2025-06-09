@@ -34,6 +34,10 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/eventmanager/dashboard', [EventManagerController::class, 'index'])->name('manager.dashboard');
     Route::get('/eventmanager/manage/events', [EventManagerController::class, 'showEvent'])->name('manager.showEvent');
     Route::get('/events/{event}/dashboard', [EventController::class, 'showDashboard'])->name('events.dashboard');
+    Route::get('/events/{event}/qrscanner', [EventController::class, 'showQRScanner'])->name('events.qrScanner');
+    Route::get('/events/{event}/guests', [EventController::class, 'showGuestList'])->name('events.guests');
+    Route::get('/events/{event}/checkedin', [EventController::class, 'showCheckedInList'])->name('events.checkedIn');
+    Route::get('/checkin/scan', [EventController::class, 'scanCheckIn'])->name('checkin.scan');
 });
 
 

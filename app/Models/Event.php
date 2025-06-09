@@ -41,6 +41,13 @@ public function users()
                 ->withTimestamps();
 }
 
+// In Event.php
+public function guests()
+{
+    return $this->belongsToMany(User::class)
+        ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
+        ->withTimestamps();
+}
 
 
 
