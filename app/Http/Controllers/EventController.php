@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Event;
+use App\Models\Package;
+use App\Models\Addon;
 
 
 
@@ -13,8 +15,10 @@ class EventController extends Controller
 {
     public function create()
     {
-        // Logic to show the booking form
-        return view('user.book');
+    $packages = Package::with('features')->where('is_active', true)->get();
+    $addons = Addon::where('is_active', true)->orderBy('sort_order')->get();
+    
+    return view('booking-form', compact('packages', 'addons'));
     }
 
  public function store(Request $request)
