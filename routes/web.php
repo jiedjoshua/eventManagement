@@ -7,6 +7,8 @@ use App\Http\Controllers\EventManagerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\VenueController;
+use App\Http\Controllers\PackageController;
 
 
 Route::get('/', function () {
@@ -34,6 +36,10 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/eventmanager/dashboard', [EventManagerController::class, 'index'])->name('manager.dashboard');
     Route::get('/eventmanager/manage/events', [EventManagerController::class, 'showEvent'])->name('manager.showEvent');
     Route::get('/events/{event}/dashboard', [EventController::class, 'showDashboard'])->name('events.dashboard');
+    Route::get('/events/{event}/qrscanner', [EventController::class, 'showQRScanner'])->name('events.qrScanner');
+    Route::get('/events/{event}/guests', [EventController::class, 'showGuestList'])->name('events.guests');
+    Route::get('/events/{event}/checkedin', [EventController::class, 'showCheckedInList'])->name('events.checkedIn');
+    Route::get('/checkin/scan', [EventController::class, 'scanCheckIn'])->name('checkin.scan');
 });
 
 
@@ -53,6 +59,15 @@ Route::get('/invite/decline/{eventId}', [InviteController::class, 'decline'])->n
 Route::get('/invite/{eventId}', [InviteController::class, 'show'])->name('invite.confirm');
 Route::get('/invite/accept/{eventId}', [InviteController::class, 'accept'])->name('invite.accept');
 
+//Venue Routes
+Route::prefix('venues')->group(function () {
+    Route::get('/', [VenueController::class, 'index']);
+    Route::get('/{venue}', [VenueController::class, 'show']);
+    Route::post('/', [VenueController::class, 'store']);
+});
 
+// Package Routes
+Route::get('/api/packages', [PackageController::class, 'getPackages']);
+Route::get('/api/packages/{id}', [PackageController::class, 'getPackage']);
 
 require __DIR__.'/auth.php';

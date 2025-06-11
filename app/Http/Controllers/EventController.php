@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Models\Event;
+use App\Models\Package;
+use App\Models\Addon;
 
 
 
@@ -13,8 +15,10 @@ class EventController extends Controller
 {
     public function create()
     {
-        // Logic to show the booking form
-        return view('user.book');
+    $packages = Package::with('features')->where('is_active', true)->get();
+    $addons = Addon::where('is_active', true)->orderBy('sort_order')->get();
+    
+    return view('booking-form', compact('packages', 'addons'));
     }
 
  public function store(Request $request)
@@ -85,6 +89,77 @@ public function showDashboard(Event $event)
       //  'not_checked_in' => $notCheckedIn,
     ]);
 }
+
+    public function showQRScanner(Event $event)
+    {
+        // Logic to show the QR scanner for the event
+        return view('manager.manage-events.view.qrscanner', compact('event'));
+    }
+
+       public function scanCheckIn(Request $request)
+    {
+        // This is your QR scan processing logic from above
+        $dataJson = $request->query('data');
+
+        if (!$dataJson) {
+            return response()->json(['error' => 'No QR data found.'], 400);
+        }
+
+        $data = json_decode($dataJson, true);
+
+        if (!$data || !isset($data['event_id']) || !isset($data['user_id'])) {
+            return response()->json(['error' => 'Invalid QR data.'], 400);
+        }
+
+        $eventId = $data['event_id'];
+        $userId = $data['user_id'];
+
+        $event = Event::find($eventId);
+        if (!$event) {
+            return response()->json(['error' => 'Event not found.'], 404);
+        }
+
+        $pivot = $event->users()->where('user_id', $userId)->first();
+        if (!$pivot) {
+            return response()->json(['error' => 'User is not invited to this event.'], 403);
+        }
+
+        $event->users()->updateExistingPivot($userId, [
+            'checked_in_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Check-in successful',
+            'user' => $pivot,
+            'checked_in_at' => now()->toDateTimeString(),
+        ]);
+    }
+
+
+    public function showGuestList($eventId)
+    {
+        // Eager load users with pivot data (rsvp_status, plus_one)
+       $event = Event::with(['guests' => function($query) {
+        $query->select('users.id', 'first_name', 'last_name', 'email') // ✅ CORRECT
+          ->withPivot('rsvp_status', 'plus_one');
+        }])->findOrFail($eventId);
+
+
+        return view('manager.manage-events.view.guest-list', compact('event'));
+    }
+
+    public function showCheckedInList($eventId)
+    {
+    // Eager load only guests who have checked in (checked_in_at is not null)
+    $event = Event::with(['guests' => function($query) {
+        $query->select('users.id', 'first_name', 'last_name', 'email')
+            ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
+            ->wherePivotNotNull('checked_in_at');
+    }])->findOrFail($eventId);
+
+    return view('manager.manage-events.view.checkedIn', compact('event'));
+    }
+
 
   
 }
