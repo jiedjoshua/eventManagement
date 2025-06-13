@@ -36,21 +36,22 @@ document.querySelectorAll('.radio-option').forEach(option => {
 });
 
 // Step navigation
-nextBtn.addEventListener('click', function () {
-    // if (validateCurrentStep()) {  // Commented out validation
-    if (currentStep < totalSteps) {
-        currentStep++;
-        updateStep();
-
-        // Reset venue steps when moving to next main step
-        if (currentStep !== 2) {
-            venueStep1.style.display = 'block';
-            venueStep2.style.display = 'none';
+nextBtn.addEventListener('click', function() {
+    // Remove the comments around the validation check
+    if (validateCurrentStep()) {  // Add this validation check
+        if (currentStep < totalSteps) {
+            currentStep++;
+            updateStep();
+            
+            // Reset venue steps when moving to next main step
+            if (currentStep !== 2) {
+                venueStep1.style.display = 'block';
+                venueStep2.style.display = 'none';
+            }
+        } else {
+            submitForm();
         }
-    } else {
-        submitForm();
-    }
-    // }  // Commented out validation
+    }  // Add this closing bracket
 });
 
 prevBtn.addEventListener('click', function () {
@@ -106,17 +107,24 @@ function updateStep() {
     nextBtn.textContent = currentStep === totalSteps ? 'Submit Booking' : 'Next Step';
 }
 
-/* Validation function commented out for testing
+ 
+ //Validation function commented out for testing
 function validateCurrentStep() {
     const currentStepContent = document.querySelector(`.step-content[data-step="${currentStep}"]`);
     const requiredFields = currentStepContent.querySelectorAll('input[required], select[required], textarea[required]');
     
     let isValid = true;
+    let firstInvalidField = null;
+    
     requiredFields.forEach(field => {
         if (!field.value.trim()) {
             field.style.borderColor = '#dc3545';
             field.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
             isValid = false;
+            
+            if (!firstInvalidField) {
+                firstInvalidField = field;
+            }
             
             field.addEventListener('input', function() {
                 this.style.borderColor = '#e1e5e9';
@@ -133,6 +141,7 @@ function validateCurrentStep() {
                 btn.style.borderColor = '#dc3545';
             });
             isValid = false;
+            alert('Please select a venue type');
         }
 
         if (!selectedVenue) {
@@ -162,24 +171,77 @@ function validateCurrentStep() {
                 card.style.borderColor = '#dc3545';
             });
             isValid = false;
+            alert('Please select a package before proceeding');
+        }
+    }
+
+    // If validation failed, scroll to and focus the first invalid field
+    if (!isValid && firstInvalidField) {
+        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalidField.focus();
+        
+        // Show general validation message
+        if (currentStep === 1) {
+            alert('Please fill in all required fields before proceeding');
         }
     }
 
     return isValid;
 }
-*/
+
 
 function submitForm() {
-    // Simulate form submission
-    form.style.display = 'none';
-    confirmation.classList.remove('hidden');
+    const formData = {
+        eventName: document.getElementById('eventName').value,
+        eventType: document.getElementById('eventType').value,
+        eventDate: document.getElementById('eventDate').value,
+        startTime: document.getElementById('startTime').value,
+        endTime: document.getElementById('endTime').value,
+        guestCount: document.getElementById('guestCount').value,
+        venueId: document.querySelector('.venue-card.selected')?.dataset.venueId,
+        packageId: document.querySelector('input[name="package"]:checked')?.value,
+        addons: Array.from(document.querySelectorAll('input[name="addons[]"]:checked')).map(cb => cb.value),
+        venueNotes: document.getElementById('venueNotes').value,
+        additionalNotes: document.getElementById('additionalNotes').value,
+    };
 
-    // Generate booking reference
-    const ref = Math.random().toString(36).substr(2, 9).toUpperCase();
-    document.getElementById('bookingRef').textContent = ref;
+    // Get CSRF token
+    const token = document.querySelector('meta[name="csrf-token"]').content;
 
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Send booking request
+    fetch('/bookings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': token,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hide form and show confirmation
+            document.getElementById('bookingForm').style.display = 'none';
+            const confirmation = document.getElementById('confirmation');
+            confirmation.classList.remove('hidden');
+            
+            // Set booking reference
+            document.getElementById('bookingRef').textContent = data.booking.reference;
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+             setTimeout(() => {
+            window.location.href = '/';
+        }, 5000);
+        } else {
+            alert(data.message || 'An error occurred while submitting your booking.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while submitting your booking. Please try again.');
+    });
 }
 
 
@@ -376,7 +438,10 @@ async function openVenueModal(venueId) {
         const venue = data.data;
 
         // Update modal content
-        document.getElementById('modalVenueImage').src = venue.main_image;
+        const modalImage = document.getElementById('modalVenueImage');
+        modalImage.src = `/${venue.main_image}`; // Add forward slash to make path relative to root
+        modalImage.alt = venue.name || 'Venue Image'; // Add fallback alt text
+
         document.getElementById('modalVenueTitle').textContent = venue.name;
         document.getElementById('modalVenueType').textContent =
             venue.type.charAt(0).toUpperCase() + venue.type.slice(1);
@@ -394,15 +459,15 @@ async function openVenueModal(venueId) {
             </div>
         `).join('');
 
-        // Update gallery
+        // Update gallery with proper path handling
         const galleryContainer = document.querySelector('.venue-gallery');
         galleryContainer.innerHTML = venue.gallery.map(item => `
-            <img src="${item.image_path}" class="gallery-img" alt="Venue Image">
+            <img src="/${item.image_path}" class="gallery-img" alt="Venue Image">
         `).join('');
 
         // Show modal
         modal.classList.add('active');
-        document.body.classList.add('modal-open');
+      
     } catch (error) {
         console.error('Error loading venue details:', error);
         alert('Failed to load venue details. Please try again.');
@@ -411,7 +476,6 @@ async function openVenueModal(venueId) {
 
 function closeModal() {
     modal.classList.remove('active');
-    document.body.classList.remove('modal-open');
 }
 
 modalClose.addEventListener('click', closeModal);

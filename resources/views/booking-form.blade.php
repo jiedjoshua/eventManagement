@@ -51,9 +51,8 @@
                                 <option value="">Select event type</option>
                                 <option value="wedding">Wedding</option>
                                 <option value="birthday">Birthday Party</option>
-                                <option value="corporate">Corporate Event</option>
+                                <option value="corporate">Debut</option>
                                 <option value="baptism">Baptism</option>
-                                <option value="other">Other</option>
                             </select>
                         </div>
                         
@@ -316,7 +315,7 @@
             <h2>🎉 Booking Request Submitted!</h2>
             <p>Thank you for choosing us for your special event. We'll review your request and get back to you within 24 hours with a detailed quote and next steps.</p>
             <br>
-            <p><strong>Booking Reference:</strong> EVT-2025-<span id="bookingRef"></span></p>
+            <p><strong>Booking Reference:</strong><span id="bookingRef"></span></p>
         </div>
     </div>
 

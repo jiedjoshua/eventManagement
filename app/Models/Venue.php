@@ -30,4 +30,28 @@ class Venue extends Model
     {
         return $this->hasMany(VenueGallery::class);
     }
+
+     public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function isAvailable($date, $startTime, $endTime): bool
+    {
+        return !$this->bookings()
+            ->where('event_date', $date)
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where(function ($q) use ($startTime, $endTime) {
+                    // Check if any existing booking overlaps with the requested time
+                    $q->whereBetween('start_time', [$startTime, $endTime])
+                        ->orWhereBetween('end_time', [$startTime, $endTime]);
+                })->orWhere(function ($q) use ($startTime, $endTime) {
+                    // Check if the requested time is within an existing booking
+                    $q->where('start_time', '<=', $startTime)
+                        ->where('end_time', '>=', $endTime);
+                });
+            })
+            ->whereIn('status', ['pending', 'approved'])
+            ->exists();
+    }
 }
