@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Event Management Sidebar</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="flex h-screen bg-gray-100">
 
@@ -23,6 +24,12 @@
         <a href="{{ route('user.bookedEvents') }} " class="block pl-4 py-2 hover:bg-indigo-100 rounded">Booked Events</a>
         <a href="{{ route('user.attendingEvents') }} " class="block pl-4 py-2 hover:bg-indigo-100 rounded">Attending Events</a>
         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest List</a>
+      </div>
+
+      <div>
+        <p class="mt-4 font-semibold text-gray-900">Payment</p>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Payments</a>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Payment History</a>
       </div>
 
       <div>
@@ -57,7 +64,7 @@
           </svg>
         </div>
         <div class="flex flex-col justify-center">
-          <span class="text-3xl font-bold text-gray-900">27</span>
+          <span class="text-3xl font-bold text-gray-900">{{ $stats['upcoming_events'] }}</span>
           <span class="text-gray-500 uppercase tracking-wide mt-1 text-xs">Upcoming Events</span>
         </div>
       </div>
@@ -70,7 +77,7 @@
           </svg>
         </div>
         <div class="flex flex-col justify-center">
-          <span class="text-3xl font-bold text-gray-900">15</span>
+          <span class="text-3xl font-bold text-gray-900">{{ $stats['confirmed_bookings'] }}</span>
           <span class="text-gray-500 uppercase tracking-wide mt-1 text-xs">Confirmed Bookings</span>
         </div>
       </div>
@@ -82,43 +89,126 @@
           </svg>
         </div>
         <div class="flex flex-col justify-center">
-          <span class="text-3xl font-bold text-gray-900">8</span>
+          <span class="text-3xl font-bold text-gray-900">{{ $stats['past_events'] }}</span>
           <span class="text-gray-500 uppercase tracking-wide mt-1 text-xs">Past Events</span>
         </div>
       </div>
 
-      <div class="w-72 h-28 bg-white rounded-lg shadow-md flex items-center p-5 space-x-5">
-        <div class="w-20 h-20 bg-indigo-600 rounded-md flex items-center justify-center text-white text-2xl">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
-          </svg>
-        </div>
-        <div class="flex flex-col justify-center">
-          <span class="text-3xl font-bold text-gray-900">42</span>
-          <span class="text-gray-500 uppercase tracking-wide mt-1 text-xs">Total Guests</span>
-        </div>
+      
       </div>
     </div>
 
     <!-- Charts Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Chart Card 1 -->
+      <!-- Chart Card 1: Event Participation Over Time -->
       <div class="bg-white rounded-lg shadow-md p-6 h-96 flex flex-col">
-        <h2 class="text-xl font-semibold mb-4">Event Attendance Overview</h2>
-        <div class="flex-grow bg-gray-100 flex items-center justify-center text-gray-400 rounded">
-            Chart Placeholder
+        <h2 class="text-xl font-semibold mb-4">Event Participation Over Time</h2>
+        <div class="flex-grow">
+          <canvas id="participationChart"></canvas>
         </div>
-    </div>
+      </div>
 
-
-      <!-- Chart Card 2 -->
+      <!-- Chart Card 2: Event Types Breakdown -->
       <div class="bg-white rounded-lg shadow-md p-6 h-96 flex flex-col">
-        <h2 class="text-xl font-semibold mb-4">Event Attendance Overview</h2>
-        <div class="flex-grow bg-gray-100 flex items-center justify-center text-gray-400 rounded">
-            Chart Placeholder
+        <h2 class="text-xl font-semibold mb-4">Event Types Breakdown</h2>
+        <div class="flex-grow">
+          <canvas id="eventTypesChart"></canvas>
         </div>
+      </div>
     </div>
 
   </main>
+
+  <script>
+    // Chart 1: Event Participation Over Time (Line Chart)
+    const participationCtx = document.getElementById('participationChart').getContext('2d');
+    new Chart(participationCtx, {
+      type: 'line',
+      data: {
+        labels: @json($participationData['labels']),
+        datasets: [{
+          label: 'Events Participated',
+          data: @json($participationData['data']),
+          borderColor: 'rgb(99, 102, 241)',
+          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: 'rgb(99, 102, 241)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.1)'
+            },
+            ticks: {
+              stepSize: 1
+            }
+          },
+          x: {
+            grid: {
+              color: 'rgba(0, 0, 0, 0.1)'
+            }
+          }
+        }
+      }
+    });
+
+    // Chart 2: Event Types Breakdown (Doughnut Chart)
+    const eventTypesCtx = document.getElementById('eventTypesChart').getContext('2d');
+    new Chart(eventTypesCtx, {
+      type: 'doughnut',
+      data: {
+        labels: @json($eventTypesData['labels']),
+        datasets: [{
+          data: @json($eventTypesData['data']),
+          backgroundColor: [
+            'rgba(99, 102, 241, 0.8)',
+            'rgba(236, 72, 153, 0.8)',
+            'rgba(34, 197, 94, 0.8)',
+            'rgba(251, 146, 60, 0.8)',
+            'rgba(168, 85, 247, 0.8)',
+            'rgba(6, 182, 212, 0.8)'
+          ],
+          borderColor: [
+            'rgb(99, 102, 241)',
+            'rgb(236, 72, 153)',
+            'rgb(34, 197, 94)',
+            'rgb(251, 146, 60)',
+            'rgb(168, 85, 247)',
+            'rgb(6, 182, 212)'
+          ],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 20,
+              usePointStyle: true
+            }
+          }
+        },
+        cutout: '60%'
+      }
+    });
+  </script>
 </body>
 </html>

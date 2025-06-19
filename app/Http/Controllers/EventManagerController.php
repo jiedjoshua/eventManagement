@@ -13,14 +13,49 @@ class EventManagerController extends Controller
 {
     public function index()
     {
-        if (Auth::user()->role !== 'event_manager') {
-            abort(403, 'Unauthorized');
+        // 1. Total Events Managed (all events)
+        $totalEvents = Event::count();
+
+        // 2. Upcoming Events (all future events)
+        $upcomingEvents = Event::where('event_date', '>=', Carbon::today())->count();
+
+        // 3. Pending Bookings/Approvals (all bookings with status 'pending')
+        $pendingBookings = Booking::where('status', 'pending')->count();
+
+        // 4. Cancelled Events (all events with status 'cancelled')
+        $cancelledEvents = Event::where('status', 'cancelled')->count();
+
+        // Chart 1: Events Per Month (current year)
+        $eventsPerMonth = Event::whereYear('event_date', now()->year)
+            ->selectRaw('EXTRACT(MONTH FROM event_date) as month, COUNT(*) as count')
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        // Prepare data for all 12 months
+        $months = [];
+        $eventCounts = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $months[] = date('M', mktime(0, 0, 0, $i, 1));
+            $eventCounts[] = $eventsPerMonth[$i] ?? 0;
         }
 
-        // Fetch event manager specific data (e.g., events they manage)
-        // $events = Event::where('manager_id', Auth::id())->get();
+        // Chart 2: Event Types Distribution
+        $eventTypes = Event::selectRaw('event_type, COUNT(*) as count')
+            ->groupBy('event_type')
+            ->pluck('count', 'event_type')
+            ->toArray();
 
-        return view('manager.dashboard' /*, compact('events') */);
+        return view('manager.dashboard', [
+            'totalEvents' => $totalEvents,
+            'upcomingEvents' => $upcomingEvents,
+            'pendingBookings' => $pendingBookings,
+            'cancelledEvents' => $cancelledEvents,
+            'months' => $months,
+            'eventCounts' => $eventCounts,
+            'eventTypeLabels' => array_keys($eventTypes),
+            'eventTypeCounts' => array_values($eventTypes),
+        ]);
     }
 
     public function showEvent()
@@ -164,7 +199,7 @@ class EventManagerController extends Controller
     }
     public function details(Event $event)
     {
-       
+
         $event->load(['booking', 'user']);
 
         return response()->json([
@@ -189,5 +224,35 @@ class EventManagerController extends Controller
                 ]
             ]
         ]);
+    }
+
+    public function showGuestLists()
+    {
+
+        $events = Event::with('guests')->orderBy('event_date', 'desc')->get();
+
+        return view('manager.guest-list', compact('events'));
+    }
+
+    public function guests(Event $event)
+    {
+        $guests = $event->guests()->paginate(10); // 10 per page
+        return response()->json([
+            'guests' => $guests->items(),
+            'pagination' => [
+                'current_page' => $guests->currentPage(),
+                'last_page' => $guests->lastPage(),
+                'next_page_url' => $guests->nextPageUrl(),
+                'prev_page_url' => $guests->previousPageUrl(),
+            ]
+        ]);
+    }
+
+    public function showGenerateExternalQRCodes()
+    {
+        // Get all events (or filter as needed)
+        $events = Event::orderBy('event_date')->get();
+
+        return view('manager.generate-qr', compact('events'));
     }
 }

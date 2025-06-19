@@ -11,6 +11,10 @@ use App\Models\Addon;
 use App\Models\Venue;
 use App\Models\Booking;
 use Illuminate\Support\Facades\DB;
+use App\Models\ExternalGuest;
+use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use ZipArchive;
 
 
 
@@ -199,53 +203,101 @@ class EventController extends Controller
 
         $data = json_decode($dataJson, true);
 
-        if (!$data || !isset($data['event_id']) || !isset($data['user_id'])) {
-            return response()->json(['error' => 'Invalid QR data.'], 400);
+        if (!$data) {
+            return response()->json(['error' => 'Invalid QR data format.'], 400);
         }
 
-        $eventId = $data['event_id'];
-        $userId = $data['user_id'];
 
-        $event = Event::find($eventId);
-        if (!$event) {
-            return response()->json(['error' => 'Event not found.'], 404);
-        }
 
-        // Get the pivot data with the checked_in_at field
-        $eventUser = DB::table('event_user')
-            ->where('event_id', $eventId)
-            ->where('user_id', $userId)
-            ->first();
+        if (isset($data['event_id']) && isset($data['external_code'])) {
+            $eventId = $data['event_id'];
+            $externalCode = $data['external_code'];
 
-        if (!$eventUser) {
-            return response()->json(['error' => 'User is not invited to this event.'], 403);
-        }
+            $externalGuest = ExternalGuest::where('event_id', $eventId)
+                ->where('unique_code', $externalCode)
+                ->first();
 
-        // Check if user has already checked in
-        if ($eventUser->checked_in_at !== null) {
-            $formattedDate = \Carbon\Carbon::parse($eventUser->checked_in_at)
-                ->format('F d, Y g:ia');
+            if (!$externalGuest) {
+                return response()->json([
+                    'error' => 'Invalid or unregistered external guest QR code.',
+                    'code' => 'EXTERNAL_GUEST_NOT_FOUND'
+                ], 404);
+            }
+
+            // Prevent double check-in
+            if ($externalGuest->checked_in_at) {
+                $formattedDate = \Carbon\Carbon::parse($externalGuest->checked_in_at)
+                    ->format('F d, Y g:ia');
+                return response()->json([
+                    'error' => 'This QR code has already been used for check-in.',
+                    'code' => 'EXTERNAL_ALREADY_CHECKED_IN',
+                    'checked_in_at' => $formattedDate
+                ], 400);
+            }
+
+            // Mark as checked in (only if not already checked in)
+            $externalGuest->checked_in_at = now();
+            $externalGuest->save();
 
             return response()->json([
-                'error' => 'This QR code has already been used for check-in.',
-                'checked_in_at' => $formattedDate
-            ], 400);
+                'message' => 'Check-in successful (external guest)',
+                'code' => 'EXTERNAL_CHECKIN_SUCCESS',
+                'guest' => [
+                    'name' => $externalGuest->name,
+                    'checked_in_at' => $externalGuest->checked_in_at->format('F d, Y g:ia')
+                ]
+            ]);
         }
 
-        // If not checked in, proceed with check-in
-        $now = now();
-        DB::table('event_user')
-            ->where('event_id', $eventId)
-            ->where('user_id', $userId)
-            ->update(['checked_in_at' => $now]);
+        // --- Registered User QR (existing logic) ---
+        if (isset($data['event_id']) && isset($data['user_id'])) {
+            $eventId = $data['event_id'];
+            $userId = $data['user_id'];
 
-        $user = DB::table('users')->where('id', $userId)->first();
+            $event = Event::find($eventId);
+            if (!$event) {
+                return response()->json(['error' => 'Event not found.'], 404);
+            }
 
-        return response()->json([
-            'message' => 'Check-in successful',
-            'user' => $user,
-            'checked_in_at' => $now->format('F d, Y g:ia')
-        ]);
+            // Get the pivot data with the checked_in_at field
+            $eventUser = DB::table('event_user')
+                ->where('event_id', $eventId)
+                ->where('user_id', $userId)
+                ->first();
+
+            if (!$eventUser) {
+                return response()->json(['error' => 'User is not invited to this event.'], 403);
+            }
+
+            // Check if user has already checked in
+            if ($eventUser->checked_in_at !== null) {
+                $formattedDate = \Carbon\Carbon::parse($eventUser->checked_in_at)
+                    ->format('F d, Y g:ia');
+
+                return response()->json([
+                    'error' => 'This QR code has already been used for check-in.',
+                    'checked_in_at' => $formattedDate
+                ], 400);
+            }
+
+            // If not checked in, proceed with check-in
+            $now = now();
+            DB::table('event_user')
+                ->where('event_id', $eventId)
+                ->where('user_id', $userId)
+                ->update(['checked_in_at' => $now]);
+
+            $user = DB::table('users')->where('id', $userId)->first();
+
+            return response()->json([
+                'message' => 'Check-in successful',
+                'user' => $user,
+                'checked_in_at' => $now->format('F d, Y g:ia')
+            ]);
+        }
+
+        // --- Fallback: Invalid QR ---
+        return response()->json(['error' => 'Invalid QR data.'], 400);
     }
 
 
@@ -329,5 +381,57 @@ class EventController extends Controller
             'success' => true,
             'message' => 'Guest checked in successfully'
         ]);
+    }
+
+    public function generateExternalQRCodes(Request $request)
+    {
+        $request->validate([
+            'event_id' => 'required|exists:events,id',
+            'quantity' => 'required|integer|min:1|max:500',
+        ]);
+
+        $event = Event::findOrFail($request->event_id);
+        $quantity = $request->quantity;
+
+        // Sanitize event name for filename
+        $eventNameForFile = preg_replace('/[^A-Za-z0-9_\-]/', '_', $event->event_name);
+
+        // Create a temporary directory
+        $tempDir = storage_path('app/temp_external_qr_' . uniqid());
+        mkdir($tempDir);
+
+        for ($i = 1; $i <= $quantity; $i++) {
+            $uniqueCode = Str::uuid()->toString();
+            $externalGuest = ExternalGuest::create([
+                'event_id' => $event->id,
+                'unique_code' => $uniqueCode,
+            ]);
+            $qrData = json_encode([
+                'event_id' => $event->id,
+                'external_code' => $uniqueCode,
+            ]);
+            $qrImage = QrCode::format('png')->size(300)->margin(10)->generate($qrData);
+            file_put_contents($tempDir . DIRECTORY_SEPARATOR . "external_guest_{$externalGuest->id}.png", $qrImage);
+        }
+
+        // Create ZIP with event name
+        $zipFileName = $eventNameForFile . '_qr_codes_' . time() . '.zip';
+        $zipPath = storage_path('app/' . $zipFileName);
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+            foreach (glob($tempDir . '/*.png') as $file) {
+                $zip->addFile($file, basename($file));
+            }
+            $zip->close();
+        }
+
+        // Clean up temp files
+        foreach (glob($tempDir . '/*.png') as $file) {
+            unlink($file);
+        }
+        rmdir($tempDir);
+
+        // Return ZIP as download, with event name as filename
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
     }
 }
