@@ -10,7 +10,7 @@
 
   <!-- Sidebar -->
   <aside class="w-64 bg-white shadow-md flex flex-col">
-    <div class="p-6 text-2xl font-bold text-indigo-600">Event Panel</div>
+    <div class="p-6 text-2xl font-bold text-indigo-600">Manager Panel</div>
     <nav class="flex-1 px-4 space-y-2 text-sm text-gray-700">
       <!-- Menu -->
       <div>
@@ -21,20 +21,15 @@
       <div>
         <p class="mt-4 font-semibold text-gray-900">Manage Events</p>
         <a href="{{ route('manager.showEvent') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Events</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Upcoming Events</a>
+         <a href="{{ route('manager.bookedEvents') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Booked Events</a>
+        <a href="{{ route('manager.upcomingEvents') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Upcoming Events</a>
         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Create Event</a>
       </div>
 
       <div>
         <p class="mt-4 font-semibold text-gray-900">RSVP Management</p>
         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest Lists</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">RSVP Status</a>
-      </div>
-
-      <div>
-        <p class="mt-4 font-semibold text-gray-900">QR Code Check-In</p>
         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Generate QR Codes</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">View Check-in Status</a>
       </div>
 
       <div>

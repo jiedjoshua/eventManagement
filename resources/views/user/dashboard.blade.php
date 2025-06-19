@@ -10,7 +10,7 @@
 
   <!-- Sidebar -->
   <aside class="w-64 bg-white shadow-md flex flex-col">
-    <div class="p-6 text-2xl font-bold text-indigo-600">Event Panel</div>
+    <div class="p-6 text-2xl font-bold text-indigo-600">Customer Panel</div>
     <nav class="flex-1 px-4 space-y-2 text-sm text-gray-700">
       <!-- Menu -->
       <div>

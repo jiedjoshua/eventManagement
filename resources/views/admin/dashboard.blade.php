@@ -1,217 +1,143 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Super Admin Dashboard - Event Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Management Sidebar</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* Sidebar fixed height and scroll */
-    #sidebar {
-      height: 100vh;
-      overflow-y: auto;
-    }
-    /* Active link style */
-    .active {
-      background-color: #4f46e5; /* Indigo-600 */
-      color: white;
-    }
-  </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="flex h-screen bg-gray-100">
 
-  <div class="flex h-screen">
-
-    <!-- Sidebar -->
-    <aside id="sidebar" class="w-64 bg-white shadow-lg flex flex-col">
-
-      <div class="p-6 text-2xl font-bold text-indigo-600 border-b border-gray-200">
-        EventAdmin
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow-md flex flex-col">
+    <div class="p-6 text-2xl font-bold text-indigo-600">Admin Panel</div>
+    <nav class="flex-1 px-4 space-y-2 text-sm text-gray-700">
+      <!-- Menu -->
+      <div>
+        <p class="font-semibold text-gray-900">Home</p>
+        <a href="#" class="block pl-4 py-2 rounded bg-indigo-200 font-semibold text-indigo-800">Dashboard</a>
       </div>
 
-      <nav class="flex-1 overflow-y-auto mt-6">
-        <ul class="space-y-1 px-4">
+      <div>
+        <p class="mt-4 font-semibold text-gray-900">User Management</p>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Users</a>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Create User</a>
+      </div>
 
-          <li>
-            <a href="#" class="block px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-700 active">
-              User Management
-            </a>
-            <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
-              <li><a href="{{ route('admin.listusers') }}" class="hover:text-indigo-600">List Users</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Create User</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Assign Roles</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Activity Logs</a></li>
-            </ul>
-          </li>
+      <div>
+        <p class="mt-4 font-semibold text-gray-900">Event Management</p>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Events</a>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Create Event</a>
+      </div>
 
-          <li>
-            <a href="#" class="block px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-700">
-              Event Management Overview
-            </a>
-            <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
-              <li><a href="#" class="hover:text-indigo-600">List Events</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Create Event</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Event Status</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Event Statistics</a></li>
-            </ul>
-          </li>
+      <div>
+        <p class="mt-4 font-semibold text-gray-900">Venue Management</p>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Venues</a>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Add Venue</a>
+      </div>
 
-          <li>
-            <a href="#" class="block px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-700">
-              Company Settings
-            </a>
-            <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
-              <li><a href="#" class="hover:text-indigo-600">Manage Details</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Branding Settings</a></li>
-            </ul>
-          </li>
+      <div>
+        <p class="mt-4 font-semibold text-gray-900">Event Package Management</p>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Wedding</a>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Birthday</a>
+         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Baptism</a>
+      </div>
 
-          <li>
-            <a href="#" class="block px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-700">
-              Role & Permission Management
-            </a>
-            <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
-              <li><a href="#" class="hover:text-indigo-600">Define Roles</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Modify Permissions</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Permission Audit Logs</a></li>
-            </ul>
-          </li>
+      <div>
+        <p class="mt-4 font-semibold text-gray-900">Settings</p>
+        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Account Settings</a>
+      </div>
+    </nav>
 
-          <li>
-            <a href="#" class="block px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-700">
-              System Analytics & Reports
-            </a>
-            <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
-              <li><a href="#" class="hover:text-indigo-600">Dashboard Stats</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Export Reports</a></li>
-            </ul>
-          </li>
+      <div class="px-6 py-4 border-t">
+  <form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" class="block text-red-600 font-semibold hover:underline">
+      Logout
+    </button>
+  </form>
+</div>
 
-          <li>
-            <a href="#" class="block px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-700">
-              Notifications & Alerts
-            </a>
-            <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
-              <li><a href="#" class="hover:text-indigo-600">Pending Approvals</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Manage Notifications</a></li>
-            </ul>
-          </li>
+  </aside>
 
-          <li>
-            <a href="#" class="block px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-700">
-              Audit Logs
-            </a>
-            <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
-              <li><a href="#" class="hover:text-indigo-600">User & Event Changes</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Login History</a></li>
-            </ul>
-          </li>
+  <!-- Main Content -->
+  <main class="flex-1 p-10 overflow-auto">
+    <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
 
-          <li>
-            <a href="#" class="block px-4 py-2 rounded-md hover:bg-indigo-50 hover:text-indigo-700">
-              Support & Feedback
-            </a>
-            <ul class="pl-6 mt-1 space-y-1 text-gray-600 text-sm">
-              <li><a href="#" class="hover:text-indigo-600">View Feedback</a></li>
-              <li><a href="#" class="hover:text-indigo-600">Manage Tickets</a></li>
-            </ul>
-          </li>
-
-        </ul>
-      </nav>
-
-    </aside>
-
-    <!-- Main content -->
-    <div class="flex-1 flex flex-col">
-
-      <!-- Topbar -->
-      <header class="flex justify-between items-center bg-white shadow px-6 py-4">
-        <h1 class="text-xl font-semibold text-gray-700">Super Admin Dashboard</h1>
-
-        <div class="flex items-center space-x-4">
-          <span class="text-gray-600">Hello, <strong>Super Admin</strong></span>
-        <form action="{{ route('logout') }}" method="POST" class="inline">
-            @csrf
-            <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
-                Logout
-            </button>
-        </form>
+    <!-- Cards Row -->
+    <div class="flex flex-wrap gap-6 mb-10">
+      <!-- Card Template -->
+      <div class="w-72 h-28 bg-white rounded-lg shadow-md flex items-center p-5 space-x-5">
+        <div class="w-20 h-20 bg-indigo-600 rounded-md flex items-center justify-center text-white text-2xl">
+          <!-- Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-12 4h14a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
         </div>
-      </header>
+        <div class="flex flex-col justify-center">
+          <span class="text-3xl font-bold text-gray-900">27</span>
+          <span class="text-gray-500 uppercase tracking-wide mt-1 text-xs">Upcoming Events</span>
+        </div>
+      </div>
 
-      <!-- Content area -->
-      <main class="flex-1 overflow-y-auto p-6">
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <!-- Duplicate & change text for other cards -->
+      <div class="w-72 h-28 bg-white rounded-lg shadow-md flex items-center p-5 space-x-5">
+        <div class="w-20 h-20 bg-indigo-600 rounded-md flex items-center justify-center text-white text-2xl">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div class="flex flex-col justify-center">
+          <span class="text-3xl font-bold text-gray-900">15</span>
+          <span class="text-gray-500 uppercase tracking-wide mt-1 text-xs">Confirmed Bookings</span>
+        </div>
+      </div>
 
-          <!-- Total Users Widget -->
-          <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold mb-4">Total Users</h2>
-            <p class="text-4xl font-bold text-indigo-600">{{ $totalUsers }}</p>
-          </div>
+      <div class="w-72 h-28 bg-white rounded-lg shadow-md flex items-center p-5 space-x-5">
+        <div class="w-20 h-20 bg-indigo-600 rounded-md flex items-center justify-center text-white text-2xl">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6h6v6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div class="flex flex-col justify-center">
+          <span class="text-3xl font-bold text-gray-900">8</span>
+          <span class="text-gray-500 uppercase tracking-wide mt-1 text-xs">Past Events</span>
+        </div>
+      </div>
 
-          <!-- Active Events Widget -->
-          <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold mb-4">Active Events</h2>
-            <p class="text-4xl font-bold text-indigo-600">56</p>
-          </div>
-
-          <!-- Revenue Widget -->
-          <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold mb-4">Earnings (This Month)</h2>
-            <p class="text-4xl font-bold text-indigo-600">$42,500</p>
-          </div>
-
-        </section>
-
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          <!-- Latest User Activity -->
-          <div class="bg-white rounded-lg shadow p-6 overflow-auto max-h-96">
-            <h2 class="text-lg font-semibold mb-4">Latest User Activity</h2>
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="border-b">
-                  <th class="py-2 px-3">User</th>
-                  <th class="py-2 px-3">Activity</th>
-                  <th class="py-2 px-3">Last Login</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="border-b hover:bg-indigo-50">
-                  <td class="py-2 px-3">John Doe</td>
-                  <td class="py-2 px-3">Created Event "Launch Party"</td>
-                  <td class="py-2 px-3">2025-05-22 14:32</td>
-                </tr>
-                <tr class="border-b hover:bg-indigo-50">
-                  <td class="py-2 px-3">Jane Smith</td>
-                  <td class="py-2 px-3">Updated User Role</td>
-                  <td class="py-2 px-3">2025-05-22 12:10</td>
-                </tr>
-                <!-- More rows -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Recent Notifications -->
-          <div class="bg-white rounded-lg shadow p-6 overflow-auto max-h-96">
-            <h2 class="text-lg font-semibold mb-4">Recent Notifications</h2>
-            <ul class="list-disc list-inside text-gray-700 space-y-2">
-              <li>New user registration pending approval.</li>
-              <li>Event "Annual Gala" is starting soon.</li>
-              <li>System backup completed successfully.</li>
-              <li>New support ticket submitted.</li>
-              <!-- More notifications -->
-            </ul>
-          </div>
-
-        </section>
-
-      </main>
-
+      <div class="w-72 h-28 bg-white rounded-lg shadow-md flex items-center p-5 space-x-5">
+        <div class="w-20 h-20 bg-indigo-600 rounded-md flex items-center justify-center text-white text-2xl">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+          </svg>
+        </div>
+        <div class="flex flex-col justify-center">
+          <span class="text-3xl font-bold text-gray-900">42</span>
+          <span class="text-gray-500 uppercase tracking-wide mt-1 text-xs">Total Guests</span>
+        </div>
+      </div>
     </div>
 
-  </div>
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Chart Card 1 -->
+      <div class="bg-white rounded-lg shadow-md p-6 h-96 flex flex-col">
+        <h2 class="text-xl font-semibold mb-4">Event Attendance Overview</h2>
+        <div class="flex-grow bg-gray-100 flex items-center justify-center text-gray-400 rounded">
+            Chart Placeholder
+        </div>
+    </div>
 
+
+      <!-- Chart Card 2 -->
+      <div class="bg-white rounded-lg shadow-md p-6 h-96 flex flex-col">
+        <h2 class="text-xl font-semibold mb-4">Event Attendance Overview</h2>
+        <div class="flex-grow bg-gray-100 flex items-center justify-center text-gray-400 rounded">
+            Chart Placeholder
+        </div>
+    </div>
+ 
+  </main>
 </body>
 </html>
+ 

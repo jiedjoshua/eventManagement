@@ -8,6 +8,9 @@ use App\Models\Event;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Models\Booking;
+use App\Models\Venue;
+use App\Models\Package;
 
 class UserController extends Controller
 {
@@ -23,18 +26,43 @@ class UserController extends Controller
 
         return view('user.dashboard' /*, compact('events') */);
     }
+    public function bookedEvents()  
+    {
+        $bookedEvents = Booking::with(['venue', 'package'])
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    public function bookedEvent(){
-    if (Auth::user()->role !== 'regular_user') {
-        abort(403, 'Unauthorized');
+        return view('user.book', compact('bookedEvents'));
     }
 
-    $userId = Auth::id(); // logged in user
-       $bookedEvents = Event::where('user_id', $userId)->get(); 
+    public function editBooking($reference)
+{
+    $booking = Booking::where('reference', $reference)->firstOrFail();
+    $venues = Venue::all();  
+    $packages = Package::all();  
     
-   
+    return view('user.edit-booking', compact('booking', 'venues', 'packages'));
+}
 
-    return view('user.book', compact('bookedEvents'));
+    public function updateBooking(Request $request, $reference)
+    {
+        $booking = Booking::where('reference', $reference)->firstOrFail();
+
+        $validated = $request->validate([
+            'event_type' => 'required|string',
+            'event_date' => 'required|date',
+            'start_time' => 'required',
+            'end_time' => 'required|after:start_time',
+            'guest_count' => 'required|integer|min:1',
+            'venue_notes' => 'nullable|string',
+            'additional_notes' => 'nullable|string',
+        ]);
+
+        $booking->update($validated);
+
+        return redirect()->route('bookings.edit', $reference)
+        ->with('success', 'Booking updated successfully');
     }
 
     public function attendingEvents()
@@ -45,5 +73,4 @@ class UserController extends Controller
 
         return view('user.attending-events', compact('acceptedEvents'));
     }
-
 }

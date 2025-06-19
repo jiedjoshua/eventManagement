@@ -31,24 +31,25 @@ class Event extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-        
     }
 
-public function users()
-{
-    return $this->belongsToMany(User::class)
-                ->withPivot('rsvp_status', 'plus_one')
-                ->withTimestamps();
-}
+    public function users()
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot('rsvp_status', 'plus_one')
+            ->withTimestamps();
+    }
 
-// In Event.php
-public function guests()
-{
-    return $this->belongsToMany(User::class)
-        ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
-        ->withTimestamps();
-}
+    // In Event.php
+    public function guests()
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
+            ->withTimestamps();
+    }
 
-
-
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class);
+    }
 }
