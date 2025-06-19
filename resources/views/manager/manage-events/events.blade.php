@@ -38,14 +38,14 @@
         <p class="mt-4 font-semibold text-gray-900">Manage Events</p>
         <a href="{{ route('manager.showEvent') }}" class="block pl-4 py-2 rounded bg-indigo-200 font-semibold text-indigo-800">Events</a>
         <a href="{{ route('manager.bookedEvents') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Booked Events</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Upcoming Events</a>
+         <a href="{{ route('manager.upcomingEvents') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Upcoming Events</a>
         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Create Event</a>
       </div>
 
       <div>
         <p class="mt-4 font-semibold text-gray-900">RSVP Management</p>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest Lists</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Generate QR Codes</a>
+        <a href="{{ route('manager.guestLists') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest Lists</a>
+        <a href="{{ route('manager.showGenerateExternalQRCodes') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Generate QR Codes</a>
       </div>
 
       <div>

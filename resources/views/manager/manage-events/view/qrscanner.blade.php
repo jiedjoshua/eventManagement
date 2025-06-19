@@ -48,13 +48,12 @@
 
         </nav>
 
-        <div class="px-6 py-4 border-t">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="block text-red-600 font-semibold hover:underline">
-                    Logout
-                </button>
-            </form>
+       <div class="px-6 py-4 border-t">
+           
+               
+                <a href="{{ route('manager.upcomingEvents') }}" class="block text-red-600 font-semibold hover:underline">
+                    Back to Manager Panel
+                </a>
         </div>
     </aside>
 

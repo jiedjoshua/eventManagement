@@ -29,8 +29,8 @@
 
             <div>
                 <p class="mt-4 font-semibold text-gray-900">RSVP Management</p>
-                <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest Lists</a>
-                <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Generate QR Codes</a>
+               <a href="{{ route('manager.guestLists') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest Lists</a>
+        <a href="{{ route('manager.showGenerateExternalQRCodes') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Generate QR Codes</a>
             </div>
 
             <div>
@@ -83,6 +83,9 @@
         <!-- Events Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($events as $event)
+             @php
+        $isPast = \Carbon\Carbon::parse($event->event_date)->endOfDay()->lt(now());
+    @endphp
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="p-6">
                     <!-- Event Status Badge -->
@@ -138,24 +141,22 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="mt-6 flex gap-2">
-                        <button onclick="showEventDetails('{{ $event->id }}')"
-                            class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">
-                            View Details
-                        </button>
-
-                        <button onclick="showReschedModal('{{ $event->id }}')"
-                            class="flex-1 bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700 transition">
-                            Reschedule
-                        </button>
-
-                        <a href="{{ route('events.dashboard', $event->id) }}"
-                            class="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition text-center">
-                            Event Mode
-                        </a>
-
-                        <!-- Guest list button -->
-                    </div>
+                   @if(!$isPast)
+            <div class="mt-6 flex gap-2">
+                <button onclick="showEventDetails('{{ $event->id }}')"
+                    class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">
+                    View Details
+                </button>
+                <button onclick="showReschedModal('{{ $event->id }}')"
+                    class="flex-1 bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700 transition">
+                    Reschedule
+                </button>
+                <a href="{{ route('events.dashboard', $event->id) }}"
+                    class="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition text-center">
+                    Event Mode
+                </a>
+            </div>
+            @endif
 
                     <!-- Guest list button -->
 
