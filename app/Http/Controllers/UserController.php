@@ -16,50 +16,50 @@ use Carbon\Carbon;
 class UserController extends Controller
 {
 
-   public function index()
+    public function index()
     {
         if (Auth::user()->role !== 'regular_user') {
             abort(403, 'Unauthorized');
         }
 
         $user = Auth::user();
-        
+
         // Get user's bookings (for charts and confirmed bookings count)
         $bookings = Booking::where('user_id', $user->id)->get();
-        
+
         // Get user's invited events (for upcoming events count)
         $invitedEvents = $user->invitedEvents()->get();
-        
+
         // Chart 1: Event Participation Over Time (Last 12 months)
         $participationData = $this->getParticipationData($bookings);
-        
+
         // Chart 2: Event Types Breakdown
         $eventTypesData = $this->getEventTypesData($bookings);
-        
+
         // Dashboard stats
         $stats = $this->getDashboardStats($user, $bookings, $invitedEvents);
 
         return view('user.dashboard', compact('participationData', 'eventTypesData', 'stats'));
     }
 
-     private function getParticipationData($bookings)
+    private function getParticipationData($bookings)
     {
         $months = [];
         $data = [];
-        
+
         // Generate last 12 months
         for ($i = 11; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
             $months[] = $date->format('M');
-            
+
             // Count bookings for this month
             $count = $bookings->filter(function ($booking) use ($date) {
                 return $booking->created_at->format('Y-m') === $date->format('Y-m');
             })->count();
-            
+
             $data[] = $count;
         }
-        
+
         return [
             'labels' => $months,
             'data' => $data
@@ -73,7 +73,7 @@ class UserController extends Controller
                 return $group->count();
             })
             ->toArray();
-        
+
         // If no data, provide default structure
         if (empty($eventTypes)) {
             $eventTypes = [
@@ -83,7 +83,7 @@ class UserController extends Controller
                 'Other' => 0
             ];
         }
-        
+
         return [
             'labels' => array_keys($eventTypes),
             'data' => array_values($eventTypes)
@@ -94,13 +94,13 @@ class UserController extends Controller
     {
         // Confirmed bookings are those with 'approved' status
         $confirmedBookings = $bookings->where('status', 'approved')->count();
-        
+
         // Upcoming events are the events the user is invited to (future events)
         $upcomingEvents = $invitedEvents->where('event_date', '>=', Carbon::today())->count();
-        
+
         // Past events are bookings with past event dates
         $pastEvents = $bookings->where('event_date', '<', Carbon::today())->count();
-        
+
         return [
             'upcoming_events' => $upcomingEvents,
             'confirmed_bookings' => $confirmedBookings,
@@ -109,7 +109,7 @@ class UserController extends Controller
     }
 
 
-    public function bookedEvents()  
+    public function bookedEvents()
     {
         $bookedEvents = Booking::with(['venue', 'package'])
             ->where('user_id', Auth::id())
@@ -120,13 +120,13 @@ class UserController extends Controller
     }
 
     public function editBooking($reference)
-{
-    $booking = Booking::where('reference', $reference)->firstOrFail();
-    $venues = Venue::all();  
-    $packages = Package::all();  
-    
-    return view('user.edit-booking', compact('booking', 'venues', 'packages'));
-}
+    {
+        $booking = Booking::where('reference', $reference)->firstOrFail();
+        $venues = Venue::all();
+        $packages = Package::all();
+
+        return view('user.edit-booking', compact('booking', 'venues', 'packages'));
+    }
 
     public function updateBooking(Request $request, $reference)
     {
@@ -145,7 +145,7 @@ class UserController extends Controller
         $booking->update($validated);
 
         return redirect()->route('bookings.edit', $reference)
-        ->with('success', 'Booking updated successfully');
+            ->with('success', 'Booking updated successfully');
     }
 
     public function attendingEvents()
@@ -158,16 +158,20 @@ class UserController extends Controller
     }
 
     public function payments()
-{
-    $user = Auth::user();
-    $bookings = Booking::where('user_id', auth()->id())
-    ->where('status', 'approved')
-    ->whereIn('payment_status', ['pending', 'partial'])
-    ->orderBy('event_date', 'asc')
-    ->get();
+    {
+        $user = Auth::user();
+        $bookings = Booking::where('user_id', auth()->id())
+            ->where('status', 'approved')
+            ->whereIn('payment_status', ['pending', 'partial'])
+            ->orderBy('event_date', 'asc')
+            ->get();
 
-    return view('user.payment.payments', compact('bookings'));
-}
+        return view('user.payment.payments', compact('bookings'));
+    }
 
-
+    public function showAccountSettings()
+    {
+        $user = Auth::user();
+        return view('user.account-settings', compact('user'));
+    }
 }
