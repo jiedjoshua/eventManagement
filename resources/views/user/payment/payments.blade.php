@@ -33,7 +33,7 @@
 
       <div>
         <p class="mt-4 font-semibold text-gray-900">Settings</p>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Account Settings</a>
+        <a href="{{ route('user.accountSettings') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Account Settings</a>
       </div>
     </nav>
 

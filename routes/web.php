@@ -75,7 +75,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('user/bookings/{reference}/edit', [UserController::class, 'editBooking'])->name('bookings.edit');
     Route::post('user/bookings/{reference}/update', [UserController::class, 'updateBooking'])->name('bookings.update');
-    Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments')->middleware('auth');
+    Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments');
+    Route::get('/user/account-settings', [UserController::class, 'showAccountSettings'])->name('user.accountSettings');
+    
 });
 Route::get('/user/events/attending', [UserController::class, 'attendingEvents'])->name('user.attendingEvents');
 
