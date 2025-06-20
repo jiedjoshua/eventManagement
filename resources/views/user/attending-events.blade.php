@@ -27,6 +27,12 @@
       </div>
 
       <div>
+        <p class="mt-4 font-semibold text-gray-900">Payment</p>
+        <a href="{{ route('user.payments') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Payments</a>
+        <a href="{{ route('user.paymentHistory') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Payment History</a>
+      </div>
+
+      <div>
         <p class="mt-4 font-semibold text-gray-900">Settings</p>
         <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Account Settings</a>
       </div>

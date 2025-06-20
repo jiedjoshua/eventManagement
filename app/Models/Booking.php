@@ -12,7 +12,7 @@ class Booking extends Model
         'user_id',
         'venue_id',
         'package_id',
-         'reference',
+        'reference',
         'event_name',
         'event_type',
         'event_date',
@@ -72,13 +72,13 @@ class Booking extends Model
     {
         // Get the package price
         $this->package_price_at_booking = $this->package->base_price;
-        
+
         // Calculate addons price
         if ($this->selected_addons) {
             $this->addons_price_at_booking = Addon::whereIn('id', $this->selected_addons)
                 ->sum('price');
         }
-        
+
         // Set total price
         $this->total_price = $this->package_price_at_booking + $this->addons_price_at_booking;
     }
@@ -98,10 +98,10 @@ class Booking extends Model
         return $this->status === 'rejected';
     }
 
-     protected static function boot()
+    protected static function boot()
     {
         parent::boot();
-        
+
         // Generate reference number before creating a new booking
         static::creating(function ($booking) {
             $booking->reference = $booking->generateReference();
@@ -114,5 +114,10 @@ class Booking extends Model
         $lastId = static::max('id') ?? 0;
         $nextId = $lastId + 1;
         return 'EVT-' . date('Y') . '-BK-' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

@@ -156,4 +156,18 @@ class UserController extends Controller
 
         return view('user.attending-events', compact('acceptedEvents'));
     }
+
+    public function payments()
+{
+    $user = Auth::user();
+    $bookings = Booking::where('user_id', auth()->id())
+    ->where('status', 'approved')
+    ->whereIn('payment_status', ['pending', 'partial'])
+    ->orderBy('event_date', 'asc')
+    ->get();
+
+    return view('user.payment.payments', compact('bookings'));
+}
+
+
 }

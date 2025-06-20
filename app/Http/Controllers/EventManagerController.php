@@ -76,7 +76,10 @@ class EventManagerController extends Controller
         // Update booking status
         $booking->update([
             'status' => 'approved',
-            'approved_at' => now()
+            'approved_at' => now(),
+            'amount_due' => $booking->total_price, 
+            'amount_paid' => 0,
+            'payment_status' => 'pending',
         ]);
 
         // Create new event from booking
@@ -100,6 +103,8 @@ class EventManagerController extends Controller
             'event_duration' => $durationString,
             'status' => 'upcoming'
         ]);
+
+        //  Send notification/email to user with payment link
 
         return redirect()->back()->with('success', 'Booking approved and event created successfully');
     }

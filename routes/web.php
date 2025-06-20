@@ -9,6 +9,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\PaymentController;
 
 
 Route::get('/', function () {
@@ -74,6 +75,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('user/bookings/{reference}/edit', [UserController::class, 'editBooking'])->name('bookings.edit');
     Route::post('user/bookings/{reference}/update', [UserController::class, 'updateBooking'])->name('bookings.update');
+    Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments')->middleware('auth');
 });
 Route::get('/user/events/attending', [UserController::class, 'attendingEvents'])->name('user.attendingEvents');
 
@@ -106,5 +108,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/bookings/trace', [EventController::class, 'traceBooking'])->name('bookings.trace');
     Route::get('/bookings/{reference}', [EventController::class, 'showBooking'])->name('bookings.show');
 });
+
+
+// Payment 
+Route::get('/booking/{booking}/pay', [PaymentController::class, 'showBookingPayment'])->name('booking.pay')->middleware('auth');
+Route::post('/booking/{booking}/pay', [PaymentController::class, 'processBookingPayment'])->middleware('auth');
+Route::get('/payment/success', function () {
+    return view('user.payment-success');
+})->name('payment.success');
+
+Route::get('/user/payment-history', [PaymentController::class, 'paymentHistory'])
+    ->name('user.paymentHistory')
+    ->middleware('auth');
+
 
 require __DIR__ . '/auth.php';

@@ -7,11 +7,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Event;
+use Laravel\Cashier\Billable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+    use Billable;
 
     /**
      * The attributes that are mass assignable.
@@ -24,7 +26,7 @@ class User extends Authenticatable
         'phone_number',
         'email',
         'password',
-        'role', 
+        'role',
     ];
 
     /**
@@ -73,7 +75,7 @@ class User extends Authenticatable
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($user) {
             if (!isset($user->role)) {
                 $user->role = 'regular_user';
@@ -84,6 +86,11 @@ class User extends Authenticatable
     public function bookings()
     {
         return $this->hasMany(Event::class);
+    }
+
+    public function booking()
+    {
+        return $this->hasMany(Booking::class);
     }
 
     public function invitedEvents()
@@ -101,4 +108,8 @@ class User extends Authenticatable
         return $this->invitedEvents()->wherePivot('rsvp_status', 'accepted');
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 }
