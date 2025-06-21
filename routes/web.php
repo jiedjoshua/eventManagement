@@ -51,7 +51,8 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/events/{event}/manual-checkin', [EventController::class, 'showManualCheckin'])->name('events.manualCheckin');
     Route::get('/events/{event}/search-guests', [EventController::class, 'searchGuests'])->name('events.searchGuests');
     Route::post('/events/{event}/check-in/{guestId}', [EventController::class, 'manualCheckIn'])->name('events.manualCheckIn');
-
+    
+    Route::patch('/manager/events/{event}/cancel', [EventManagerController::class, 'cancelEvent'])->name('manager.events.cancel');
 
 
     // Booking Management
