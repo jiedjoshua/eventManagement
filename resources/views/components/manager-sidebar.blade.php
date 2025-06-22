@@ -1,10 +1,10 @@
 @props(['activePage' => ''])
 
-<aside class="w-64 bg-white shadow-lg flex flex-col">
-    <div class="p-6 text-2xl font-bold text-indigo-600 border-b border-gray-200">
+<aside class="w-64 bg-white shadow-lg flex flex-col h-screen">
+    <div class="p-6 text-2xl font-bold text-indigo-600 border-b border-gray-200 flex-shrink-0">
         {{ $slot }}
     </div>
-    <nav class="flex-1 px-4 space-y-2 text-sm text-gray-700 py-6">
+    <nav class="flex-1 px-4 space-y-2 text-sm text-gray-700 py-6 overflow-y-auto">
         <!-- Home Section -->
         <div>
             <p class="font-semibold text-gray-900 mb-2">Home</p>
@@ -48,6 +48,23 @@
             </a>
         </div>
 
+        <!-- Venue Management Section -->
+        <div>
+            <p class="mt-6 font-semibold text-gray-900 mb-2">Venue Management</p>
+            <a href="{{ route('manager.venues') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'venues' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                List Venues
+            </a>
+            <a href="{{ route('manager.venue-calendar') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'venue-calendar' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                Venue Calendar
+            </a>
+            <a href="{{ route('manager.venue-map') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'venue-map' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                Venue Map
+            </a>
+        </div>
+
         <!-- Reports & Analytics Section -->
         <div>
             <p class="mt-6 font-semibold text-gray-900 mb-2">Reports & Analytics</p>
@@ -64,7 +81,7 @@
         <!-- Settings Section -->
         <div>
             <p class="mt-6 font-semibold text-gray-900 mb-2">Settings</p>
-            <a href="#" 
+            <a href="{{ route('manager.account-settings') }}" 
                class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'account-settings' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
                 Account Settings
             </a>
@@ -72,7 +89,7 @@
     </nav>
 
     <!-- Logout Section -->
-    <div class="px-6 py-4 border-t border-gray-200">
+    <div class="px-6 py-4 border-t border-gray-200 flex-shrink-0">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="block text-red-600 font-semibold hover:text-red-700 transition-colors">

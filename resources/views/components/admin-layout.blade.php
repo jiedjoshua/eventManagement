@@ -4,14 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Manager Panel' }} - CrwdCtrl</title>
+    <title>{{ $title ?? 'Admin Panel' }} - CrwdCtrl</title>
     <script src="https://cdn.tailwindcss.com"></script>
-     @stack('styles')
-    
+    @stack('styles')
 </head>
 <body class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
-    @include('components.manager-sidebar', ['activePage' => $activePage ?? '', 'slot' => 'Manager Panel'])
+    <x-admin-sidebar :active-page="$activePage ?? ''">
+        Admin Panel
+    </x-admin-sidebar>
 
     <!-- Main Content -->
     <main class="flex-1 p-8 overflow-auto">

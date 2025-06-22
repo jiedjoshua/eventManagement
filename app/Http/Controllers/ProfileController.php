@@ -34,7 +34,12 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return redirect()->route('user.accountSettings')->with('status', 'profile-updated');
+        // Redirect based on user role
+        if ($request->user()->role === 'event_manager') {
+            return redirect()->route('manager.account-settings')->with('status', 'profile-updated');
+        } else {
+            return redirect()->route('user.accountSettings')->with('status', 'profile-updated');
+        }
     }
 
     /**
