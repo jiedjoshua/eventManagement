@@ -60,15 +60,19 @@
         <!-- Event Package Management Section -->
         <div>
             <p class="mt-6 font-semibold text-gray-900 mb-2">Event Package Management</p>
-            <a href="#" 
+            <a href="{{ route('admin.packages.index') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'packages' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                All Packages
+            </a>
+            <a href="{{ route('admin.packages.index') }}?type=Wedding" 
                class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'wedding-packages' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
                 Wedding
             </a>
-            <a href="#" 
+            <a href="{{ route('admin.packages.index') }}?type=Birthday" 
                class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'birthday-packages' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
                 Birthday
             </a>
-            <a href="#" 
+            <a href="{{ route('admin.packages.index') }}?type=Baptism" 
                class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'baptism-packages' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
                 Baptism
             </a>

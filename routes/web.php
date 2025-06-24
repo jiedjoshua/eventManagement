@@ -27,11 +27,22 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::resource('users', SuperAdminController::class);
     Route::get('/admin/dashboard', [SuperAdminController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/users', [SuperAdminController::class, 'listUsers'])->name('admin.listusers');
-    Route::post('/admin/users', [SuperAdminController::class, 'store'])->name('admin.users.store'); // Add this line
-    Route::put('/admin/users/{user}', [SuperAdminController::class, 'update'])->name('admin.users.update'); // Update this line
-    Route::delete('/admin/users/{user}', [SuperAdminController::class, 'destroy'])->name('admin.users.destroy'); // Add this line
-    Route::get('/admin/users/{user}', [SuperAdminController::class, 'show'])->name('admin.users.show'); // Add this line
-    Route::get('/admin/users/{user}/edit', [SuperAdminController::class, 'edit'])->name('admin.users.edit'); // Add this line
+    Route::post('/admin/users', [SuperAdminController::class, 'store'])->name('admin.users.store');
+    Route::put('/admin/users/{user}', [SuperAdminController::class, 'update'])->name('admin.users.update');
+    Route::delete('/admin/users/{user}', [SuperAdminController::class, 'destroy'])->name('admin.users.destroy');
+    Route::get('/admin/users/{user}', [SuperAdminController::class, 'show'])->name('admin.users.show');
+    Route::get('/admin/users/{user}/edit', [SuperAdminController::class, 'edit'])->name('admin.users.edit');
+
+    // Package Management Routes
+    Route::resource('admin/packages', PackageController::class)->names([
+        'index' => 'admin.packages.index',
+        'create' => 'admin.packages.create',
+        'store' => 'admin.packages.store',
+        'edit' => 'admin.packages.edit',
+        'update' => 'admin.packages.update',
+        'destroy' => 'admin.packages.destroy',
+    ]);
+    Route::patch('/admin/packages/{package}/toggle-status', [PackageController::class, 'toggleStatus'])->name('admin.packages.toggle-status');
 
     Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
     Route::get('/venues/{venue}', [VenueController::class, 'show'])->name('venues.show');
