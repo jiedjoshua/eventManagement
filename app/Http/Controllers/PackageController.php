@@ -22,7 +22,9 @@ class PackageController extends Controller
         }
 
         $packages = $query->orderBy('type')->orderBy('name')->get();
-        return view('admin.packages.index', compact('packages'));
+        $addons = Addon::all(); // Fetch all add-ons
+
+        return view('admin.packages.index', compact('packages', 'addons'));
     }
 
     public function create()
@@ -47,6 +49,9 @@ class PackageController extends Controller
                 'features.*.description' => 'required|string',
                 'features.*.sort_order' => 'required|integer|min:1'
             ]);
+
+            // Always store type as lowercase
+            $validated['type'] = strtolower($validated['type']);
 
             DB::transaction(function () use ($validated) {
                 $package = Package::create([
@@ -134,6 +139,9 @@ class PackageController extends Controller
                 'features.*.description' => 'required|string',
                 'features.*.sort_order' => 'required|integer|min:1'
             ]);
+
+            // Always store type as lowercase
+            $validated['type'] = strtolower($validated['type']);
 
             DB::transaction(function () use ($validated, $package) {
                 $package->update([

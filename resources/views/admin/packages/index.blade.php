@@ -1,13 +1,22 @@
 <x-admin-layout title="Package Management" active-page="packages">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Package Management</h1>
-        <button onclick="openCreateModal()" 
-                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            <span>Add Package</span>
-        </button>
+        <div class="flex space-x-2">
+            <button onclick="openCreateAddonModal()" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span>Add Add-on</span>
+            </button>
+            <button onclick="openCreateModal()" 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span>Add Package</span>
+            </button>
+        </div>
     </div>
 
     @if(session('success'))
@@ -135,6 +144,38 @@
                 </div>
             </div>
         @endforelse
+    </div>
+
+    <!-- Add-ons Section -->
+    <div class="mt-10">
+        <h2 class="text-2xl font-bold mb-4">Add-ons</h2>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($addons as $addon)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $addon->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($addon->price) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <button onclick="openEditAddonModal({{ $addon->id }})" class="text-indigo-600 hover:underline mr-2">Edit</button>
+                                <button onclick="deleteAddon({{ $addon->id }}, '{{ $addon->name }}')" class="text-red-600 hover:underline">Delete</button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">No add-ons found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -271,11 +312,98 @@
         </div>
     </div>
 
+    <!-- Add-on Create/Edit Modal -->
+    <div id="addonModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900" id="addonModalTitle">Create Add-on</h3>
+                <button onclick="closeAddonModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="addonForm" class="space-y-6">
+                @csrf
+                <input type="hidden" id="addonId" name="addon_id">
+                <input type="hidden" id="addon_method" name="_method" value="POST">
+                <div>
+                    <label for="addonName" class="block text-sm font-medium text-gray-700 mb-2">Display Name *</label>
+                    <input type="text" id="addonName" name="name" required
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="e.g., Extra Photography">
+                </div>
+                <div>
+                    <label for="addonPrice" class="block text-sm font-medium text-gray-700 mb-2">Price (₱) *</label>
+                    <input type="number" id="addonPrice" name="price" required min="0" step="0.01"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="0.00">
+                </div>
+                <div>
+                    <label for="addonDescription" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="addonDescription" name="description" rows="3"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Describe this add-on..."></textarea>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+                    <button type="button" onclick="closeAddonModal()" 
+                            class="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <span id="addonSubmitButtonText">Create Add-on</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add-on Delete Confirmation Modal -->
+    <div id="addonDeleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mt-4">Delete Add-on</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Are you sure you want to delete "<span id="addonName"></span>"? This action cannot be undone.
+                    </p>
+                </div>
+                <div class="flex justify-center space-x-4 mt-4">
+                    <button onclick="closeAddonDeleteModal()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
+                        Cancel
+                    </button>
+                    <button onclick="confirmAddonDelete()" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Notification -->
+    <div id="successNotification" class="hidden fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span id="successMessage"></span>
+        </div>
+    </div>
+
     @push('scripts')
     <script>
         let packageToDelete = null;
         let modalFeatureCount = 0;
         let isEditMode = false;
+        let addonToDelete = null;
 
         // Filter functionality
         document.getElementById('typeFilter').addEventListener('change', filterPackages);
@@ -385,14 +513,16 @@
                 .then(data => {
                     if (data.success) {
                         const package = data.package;
-                        
                         document.getElementById('modalName').value = package.name;
-                        document.getElementById('modalType').value = package.type;
+                        // Normalize event type value to match select options
+                        const typeValue = package.type
+                            ? package.type.charAt(0).toUpperCase() + package.type.slice(1).toLowerCase()
+                            : '';
+                        document.getElementById('modalType').value = typeValue;
                         document.getElementById('modalDisplayTitle').value = package.title;
                         document.getElementById('modalPrice').value = package.price;
                         document.getElementById('modalDescription').value = package.description;
                         document.getElementById('modalIsActive').checked = package.is_active;
-                        
                         // Load features
                         clearModalFeatures();
                         if (package.features && package.features.length > 0) {
@@ -402,7 +532,6 @@
                         } else {
                             addModalFeature(); // Add initial feature if none exist
                         }
-                        
                         document.getElementById('packageModal').classList.remove('hidden');
                     } else {
                         alert('Failed to load package data');
@@ -516,12 +645,20 @@
         window.addEventListener('click', function(e) {
             const deleteModal = document.getElementById('deleteModal');
             const packageModal = document.getElementById('packageModal');
+            const addonModal = document.getElementById('addonModal');
+            const addonDeleteModal = document.getElementById('addonDeleteModal');
             
             if (e.target === deleteModal) {
                 closeDeleteModal();
             }
             if (e.target === packageModal) {
                 closePackageModal();
+            }
+            if (e.target === addonModal) {
+                closeAddonModal();
+            }
+            if (e.target === addonDeleteModal) {
+                closeAddonDeleteModal();
             }
         });
 
@@ -530,8 +667,141 @@
             if (e.key === 'Escape') {
                 closeDeleteModal();
                 closePackageModal();
+                closeAddonModal();
+                closeAddonDeleteModal();
             }
         });
+
+        // Add-on Modal Functions
+        function openCreateAddonModal() {
+            document.getElementById('addonModalTitle').textContent = 'Create Add-on';
+            document.getElementById('addonSubmitButtonText').textContent = 'Create Add-on';
+            document.getElementById('addon_method').value = 'POST';
+            document.getElementById('addonForm').action = '/admin/addons'; // Adjust route as needed
+            document.getElementById('addonForm').reset();
+            document.getElementById('addonId').value = '';
+            document.getElementById('addonModal').classList.remove('hidden');
+        }
+
+        function openEditAddonModal(addonId) {
+            document.getElementById('addonModalTitle').textContent = 'Edit Add-on';
+            document.getElementById('addonSubmitButtonText').textContent = 'Update Add-on';
+            document.getElementById('addon_method').value = 'PUT';
+            document.getElementById('addonForm').action = `/admin/addons/${addonId}`; // Adjust route as needed
+            document.getElementById('addonId').value = addonId;
+            // Fetch add-on data (AJAX)
+            fetch(`/admin/addons/${addonId}/edit`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const addon = data.addon;
+                        document.getElementById('addonName').value = addon.name;
+                        document.getElementById('addonPrice').value = addon.price;
+                        document.getElementById('addonDescription').value = addon.description || '';
+                        document.getElementById('addonModal').classList.remove('hidden');
+                    } else {
+                        alert('Failed to load add-on data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load add-on data');
+                });
+        }
+
+        function closeAddonModal() {
+            document.getElementById('addonModal').classList.add('hidden');
+        }
+
+        // Add-on AJAX form submission
+        const addonForm = document.getElementById('addonForm');
+        if (addonForm) {
+            addonForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                let url = this.action;
+                fetch(url, {
+                    method: 'POST', // Always use POST
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        closeAddonModal();
+                        showSuccessNotification(data.message);
+                        // Reload page to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        alert(data.message || 'Failed to save add-on');
+                    }
+                })
+                .catch(error => {
+                    alert('Failed to save add-on. Please check your input and try again.');
+                });
+            });
+        }
+
+        // Success notification function
+        function showSuccessNotification(message) {
+            const notification = document.getElementById('successNotification');
+            const messageElement = document.getElementById('successMessage');
+            messageElement.textContent = message;
+            notification.classList.remove('hidden');
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Add-on delete functions
+        function deleteAddon(addonId, addonName) {
+            addonToDelete = addonId;
+            document.getElementById('addonName').textContent = addonName;
+            document.getElementById('addonDeleteModal').classList.remove('hidden');
+        }
+
+        function closeAddonDeleteModal() {
+            document.getElementById('addonDeleteModal').classList.add('hidden');
+            addonToDelete = null;
+        }
+
+        function confirmAddonDelete() {
+            if (addonToDelete) {
+                fetch(`/admin/addons/${addonToDelete}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    closeAddonDeleteModal();
+                    if (data.success) {
+                        showSuccessNotification(data.message);
+                        // Reload page to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        alert(data.message || 'Failed to delete add-on');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to delete add-on. Please try again.');
+                });
+            }
+        }
     </script>
     @endpush
 </x-admin-layout> 

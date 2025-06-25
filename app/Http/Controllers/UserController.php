@@ -116,7 +116,10 @@ class UserController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('user.book', compact('bookedEvents'));
+        return view('user.book', [
+    'bookedEvents' => $bookedEvents,
+    'activePage' => 'booked-events'
+]);
     }
 
     public function editBooking($reference)

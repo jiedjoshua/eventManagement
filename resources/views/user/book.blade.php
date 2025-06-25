@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Booked Events with Sidebar</title>
+  <title>Booked Events</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="//unpkg.com/alpinejs" defer></script>
@@ -23,12 +23,16 @@
       </div>
 
       <div>
-        <p class="mt-4 font-semibold text-gray-900">My Events</p>
-        <a href="{{ route('user.bookedEvents') }}" class="block pl-4 py-2 rounded bg-indigo-200 font-semibold text-indigo-800">Booked Events</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Attending Events</a>
-        <a href="#" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Guest List</a>
-      </div>
-
+            <p class="mt-6 font-semibold text-gray-900 mb-2">My Events</p>
+            <a href="{{ route('user.bookedEvents') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'booked-events' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                Booked Events
+            </a>
+            <a href="{{ route('user.attendingEvents') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'attending-events' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                Attending Events
+            </a>
+        </div>
       <div>
         <p class="mt-4 font-semibold text-gray-900">Payment</p>
         <a href="{{ route('user.payments') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Payments</a>
@@ -102,6 +106,7 @@
       'rejected' => 'bg-red-100 text-red-800',
       ];
       $statusClass = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
+      $isPast = \Carbon\Carbon::parse($booking->event_date)->endOfDay()->lt(now());
       @endphp
 
       <div class="bg-white rounded-lg shadow-md p-5 flex flex-col justify-between">
@@ -130,24 +135,31 @@
         </div>
 
         <div class="mt-4 flex flex-wrap gap-2">
-          <button type="button"
-            @click="showModal = true; currentBooking = {{ $booking->toJson() }}"
-            class="flex-1 bg-blue-600 text-white text-sm py-2 rounded hover:bg-blue-700 transition">
-            View Details
-          </button>
+          @if($isPast)
+            <a href="{{ route('feedback.create', $booking->event->id) }}"
+               class="flex-1 bg-yellow-600 text-white text-sm py-2 rounded hover:bg-yellow-700 transition text-center">
+              Give Feedback
+            </a>
+          @else
+            <button type="button"
+              @click="showModal = true; currentBooking = {{ $booking->toJson() }}"
+              class="flex-1 bg-blue-600 text-white text-sm py-2 rounded hover:bg-blue-700 transition">
+              View Details
+            </button>
 
-          @if($booking->status === 'approved')
-          <button type="button"
-            class="flex-1 bg-purple-600 text-white text-sm py-2 rounded hover:bg-purple-700 transition"
-            @click="openModal('{{ $booking->reference }}')">
-            Guest List
-          </button>
+            @if($booking->status === 'approved')
+            <button type="button"
+              class="flex-1 bg-purple-600 text-white text-sm py-2 rounded hover:bg-purple-700 transition"
+              @click="openModal('{{ $booking->reference }}')">
+              Guest List
+            </button>
 
-          <button type="button"
-            @click="showQRModal = true; inviteLink = '{{ route('invite.confirm', $booking->event->id) }}'"
-            class="flex-1 bg-indigo-600 text-white text-sm py-2 rounded hover:bg-indigo-700 transition">
-            QR / Invitations
-          </button>
+            <button type="button"
+              @click="showQRModal = true; inviteLink = '{{ route('invite.confirm', $booking->event->id) }}'"
+              class="flex-1 bg-indigo-600 text-white text-sm py-2 rounded hover:bg-indigo-700 transition">
+              QR / Invitations
+            </button>
+            @endif
           @endif
         </div>
       </div>

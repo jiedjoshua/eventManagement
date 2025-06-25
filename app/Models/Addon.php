@@ -32,4 +32,6 @@ class Addon extends Model
             ->withPivot('price_override')
             ->withTimestamps();
     }
+
+    
 }

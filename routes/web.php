@@ -10,6 +10,10 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\ManagerFeedbackController;
+use App\Http\Controllers\AddonController;
+use App\Http\Controllers\EventAdminController;
 
 
 Route::get('/', function () {
@@ -44,6 +48,12 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     ]);
     Route::patch('/admin/packages/{package}/toggle-status', [PackageController::class, 'toggleStatus'])->name('admin.packages.toggle-status');
 
+    // Add-on Management Routes
+    Route::post('/admin/addons', [AddonController::class, 'store']);
+    Route::get('/admin/addons/{addon}/edit', [AddonController::class, 'edit']);
+    Route::match(['put', 'patch'], '/admin/addons/{addon}', [AddonController::class, 'update']);
+    Route::delete('/admin/addons/{addon}', [AddonController::class, 'destroy']);
+
     Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
     Route::get('/venues/{venue}', [VenueController::class, 'show'])->name('venues.show');
     Route::get('/venues/{venue}/edit', [VenueController::class, 'edit'])->name('venues.edit');
@@ -63,6 +73,16 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::get('/venues/{venue}', [VenueController::class, 'show'])->name('venues.show');
 
     Route::get('/admin/account-settings', [SuperAdminController::class, 'accountSettings'])->name('admin.account-settings');
+
+    // Event Management Routes
+    Route::resource('admin/events', EventAdminController::class)->names([
+        'index' => 'admin.events.index',
+        'create' => 'admin.events.create',
+        'store' => 'admin.events.store',
+        'edit' => 'admin.events.edit',
+        'update' => 'admin.events.update',
+        'destroy' => 'admin.events.destroy',
+    ]);
 });
 
 Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group(function () {
@@ -108,6 +128,10 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/manager/venues/map', [VenueController::class, 'managerVenueMap'])->name('manager.venue-map');
     Route::get('/manager/venues/{id}', [VenueController::class, 'showVenue'])->name('manager.venue.show');
     Route::get('/manager/venue-calendar/bookings', [VenueController::class, 'getManagerCalendarBookings'])->name('manager.venue-calendar.bookings');
+
+    Route::get('/manager/feedback-analytics', [ManagerFeedbackController::class, 'analytics'])->name('manager.feedback.analytics');
+    Route::get('/manager/feedbacks/{event}', [ManagerFeedbackController::class, 'eventFeedbacks'])->name('manager.feedback.event');
+    Route::get('/manager/event-summary', [ManagerFeedbackController::class, 'eventSummary'])->name('manager.event.summary');
 });
 
 
@@ -120,7 +144,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('user/bookings/{reference}/update', [UserController::class, 'updateBooking'])->name('bookings.update');
     Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments');
     Route::get('/user/account-settings', [UserController::class, 'showAccountSettings'])->name('user.accountSettings');
-    
+    Route::get('user/events/{event}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
+Route::post('user/events/{event}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 });
 Route::get('/user/events/attending', [UserController::class, 'attendingEvents'])->name('user.attendingEvents');
 
