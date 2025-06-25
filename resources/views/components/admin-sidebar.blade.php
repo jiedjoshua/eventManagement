@@ -81,7 +81,7 @@
         <!-- Settings Section -->
         <div>
             <p class="mt-6 font-semibold text-gray-900 mb-2">Settings</p>
-            <a href="#" 
+            <a href="{{ route('admin.account-settings') }}" 
                class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'account-settings' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
                 Account Settings
             </a>

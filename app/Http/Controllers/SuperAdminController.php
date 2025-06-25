@@ -55,65 +55,64 @@ class SuperAdminController extends Controller
     }
 
     // Save new user with temporary password
-  public function store(Request $request)
-{
-    Log::info('Store method called');
-    Log::info('Request data:', $request->all());
+    public function store(Request $request)
+    {
+        Log::info('Store method called');
+        Log::info('Request data:', $request->all());
 
-    $request->validate([
-        'first_name'   => 'required|string|max:255',
-        'last_name'    => 'required|string|max:255',
-        'phone_number' => 'nullable|string|max:20',
-        'email'        => 'required|email|unique:users,email',
-        'role'         => 'required|string|in:regular_user,event_manager,super_admin',
-    ]);
-
-    try {
-        // Generate a temporary password
-        $temporaryPassword = $this->generateTemporaryPassword();
-
-        $user = User::create([
-            'first_name'   => $request->first_name,
-            'last_name'    => $request->last_name,
-            'phone_number' => $request->phone_number,
-            'email'        => $request->email,
-            'password'     => Hash::make($temporaryPassword),
-            'role'         => $request->role,
+        $request->validate([
+            'first_name'   => 'required|string|max:255',
+            'last_name'    => 'required|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'email'        => 'required|email|unique:users,email',
+            'role'         => 'required|string|in:regular_user,event_manager,super_admin',
         ]);
 
-        // Use ResendService instead of sendPulseService
-        $resendService = new \App\Services\ResendService();
-        $emailSent = $resendService->sendTemporaryPassword(
-            $request->email,
-            $request->first_name . ' ' . $request->last_name,
-            $temporaryPassword
-        );
+        try {
+            // Generate a temporary password
+            $temporaryPassword = $this->generateTemporaryPassword();
 
-        Log::info('User created', [
-            'user_id' => $user->id,
-            'email_sent' => $emailSent
-        ]);
+            $user = User::create([
+                'first_name'   => $request->first_name,
+                'last_name'    => $request->last_name,
+                'phone_number' => $request->phone_number,
+                'email'        => $request->email,
+                'password'     => Hash::make($temporaryPassword),
+                'role'         => $request->role,
+            ]);
 
-        if ($emailSent) {
-            return response()->json([
-                'success' => true,
-                'message' => 'User created successfully. Temporary password has been sent to their email.'
+            // Use ResendService instead of sendPulseService
+            $resendService = new \App\Services\ResendService();
+            $emailSent = $resendService->sendTemporaryPassword(
+                $request->email,
+                $request->first_name . ' ' . $request->last_name,
+                $temporaryPassword
+            );
+
+            Log::info('User created', [
+                'user_id' => $user->id,
+                'email_sent' => $emailSent
             ]);
-        } else {
+
+            if ($emailSent) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User created successfully. Temporary password has been sent to their email.'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User created successfully, but there was an issue sending the temporary password email. Please contact the user directly.'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('User creation failed: ' . $e->getMessage());
             return response()->json([
-                'success' => true,
-                'message' => 'User created successfully, but there was an issue sending the temporary password email. Please contact the user directly.'
-            ]);
+                'success' => false,
+                'message' => 'Failed to create user. Please try again.'
+            ], 500);
         }
-
-    } catch (\Exception $e) {
-        Log::error('User creation failed: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to create user. Please try again.'
-        ], 500);
     }
-}
 
     // Show user details
     public function show(User $user)
@@ -126,59 +125,59 @@ class SuperAdminController extends Controller
 
     // Show form to edit existing user
     public function edit(User $user)
-{
-    return response()->json([
-        'success' => true,
-        'user' => [
-            'id' => $user->id,
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'email' => $user->email,
-            'phone_number' => $user->phone_number,
-            'role' => $user->role,
-        ]
-    ]);
-}
-
-    // Update existing user
-   public function update(Request $request, User $user)
-{
-    try {
-        // Validate the inputs to match your form
-        $data = $request->validate([
-            'first_name'   => 'required|string|max:255',
-            'last_name'    => 'required|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'email'        => 'required|email|unique:users,email,' . $user->id,
-            'role'         => 'required|string|in:regular_user,event_manager,super_admin',
-        ]);
-
-        // Update the user with the validated data
-        $user->update($data);
-
+    {
         return response()->json([
             'success' => true,
-            'message' => 'User updated successfully.'
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'phone_number' => $user->phone_number,
+                'role' => $user->role,
+            ]
         ]);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validation failed.',
-            'errors' => $e->errors()
-        ], 422);
-    } catch (\Exception $e) {
-        Log::error('User update failed', [
-            'user_id' => $user->id,
-            'error' => $e->getMessage(),
-            'request' => $request->all()
-        ]);
-
-        return response()->json([
-            'success' => false,
-            'message' => 'User update failed. Please try again.'
-        ], 500);
     }
-}
+
+    // Update existing user
+    public function update(Request $request, User $user)
+    {
+        try {
+            // Validate the inputs to match your form
+            $data = $request->validate([
+                'first_name'   => 'required|string|max:255',
+                'last_name'    => 'required|string|max:255',
+                'phone_number' => 'nullable|string|max:20',
+                'email'        => 'required|email|unique:users,email,' . $user->id,
+                'role'         => 'required|string|in:regular_user,event_manager,super_admin',
+            ]);
+
+            // Update the user with the validated data
+            $user->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully.'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('User update failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'request' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'User update failed. Please try again.'
+            ], 500);
+        }
+    }
     // Delete a user
     public function destroy(User $user)
     {
@@ -223,5 +222,12 @@ class SuperAdminController extends Controller
 
         // Shuffle the password to make it more random
         return str_shuffle($password);
+    }
+
+    public function accountSettings()
+    {
+        return view('admin.account-settings', [
+            'user' => Auth::user()
+        ]);
     }
 }

@@ -61,6 +61,8 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     // Public venue routes (for API)
     Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
     Route::get('/venues/{venue}', [VenueController::class, 'show'])->name('venues.show');
+
+    Route::get('/admin/account-settings', [SuperAdminController::class, 'accountSettings'])->name('admin.account-settings');
 });
 
 Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group(function () {

@@ -24,21 +24,19 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request)
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->validated());
+        $user->save();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        // Redirect based on user role
-        if ($request->user()->role === 'event_manager') {
+        // Redirect based on role
+        if ($user->role === 'super_admin') {
+            return redirect()->route('admin.account-settings')->with('status', 'profile-updated');
+        } elseif ($user->role === 'event_manager') {
             return redirect()->route('manager.account-settings')->with('status', 'profile-updated');
         } else {
-            return redirect()->route('user.accountSettings')->with('status', 'profile-updated');
+            return redirect()->route('profile.edit')->with('status', 'profile-updated');
         }
     }
 
