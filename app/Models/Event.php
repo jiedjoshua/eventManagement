@@ -69,4 +69,9 @@ protected $fillable = [
     {
         return $this->belongsTo(Booking::class);
     }
+
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class);
+    }
 }

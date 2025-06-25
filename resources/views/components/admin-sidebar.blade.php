@@ -47,13 +47,9 @@
         <!-- Event Management Section -->
         <div>
             <p class="mt-6 font-semibold text-gray-900 mb-2">Event Management</p>
-            <a href="#" 
+            <a href="{{ route('admin.events.index') }}" 
                class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'events' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
                 Events
-            </a>
-            <a href="#" 
-               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'create-event' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
-                Create Event
             </a>
         </div>
 

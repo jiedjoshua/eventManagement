@@ -68,13 +68,13 @@
         <!-- Reports & Analytics Section -->
         <div>
             <p class="mt-6 font-semibold text-gray-900 mb-2">Reports & Analytics</p>
-            <a href="#" 
-               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'event-summary' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+            <a href="{{ route('manager.event.summary') }}"
+               class="block pl-4 py-2 rounded transition-colors {{ (isset($activePage) && $activePage === 'event-summary') ? 'bg-indigo-200 font-bold' : 'hover:bg-indigo-50' }}">
                 Event Summary
             </a>
-            <a href="#" 
-               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'feedback-summary' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
-                Feedback Summary
+            <a href="{{ route('manager.feedback.analytics') }}"
+               class="block pl-4 py-2 rounded transition-colors {{ (isset($activePage) && $activePage === 'feedback-analytics') ? 'bg-indigo-200 font-bold' : 'hover:bg-indigo-50' }}">
+                Feedback Analytics
             </a>
         </div>
 

@@ -4,15 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Manager Panel' }} - CrwdCtrl</title>
+    <title>{{ $title ?? 'Customer Panel' }} - CrwdCtrl</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-     @stack('styles')
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add this line -->
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    @stack('styles')
 </head>
 <body class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
-    @include('components.manager-sidebar', ['activePage' => $activePage ?? '', 'slot' => 'Manager Panel'])
+    <x-customer-sidebar :active-page="$activePage ?? ''">
+        Customer Panel
+    </x-customer-sidebar>
 
     <!-- Main Content -->
     <main class="flex-1 p-8 overflow-auto">
@@ -22,6 +24,6 @@
     <!-- Modals and Notifications -->
     @stack('modals')
     @stack('notifications')
-    @stack('scripts')
+    @stack('scripts') <!-- Make sure this is here! -->
 </body>
 </html>
