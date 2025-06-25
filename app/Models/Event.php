@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Event extends Model
 {
     use HasFactory;
-
-    protected $fillable = [
+protected $fillable = [
         'user_id',
+        'booking_id', 
         'event_name',
         'event_type',
         'package_type',
@@ -26,6 +26,23 @@ class Event extends Model
         'allow_plus_one',
         'reminder_schedule',
         'total_price',
+        'status',
+        'cancel_reason',
+        'cancelled_at',
+        'approved_at',
+        'rejected_at'
+    ];
+
+    protected $casts = [
+        'event_date' => 'date',
+        'start_time' => 'string',
+        'end_time' => 'string',
+        'rsvp_deadline' => 'date',
+        'enable_rsvp' => 'boolean',
+        'allow_plus_one' => 'boolean',
+        'cancelled_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
     ];
 
     public function user()

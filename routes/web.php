@@ -25,14 +25,44 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::resource('users', SuperAdminController::class);
-    Route::get('/admin/usermanagement', [SuperAdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/dashboard', [SuperAdminController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/users', [SuperAdminController::class, 'listUsers'])->name('admin.listusers');
-    Route::put('/admin/users/{user}', [SuperAdminController::class, 'update'])->name('admin.update');
-    Route::post('admin/users/create', [SuperAdminController::class, 'store'])->name('admin.store');
+    Route::post('/admin/users', [SuperAdminController::class, 'store'])->name('admin.users.store');
+    Route::put('/admin/users/{user}', [SuperAdminController::class, 'update'])->name('admin.users.update');
+    Route::delete('/admin/users/{user}', [SuperAdminController::class, 'destroy'])->name('admin.users.destroy');
+    Route::get('/admin/users/{user}', [SuperAdminController::class, 'show'])->name('admin.users.show');
+    Route::get('/admin/users/{user}/edit', [SuperAdminController::class, 'edit'])->name('admin.users.edit');
+
+    // Package Management Routes
+    Route::resource('admin/packages', PackageController::class)->names([
+        'index' => 'admin.packages.index',
+        'create' => 'admin.packages.create',
+        'store' => 'admin.packages.store',
+        'edit' => 'admin.packages.edit',
+        'update' => 'admin.packages.update',
+        'destroy' => 'admin.packages.destroy',
+    ]);
+    Route::patch('/admin/packages/{package}/toggle-status', [PackageController::class, 'toggleStatus'])->name('admin.packages.toggle-status');
 
     Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
     Route::get('/venues/{venue}', [VenueController::class, 'show'])->name('venues.show');
     Route::get('/venues/{venue}/edit', [VenueController::class, 'edit'])->name('venues.edit');
+
+    // Admin Venue Routes
+    Route::get('/admin/venues', [VenueController::class, 'adminIndex'])->name('admin.venues.index');
+    Route::get('/admin/venues/map', [VenueController::class, 'venueMap'])->name('admin.venues.map');
+    Route::get('/admin/venue-calendar', [VenueController::class, 'venueCalendar'])->name('admin.venue-calendar');
+    Route::get('/admin/venue-calendar/bookings', [VenueController::class, 'getCalendarBookings'])->name('admin.venue-calendar.bookings');
+    Route::post('/admin/venues', [VenueController::class, 'store'])->name('admin.venues.store');
+    Route::get('/admin/venues/{venue}', [VenueController::class, 'adminShow'])->name('admin.venues.show');
+    Route::put('/admin/venues/{venue}', [VenueController::class, 'update'])->name('admin.venues.update');
+    Route::delete('/admin/venues/{venue}', [VenueController::class, 'destroy'])->name('admin.venues.destroy');
+
+    // Public venue routes (for API)
+    Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
+    Route::get('/venues/{venue}', [VenueController::class, 'show'])->name('venues.show');
+
+    Route::get('/admin/account-settings', [SuperAdminController::class, 'accountSettings'])->name('admin.account-settings');
 });
 
 Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group(function () {
@@ -51,8 +81,10 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/events/{event}/manual-checkin', [EventController::class, 'showManualCheckin'])->name('events.manualCheckin');
     Route::get('/events/{event}/search-guests', [EventController::class, 'searchGuests'])->name('events.searchGuests');
     Route::post('/events/{event}/check-in/{guestId}', [EventController::class, 'manualCheckIn'])->name('events.manualCheckIn');
+    
+    Route::patch('/manager/events/{event}/cancel', [EventManagerController::class, 'cancelEvent'])->name('manager.events.cancel');
 
-
+    Route::get('/manager/account-settings', [EventManagerController::class, 'accountSettings'])->name('manager.account-settings');
 
     // Booking Management
     Route::get('/manager/booked-events', [EventManagerController::class, 'showBooked'])->name('manager.bookedEvents');
@@ -65,6 +97,17 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
 
     Route::get('/manager/generate-external-qr-codes', [EventManagerController::class, 'showGenerateExternalQRCodes'])->name('manager.showGenerateExternalQRCodes');
     Route::post('/manager/generate-external-qr-codes', [EventController::class, 'generateExternalQRCodes'])->name('manager.generateExternalQRCodes');
+
+    // Event CRUD operations
+    Route::put('/manager/events/{event}', [EventManagerController::class, 'updateEvent'])->name('manager.events.update');
+    Route::delete('/manager/events/{event}', [EventManagerController::class, 'deleteEvent'])->name('manager.events.delete');
+
+    // Manager Venue Routes (View Only)
+    Route::get('/manager/venues', [VenueController::class, 'managerVenues'])->name('manager.venues');
+    Route::get('/manager/venues/calendar', [VenueController::class, 'managerVenueCalendar'])->name('manager.venue-calendar');
+    Route::get('/manager/venues/map', [VenueController::class, 'managerVenueMap'])->name('manager.venue-map');
+    Route::get('/manager/venues/{id}', [VenueController::class, 'showVenue'])->name('manager.venue.show');
+    Route::get('/manager/venue-calendar/bookings', [VenueController::class, 'getManagerCalendarBookings'])->name('manager.venue-calendar.bookings');
 });
 
 

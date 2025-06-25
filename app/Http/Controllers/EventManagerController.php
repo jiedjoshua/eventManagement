@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
 use App\Models\Booking;
 use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
 
 
 class EventManagerController extends Controller
@@ -60,8 +61,9 @@ class EventManagerController extends Controller
 
     public function showEvent()
     {
-        $events = Event::all();  // Assuming your event model is Event
-        return view('manager.manage-events.events', compact('events')) /*, compact('event') */;
+        $events = Event::with(['user', 'booking'])->get();
+        $venues = \App\Models\Venue::where('is_active', true)->orderBy('name')->get();
+        return view('manager.manage-events.events', compact('events', 'venues'));
     }
 
     // BOOKING //
@@ -77,7 +79,7 @@ class EventManagerController extends Controller
         $booking->update([
             'status' => 'approved',
             'approved_at' => now(),
-            'amount_due' => $booking->total_price, 
+            'amount_due' => $booking->total_price,
             'amount_paid' => 0,
             'payment_status' => 'pending',
         ]);
@@ -140,7 +142,7 @@ class EventManagerController extends Controller
 
     public function upcomingEvents(Request $request)
     {
-        $query = Event::with('booking')
+        $query = Event::with(['booking', 'user']) // Add 'booking' to the with()
             ->where('status', 'upcoming')
             ->where('event_date', '>=', now());
 
@@ -173,14 +175,13 @@ class EventManagerController extends Controller
             // Default sorting
             $query->orderBy('event_date', 'asc');
         }
-
         $events = $query->paginate(9)->withQueryString();
-
         return view('manager.manage-events.upcoming-events', compact('events'));
     }
 
-    public function reschedule(Request $request, Event $event)
-    {
+   public function reschedule(Request $request, Event $event)
+{
+    try {
         $request->validate([
             'event_date' => 'required|date|after:today',
             'start_time' => 'required',
@@ -200,41 +201,62 @@ class EventManagerController extends Controller
             'event_duration' => $durationString
         ]);
 
-        return redirect()->back()->with('success', 'Event rescheduled successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Event rescheduled successfully!'
+        ]);
+        
+    } catch (ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $e->errors()
+        ], 422);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to reschedule event: ' . $e->getMessage()
+        ], 500);
     }
+}
     public function details(Event $event)
     {
+        try {
+            $event->load(['booking', 'user']);
 
-        $event->load(['booking', 'user']);
-
-        return response()->json([
-            'event' => [
-                'id' => $event->id,
-                'event_date' => $event->event_date,
-                'start_time' => substr($event->start_time, 0, 5),
-                'end_time' => substr($event->end_time, 0, 5),
-                'event_name' => $event->event_name,
-                'event_type' => $event->event_type,
-                'venue_name' => $event->venue_name,
-                'guest_count' => $event->guest_count,
-                'package_type' => $event->package_type,
-                'status' => $event->status,
-                'booking' => [
-                    'reference' => $event->booking->reference ?? 'N/A'
-                ],
-                'contact_person' => [
-                    'name' => $event->user->first_name . ' ' . $event->user->last_name,
-                    'email' => $event->user->email,
-                    'phone' => $event->user->phone_number
+            return response()->json([
+                'event' => [
+                    'id' => $event->id,
+                    'event_date' => $event->event_date ? Carbon::parse($event->event_date)->format('Y-m-d') : null,
+                    'start_time' => $event->start_time ? substr($event->start_time, 0, 5) : null,
+                    'end_time' => $event->end_time ? substr($event->end_time, 0, 5) : null,
+                    'event_name' => $event->event_name,
+                    'event_type' => $event->event_type,
+                    'venue_name' => $event->venue_name,
+                    'guest_count' => $event->guest_count,
+                    'package_type' => $event->package_type,
+                    'status' => $event->status,
+                    'booking' => [
+                        'reference' => $event->booking->reference ?? null
+                    ],
+                    'contact_person' => [
+                        'name' => $event->user ? ($event->user->first_name . ' ' . $event->user->last_name) : null,
+                        'email' => $event->user->email ?? null,
+                        'phone' => $event->user->phone_number ?? null
+                    ]
                 ]
-            ]
-        ]);
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to load event details: ' . $e->getMessage()], 500);
+        }
     }
-
     public function showGuestLists()
     {
-
-        $events = Event::with('guests')->orderBy('event_date', 'desc')->get();
+        $events = Event::with('guests')
+            ->withCount('guests')
+            ->orderBy('event_date', 'desc')
+            ->get();
 
         return view('manager.guest-list', compact('events'));
     }
@@ -259,5 +281,131 @@ class EventManagerController extends Controller
         $events = Event::orderBy('event_date')->get();
 
         return view('manager.generate-qr', compact('events'));
+    }
+
+    public function cancelEvent(Request $request, Event $event)
+    {
+        $request->validate([
+            'cancellation_reason' => 'required|string|max:500'
+        ]);
+
+        $event->update([
+            'status' => 'cancelled',
+            'cancellation_reason' => $request->cancellation_reason,
+            'cancelled_at' => now()
+        ]);
+
+        // Also update the associated booking status
+        if ($event->booking) {
+            $event->booking->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => $request->cancellation_reason,
+                'cancelled_at' => now()
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Event cancelled successfully');
+    }
+
+    public function accountSettings()
+    {
+        $user = Auth::user();
+        return view('manager.account-settings', compact('user'));
+    }
+
+    public function updateEvent(Request $request, Event $event)
+    {
+        try {
+            $request->validate([
+                'event_name' => 'required|string|max:255',
+                'event_type' => 'required|string|max:255',
+                'event_date' => 'required|date',
+                'start_time' => 'required',
+                'end_time' => 'required|after:start_time',
+                'guest_count' => 'required|integer|min:1',
+                'venue_name' => 'required|string|max:255',
+            ]);
+
+            // Calculate new duration
+            $startTime = Carbon::parse($request->start_time);
+            $endTime = Carbon::parse($request->end_time);
+            $duration = $startTime->diff($endTime);
+            $durationString = $duration->h . 'h ' . $duration->i . 'm';
+
+            // Update the event
+            $event->update([
+                'event_name' => $request->event_name,
+                'event_type' => $request->event_type,
+                'event_date' => $request->event_date,
+                'start_time' => $request->start_time,
+                'end_time' => $request->end_time,
+                'guest_count' => $request->guest_count,
+                'venue_name' => $request->venue_name,
+                'event_duration' => $durationString
+            ]);
+
+            // Update the associated booking if it exists
+            if ($event->booking) {
+                $event->booking->update([
+                    'event_name' => $request->event_name,
+                    'event_type' => $request->event_type,
+                    'event_date' => $request->event_date,
+                    'start_time' => $request->start_time,
+                    'end_time' => $request->end_time,
+                    'guest_count' => $request->guest_count,
+                ]);
+
+                // Update venue information in the venue table if the booking has a venue
+                if ($event->booking->venue) {
+                    $event->booking->venue->update([
+                        'name' => $request->venue_name
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Event updated successfully!'
+            ]);
+            
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update event: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteEvent(Event $event)
+    {
+        try {
+            // Also update the associated booking status if it exists
+            if ($event->booking) {
+                $event->booking->update([
+                    'status' => 'cancelled',
+                    'cancelled_at' => now()
+                ]);
+            }
+
+            $event->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Event deleted successfully!'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete event: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

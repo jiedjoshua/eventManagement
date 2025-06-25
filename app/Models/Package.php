@@ -12,6 +12,7 @@ class Package extends Model
         'type',
         'title',
         'price',
+        'base_price',
         'description',
         'is_active'
     ];
