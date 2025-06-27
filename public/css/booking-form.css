@@ -202,15 +202,12 @@
         }
 
         .radio-option input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
+            display: none;
         }
 
         .radio-option input[type="radio"]:checked + span {
             color: #667eea;
-            font-weight: bold;
+            font-weight: 600;
         }
 
         .radio-option input[type="radio"]:checked ~ .checkmark {
@@ -219,100 +216,94 @@
 
         .packages {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
-            justify-content: center;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
         }
 
         .package-card {
-            width: 320px;
             border: 2px solid #e1e5e9;
             border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            padding: 25px;
             background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
             position: relative;
             overflow: hidden;
-            margin: 0 auto;
         }
 
         .package-card:hover {
+            border-color: #667eea;
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
         }
 
         .package-card.selected {
             border-color: #667eea;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            background: linear-gradient(135deg, #f8f9ff, #e8f2ff);
         }
 
         .package-title {
-            font-size: 1.6rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 1.3rem;
+            font-weight: 600;
             color: #333;
+            margin-bottom: 10px;
         }
 
         .package-price {
-            font-size: 2.2rem;
-            font-weight: bold;
+            font-size: 1.8rem;
+            font-weight: 700;
             color: #667eea;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .package-description {
             color: #666;
-            margin-bottom: 25px;
-            font-size: 0.95rem;
-            line-height: 1.5;
+            margin-bottom: 20px;
+            line-height: 1.6;
         }
 
         .package-features {
-            text-align: left;
-            margin-bottom: 25px;
-            min-height: 100px;
+            margin-bottom: 20px;
         }
 
         .package-feature {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
-            color: #4a5568;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #555;
         }
 
         .package-feature i {
-            color: #667eea;
-            margin-right: 8px;
+            color: #28a745;
+            margin-right: 10px;
+            font-size: 1.1rem;
         }
 
         .package-actions {
             display: flex;
             gap: 10px;
-            justify-content: center;
         }
 
         .package-btn {
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: none;
         }
 
         .package-btn.select-btn {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
         }
 
         .package-btn.view-btn {
-            background: #f0f2f5;
-            color: #4a5568;
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e1e5e9;
         }
 
         .package-btn:hover {
@@ -321,9 +312,9 @@
 
         .addons {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .addon-item {
@@ -331,10 +322,10 @@
             align-items: center;
             padding: 15px;
             border: 2px solid #e1e5e9;
-            border-radius: 12px;
+            border-radius: 10px;
+            background: white;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: white;
         }
 
         .addon-item:hover {
@@ -343,22 +334,22 @@
         }
 
         .addon-item input[type="checkbox"] {
-            width: auto;
-            margin-right: 10px;
+            margin-right: 12px;
             transform: scale(1.2);
         }
 
         .addon-item input[type="checkbox"]:checked + span {
             color: #667eea;
-            font-weight: bold;
+            font-weight: 600;
         }
 
         .navigation {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 30px 40px;
             background: #f8f9fa;
-            border-top: 1px solid #e1e5e9;
+            border-top: 1px solid #e9ecef;
         }
 
         .btn {
@@ -369,19 +360,19 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
 
         .btn-secondary {
@@ -395,14 +386,15 @@
         }
 
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
+            transform: none !important;
         }
 
         .confirmation {
             text-align: center;
-            padding: 40px;
+            padding: 60px 40px;
+            animation: fadeInUp 0.6s ease;
         }
 
         .confirmation.hidden {
@@ -412,14 +404,14 @@
         .success-icon {
             width: 80px;
             height: 80px;
-            margin: 0 auto 20px;
-            border-radius: 50%;
             background: linear-gradient(135deg, #28a745, #20c997);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 2.5rem;
             color: white;
-            font-size: 2rem;
+            margin: 0 auto 30px;
             animation: bounceIn 0.8s ease;
         }
 
@@ -430,134 +422,133 @@
         }
 
         .emoji {
-            font-size: 1.2rem;
-            margin-right: 8px;
+            font-size: 1.2em;
         }
 
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
+
             .packages {
                 grid-template-columns: 1fr;
             }
-            
+
             .addons {
                 grid-template-columns: 1fr;
             }
-            
+
             .step-indicators {
-                flex-wrap: wrap;
+                flex-direction: column;
+                gap: 15px;
             }
-            
+
             .navigation {
                 flex-direction: column;
                 gap: 15px;
             }
         }
 
-        /* Venue Cards Styles */
         .venue-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 30px;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
         }
 
         .venue-card {
-            position: relative;
-            width: 320px;
-            border-radius: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 20px;
             overflow: hidden;
             background: white;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            flex: 0 0 auto;
+            position: relative;
         }
 
         .venue-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
         }
 
         .venue-card.selected {
-            border: 3px solid #667eea;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
         .venue-image {
             width: 100%;
             height: 200px;
             object-fit: cover;
+            transition: transform 0.4s ease;
         }
 
         .venue-content {
-            padding: 20px;
-            height: 200px;
-            display: flex;
-            flex-direction: column;
+            padding: 25px;
+            position: relative;
         }
 
         .venue-title {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 600;
-            margin-bottom: 10px;
             color: #333;
+            margin-bottom: 10px;
+            line-height: 1.3;
         }
 
         .venue-description {
-            font-size: 0.9rem;
             color: #666;
-            margin-bottom: 15px;
             line-height: 1.6;
-            flex-grow: 1;
-            overflow: hidden;
+            margin-bottom: 20px;
             display: -webkit-box;
-            -webkit-line-clamp: 4;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .venue-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
-            gap: 15px;
+            margin-top: 20px;
         }
 
         .venue-info {
             display: flex;
-            flex-direction: column;
-            gap: 5px;
-            flex: 1;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #666;
         }
 
         .venue-actions span {
-            flex: 1;
+            color: #667eea;
+            font-weight: 500;
         }
 
         .venue-price {
-            font-weight: 600;
+            font-size: 1.3rem;
+            font-weight: 700;
             color: #667eea;
-            font-size: 1.1em;
-            text-align: left;
+            margin-bottom: 15px;
         }
 
         .view-more-btn {
-            padding: 8px 15px;
-            border-radius: 20px;
-            background: #f0f2f5;
-            color: #4a5568;
-            font-size: 0.9rem;
-            font-weight: 500;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .view-more-btn:hover {
-            background: #e2e8f0;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
         .venue-modal {
@@ -709,7 +700,6 @@
             box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
         }
 
-        /* Venue Step Styles */
         .venue-step {
             animation: fadeIn 0.5s ease;
         }
@@ -727,7 +717,6 @@
             margin-top: 40px;
         }
 
-        /* Venue Type Selection Styles */
         .venue-type-selection {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -781,7 +770,7 @@
         }
 
         .venue-type-label {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 600;
             color: #333;
             margin-bottom: 15px;
@@ -791,61 +780,54 @@
         }
 
         .venue-type-desc {
-            font-size: 1rem;
             color: #666;
+            line-height: 1.6;
             position: relative;
             z-index: 2;
             transition: all 0.5s ease;
-            max-width: 80%;
-            margin: 0 auto;
         }
 
         .venue-type-btn:hover .venue-type-icon,
         .venue-type-btn:hover .venue-type-label,
-        .venue-type-btn:hover .venue-type-desc,
-        .venue-type-btn.selected .venue-type-icon,
-        .venue-type-btn.selected .venue-type-label,
-        .venue-type-btn.selected .venue-type-desc {
+        .venue-type-btn:hover .venue-type-desc {
             color: white;
             transform: scale(1.05);
         }
 
-        /* Back Button Styles */
         #backToVenueType {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 500;
-            color: #4a5568;
-            background: #f0f2f5;
+            background: #6c757d;
+            color: white;
             border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         #backToVenueType:hover {
-            background: #e2e8f0;
-            transform: translateX(-5px);
+            background: #5a6268;
+            transform: translateY(-2px);
         }
 
         #backToVenueType span {
             font-size: 1.2rem;
-            line-height: 1;
+            font-weight: bold;
         }
 
-        /* Venue Features Styles */
         .venue-features {
-            margin: 30px 0;
+            margin-bottom: 30px;
         }
 
         .venue-features h3 {
-            font-size: 1.2rem;
-            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.3rem;
             margin-bottom: 15px;
-            color: #333;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3498db;
         }
 
         #modalVenueSpaces {
@@ -855,68 +837,53 @@
         }
 
         .space-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
             background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
         }
 
         .space-item-type {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
+            font-size: 0.9rem;
+            color: #667eea;
             font-weight: 600;
             text-transform: uppercase;
-            min-width: 80px;
-            text-align: center;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
         }
 
         .space-item-name {
             font-weight: 600;
             color: #333;
-            flex: 1;
+            margin-bottom: 5px;
         }
 
         .space-item-capacity {
             color: #666;
-            font-size: 14px;
+            font-size: 0.9rem;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        /* Prevent body scroll when modal is open */
         body.modal-open {
             overflow: hidden;
-            padding-right: 15px; /* Prevent layout shift when scrollbar disappears */
         }
 
-        /* Responsive Styles */
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
-                padding-bottom: 20px;
+                border-radius: 15px;
             }
 
             .header {
-                padding: 20px;
+                padding: 25px 20px;
             }
 
             .header h1 {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
 
             .header p {
@@ -924,18 +891,16 @@
             }
 
             .form-content {
-                padding: 20px;
+                padding: 30px 20px;
             }
 
             .form-row {
                 grid-template-columns: 1fr;
-                gap: 15px;
             }
 
-            /* Venue Type Selection */
             .venue-type-selection {
                 grid-template-columns: 1fr;
-                gap: 15px;
+                gap: 20px;
             }
 
             .venue-type-btn {
@@ -957,44 +922,38 @@
                 font-size: 0.9rem;
             }
 
-            /* Venue Grid */
             .venue-grid {
-                gap: 15px;
-                justify-content: center;
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
 
             .venue-card {
-                width: 300px;
-                margin-bottom: 0;
+                border-radius: 15px;
             }
 
             .venue-content {
-                height: 220px;
+                padding: 20px;
             }
 
             .venue-image {
-                height: 180px;
+                height: 150px;
             }
 
             .venue-title {
-                font-size: 1.1rem;
-                margin-bottom: 8px;
+                font-size: 1.2rem;
             }
 
             .venue-description {
-                font-size: 0.85rem;
-                margin-bottom: 12px;
+                font-size: 0.9rem;
             }
 
-            /* Modal */
             .venue-modal {
-                padding: 0;
+                padding: 10px;
             }
 
             .modal-content {
-                border-radius: 0;
-                margin: 0;
-                height: 100vh;
+                max-height: 90vh;
+                border-radius: 15px;
             }
 
             .modal-header {
@@ -1002,21 +961,16 @@
             }
 
             .modal-body {
-                padding: 15px;
+                padding: 20px;
             }
 
             .modal-title {
-                font-size: 1.4rem;
-                margin-bottom: 12px;
+                font-size: 1.5rem;
             }
 
             .venue-details {
                 grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            .detail-item {
-                font-size: 0.9rem;
+                gap: 15px;
             }
 
             .venue-gallery {
@@ -1034,172 +988,174 @@
 
             .venue-directions .btn {
                 padding: 10px 20px;
-                font-size: 14px;
+                font-size: 0.9rem;
             }
 
-            /* Navigation */
             .navigation {
-                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
             }
 
             .btn {
-                padding: 12px 20px;
-                font-size: 0.95rem;
+                width: 100%;
+                padding: 15px;
             }
         }
 
-        /* Tablet Styles */
         @media (min-width: 769px) and (max-width: 1024px) {
             .container {
-                margin: 15px;
+                max-width: 90%;
             }
 
             .venue-type-selection {
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 20px;
-            }
-
-            .venue-type-btn {
-                min-height: 240px;
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .venue-card {
-                width: 310px;
+                min-height: 400px;
             }
 
             .modal-content {
-                margin: 30px auto;
-                max-height: calc(100vh - 60px);
+                max-width: 90%;
             }
         }
 
-        /* Larger Screens */
         @media (min-width: 1025px) {
             .container {
-                max-width: 1200px;
+                max-width: 900px;
             }
 
             .venue-type-selection {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 30px;
             }
 
             .venue-grid {
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 25px;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             }
         }
 
-        /* General Responsive Improvements */
         .step-indicators {
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 15px;
+            display: flex;
+            justify-content: center;
+            padding: 30px;
+            background: #f8f9fa;
         }
 
         .step {
-            margin: 5px;
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
         }
 
         .step-number {
-            width: 35px;
-            height: 35px;
-            font-size: 0.9rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            transition: all 0.3s ease;
         }
 
         .step span {
-            font-size: 0.9rem;
+            font-weight: 500;
+            color: #666;
         }
 
         input, select, textarea {
-            padding: 12px;
-            font-size: 0.95rem;
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
         }
 
         label {
-            font-size: 0.95rem;
-            margin-bottom: 6px;
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.05rem;
         }
 
-        /* Improved Touch Targets for Mobile */
         @media (max-width: 768px) {
             .view-more-btn,
-            .modal-close,
-            .btn {
-                min-height: 44px;
-                min-width: 44px;
+            .venue-actions {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
             }
 
             input[type="radio"],
             input[type="checkbox"] {
-                width: 20px;
-                height: 20px;
+                transform: scale(1.3);
             }
 
             .addon-item {
                 padding: 12px;
+                font-size: 0.9rem;
             }
         }
 
-        /* Loading States */
         .loading {
-            opacity: 0.7;
-            pointer-events: none;
+            text-align: center;
+            padding: 40px;
+            color: #666;
         }
 
-        /* Smooth Transitions */
         .venue-card,
-        .venue-type-btn,
-        .btn,
-        .modal-content {
-            transition: all 0.3s ease;
+        .package-card {
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Better Spacing for Content */
         h2 {
-            margin-bottom: 1.5rem;
-            font-size: clamp(1.5rem, 4vw, 2rem);
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
         }
 
         .form-group:not(:last-child) {
-            margin-bottom: 1.5rem;
+            margin-bottom: 25px;
         }
 
         .venue-tag {
             position: absolute;
             top: 15px;
-            right: 15px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            left: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(5px);
-            z-index: 1;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .venue-content {
-            padding: 20px;
-            height: 200px;
-            display: flex;
-            flex-direction: column;
+            position: relative;
+            z-index: 2;
         }
 
         .venue-description {
-            font-size: 0.9rem;
             color: #666;
-            margin-bottom: 15px;
             line-height: 1.6;
-            flex-grow: 1;
-            overflow: hidden;
+            margin-bottom: 20px;
             display: -webkit-box;
-            -webkit-line-clamp: 4;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        /* Modal Styles Update */
         .modal-close {
             position: absolute;
             top: 20px;
@@ -1228,23 +1184,22 @@
 
         @media (max-width: 768px) {
             .venue-content {
-                height: 220px;
+                padding: 15px;
             }
 
             .venue-description {
-                -webkit-line-clamp: 5;
+                font-size: 0.9rem;
             }
 
             .modal-close {
-                top: 10px;
-                right: 10px;
-                width: 36px;
-                height: 36px;
+                width: 35px;
+                height: 35px;
                 font-size: 20px;
+                top: 15px;
+                right: 15px;
             }
         }
 
-        /* Package Modal Styles */
         .package-modal {
             display: none;
             position: fixed;
@@ -1261,7 +1216,7 @@
         .package-modal.active {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
         }
 
         .package-modal-content {
@@ -1269,73 +1224,74 @@
             border-radius: 20px;
             max-width: 600px;
             width: 100%;
+            margin: 20px auto;
             position: relative;
-            padding: 40px;
-            margin: 20px;
+            overflow: hidden;
+            max-height: calc(100vh - 40px);
         }
 
         .package-modal-close {
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: #f0f2f5;
+            background: rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 20px;
-            border: none;
+            font-size: 24px;
+            color: #333;
             transition: all 0.3s ease;
+            z-index: 1010;
+            border: none;
         }
 
         .package-modal-close:hover {
-            background: #e2e8f0;
+            background: rgba(0, 0, 0, 0.2);
             transform: rotate(90deg);
         }
 
         .package-modal-title {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-size: 1.6rem;
+            font-weight: 600;
             color: #333;
-            text-align: center;
+            margin-bottom: 10px;
+            padding: 30px 30px 0 30px;
         }
 
         .package-modal-price {
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: 1.8rem;
+            font-weight: 700;
             color: #667eea;
-            margin-bottom: 30px;
-            text-align: center;
+            margin-bottom: 20px;
+            padding: 0 30px;
         }
 
         .package-modal-features {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
+            padding: 0 30px 30px 30px;
         }
 
         .package-modal-feature {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            margin-bottom: 15px;
             padding: 15px;
-            background: #f8fafc;
+            background: #f8f9fa;
             border-radius: 10px;
         }
 
         .feature-icon {
+            color: #28a745;
+            margin-right: 15px;
             font-size: 1.2rem;
-            color: #667eea;
-            flex-shrink: 0;
+            margin-top: 2px;
         }
 
         .feature-content {
-            flex-grow: 1;
+            flex: 1;
         }
 
         .feature-title {
@@ -1345,7 +1301,6 @@
         }
 
         .feature-description {
-            font-size: 0.9rem;
             color: #666;
             line-height: 1.5;
         }
@@ -1356,16 +1311,15 @@
             }
 
             .package-card {
-                width: 100%;
-                max-width: 320px;
+                padding: 20px;
             }
 
             .package-modal-content {
-                padding: 30px 20px;
+                max-height: 90vh;
+                border-radius: 15px;
             }
         }
 
-        /* Booking Summary Styles */
         .booking-summary {
             background: #f8f9fa;
             border-radius: 15px;
@@ -1374,66 +1328,61 @@
         }
 
         .booking-summary h3 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #e1e5e9;
+            border-bottom: 2px solid #3498db;
+            font-weight: 600;
         }
 
         .summary-item {
-            margin-bottom: 12px;
-            font-size: 1rem;
-            color: #4a5568;
             display: flex;
-            align-items: flex-start;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .summary-item strong {
-            min-width: 180px;
-            color: #2d3748;
+            color: #2c3e50;
+            font-weight: 600;
         }
 
         .summary-item span {
-            flex: 1;
+            color: #666;
         }
 
         .addon-list {
             list-style: none;
-            padding: 0;
             margin: 0;
+            padding: 0;
         }
 
         .addon-list li {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
+            padding: 5px 0;
+            color: #666;
+            border-bottom: 1px solid #f1f1f1;
         }
 
         .addon-list li::before {
-            content: "•";
-            color: #667eea;
+            content: "✓";
+            color: #28a745;
             font-weight: bold;
-            display: inline-block;
-            width: 1em;
-            margin-left: -1em;
+            margin-right: 8px;
         }
 
         .pricing-breakdown {
-            background: #f8f9fa;
-            border-radius: 12px;
+            background: white;
+            border-radius: 10px;
             padding: 20px;
-            border: 2px solid #e1e5e9;
+            margin-top: 20px;
         }
 
         .pricing-breakdown .summary-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-bottom: 1px solid #e9ecef;
             padding: 8px 0;
-            border-bottom: 1px solid #e1e5e9;
         }
 
         .pricing-breakdown .summary-item:last-child {
@@ -1441,293 +1390,30 @@
         }
 
         .pricing-breakdown .total-price {
-            border-top: 2px solid #667eea;
-            border-bottom: none;
-            margin-top: 10px;
-            padding-top: 15px;
-            font-size: 1.1em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
             font-weight: 600;
-            color: #333;
         }
 
         .pricing-breakdown .total-price span {
-            color: #667eea;
-            font-size: 1.2em;
+            color: white;
+            font-weight: 700;
         }
 
         @media (max-width: 768px) {
             .booking-summary {
-                padding: 15px;
-            }
-            .summary-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .summary-item strong {
-                margin-bottom: 5px;
-            }
-        }
-
-        /* Terms and Privacy Policy Modal Styles */
-        #termsModal, #privacyModal {
-            display: none !important;
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #termsModal.show, #privacyModal.show {
-            display: flex !important;
-            visibility: visible;
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        #termsModal .modal-content, #privacyModal .modal-content {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-            animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            max-width: 800px;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            position: relative;
-            transform: scale(1);
-            display: block !important;
-            margin: 0 !important;
-            flex-direction: unset !important;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-60px) scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        #termsModal .modal-header, #privacyModal .modal-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 25px 30px;
-            border-radius: 20px 20px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        #termsModal .modal-header h2, #privacyModal .modal-header h2 {
-            margin: 0;
-            font-size: 1.6rem;
-            font-weight: 600;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        #termsModal .modal-close, #privacyModal .modal-close {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            font-size: 28px;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-
-        #termsModal .modal-close:hover, #privacyModal .modal-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1) rotate(90deg);
-        }
-
-        #termsModal .modal-body, #privacyModal .modal-body {
-            padding: 35px;
-            line-height: 1.7;
-            color: #333;
-        }
-
-        #termsModal .section, #privacyModal .section {
-            margin-bottom: 30px;
-        }
-
-        #termsModal .section h3, #privacyModal .section h3 {
-            color: #2c3e50;
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 3px solid #3498db;
-            font-weight: 600;
-        }
-
-        #termsModal .section h4, #privacyModal .section h4 {
-            color: #34495e;
-            font-size: 1.1rem;
-            margin: 20px 0 10px 0;
-            font-weight: 600;
-        }
-
-        #termsModal .section p, #privacyModal .section p {
-            margin-bottom: 15px;
-            color: #555;
-            font-size: 1rem;
-        }
-
-        #termsModal .section ul, #privacyModal .section ul {
-            margin-left: 25px;
-            margin-bottom: 15px;
-        }
-
-        #termsModal .section li, #privacyModal .section li {
-            margin-bottom: 8px;
-            color: #555;
-            font-size: 1rem;
-        }
-
-        #termsModal .highlight, #privacyModal .highlight {
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-            padding: 20px;
-            border-left: 5px solid #ffc107;
-            margin: 25px 0;
-            border-radius: 8px;
-            color: #856404;
-            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
-        }
-
-        #termsModal .contact-info, #privacyModal .contact-info {
-            background: linear-gradient(135deg, #e8f4fd, #d1ecf1);
-            padding: 25px;
-            border-radius: 12px;
-            margin: 25px 0;
-            border: 1px solid #bee5eb;
-        }
-
-        #termsModal .contact-info h4, #privacyModal .contact-info h4 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        #termsModal .contact-info p, #privacyModal .contact-info p {
-            margin-bottom: 10px;
-            color: #555;
-            font-size: 1rem;
-        }
-
-        #termsModal .btn, #privacyModal .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 15px 35px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        #termsModal .btn:hover, #privacyModal .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        /* Scrollbar styling for modal content */
-        #termsModal .modal-content::-webkit-scrollbar, 
-        #privacyModal .modal-content::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #termsModal .modal-content::-webkit-scrollbar-track, 
-        #privacyModal .modal-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        #termsModal .modal-content::-webkit-scrollbar-thumb, 
-        #privacyModal .modal-content::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 10px;
-        }
-
-        #termsModal .modal-content::-webkit-scrollbar-thumb:hover, 
-        #privacyModal .modal-content::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-
-        @media (max-width: 768px) {
-            #termsModal, #privacyModal {
-                padding: 10px;
-            }
-            
-            #termsModal .modal-content, #privacyModal .modal-content {
-                max-height: 90vh;
-                border-radius: 15px;
-            }
-            
-            #termsModal .modal-header, #privacyModal .modal-header {
                 padding: 20px;
-                border-radius: 15px 15px 0 0;
-            }
-            
-            #termsModal .modal-header h2, #privacyModal .modal-header h2 {
-                font-size: 1.4rem;
-            }
-            
-            #termsModal .modal-body, #privacyModal .modal-body {
-                padding: 25px;
-            }
-            
-            #termsModal .section h3, #privacyModal .section h3 {
-                font-size: 1.2rem;
             }
 
-            #termsModal .modal-close, #privacyModal .modal-close {
-                width: 35px;
-                height: 35px;
-                font-size: 24px;
+            .summary-item {
+                margin-bottom: 8px;
             }
-        }
 
-        #termsModal:not(.show) .modal-content, #privacyModal:not(.show) .modal-content {
-            display: none !important;
-        }
-
-        #termsModal.show .modal-content, #privacyModal.show .modal-content {
-            display: block !important;
+            .summary-item strong {
+                display: block;
+                margin-bottom: 2px;
+            }
         }
