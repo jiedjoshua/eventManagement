@@ -80,7 +80,7 @@
         </p>
       </div>
       <div class="relative">
-        <img src="{{ asset('img/wedding.webp') }}" alt="Our Story" class="w-full h-96 object-cover rounded-2xl shadow-lg">
+        <img src="{{ asset('public/img/wedding.webp') }}" alt="Our Story" class="w-full h-96 object-cover rounded-2xl shadow-lg">
         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-2xl"></div>
       </div>
     </div>

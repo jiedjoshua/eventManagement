@@ -94,7 +94,7 @@
       <!-- Wedding Images -->
       <div class="gallery-item wedding" data-category="wedding">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/wedding.webp') }}" alt="Wedding Celebration" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/wedding.webp') }}" alt="Wedding Celebration" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">Elegant Wedding</h3>
@@ -106,7 +106,7 @@
 
       <div class="gallery-item wedding" data-category="wedding">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/wedding.png') }}" alt="Wedding Reception" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/wedding.png') }}" alt="Wedding Reception" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">Wedding Reception</h3>
@@ -119,7 +119,7 @@
       <!-- Birthday Images -->
       <div class="gallery-item birthday" data-category="birthday">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/birthday.jpg') }}" alt="Birthday Party" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/birthday.jpg') }}" alt="Birthday Party" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">Birthday Celebration</h3>
@@ -132,7 +132,7 @@
       <!-- Debut Images -->
       <div class="gallery-item debut" data-category="debut">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/debut.webp') }}" alt="Debut Celebration" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/debut.webp') }}" alt="Debut Celebration" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">18th Debut</h3>
@@ -145,7 +145,7 @@
       <!-- Baptism Images -->
       <div class="gallery-item baptism" data-category="baptism">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/baptism.jpg') }}" alt="Baptism Ceremony" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/baptism.jpg') }}" alt="Baptism Ceremony" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">Baptism Ceremony</h3>
@@ -158,7 +158,7 @@
       <!-- Additional Wedding Images (using car1.jpg as placeholder) -->
       <div class="gallery-item wedding" data-category="wedding">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/car1.jpg') }}" alt="Wedding Transportation" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/car1.jpg') }}" alt="Wedding Transportation" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">Wedding Transportation</h3>
@@ -171,7 +171,7 @@
       <!-- Additional Birthday Images -->
       <div class="gallery-item birthday" data-category="birthday">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/birthday.jpg') }}" alt="Kids Birthday Party" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/birthday.jpg') }}" alt="Kids Birthday Party" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">Kids Birthday</h3>
@@ -184,7 +184,7 @@
       <!-- Additional Debut Images -->
       <div class="gallery-item debut" data-category="debut">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/debut.webp') }}" alt="Debut Reception" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/debut.webp') }}" alt="Debut Reception" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">Debut Reception</h3>
@@ -197,7 +197,7 @@
       <!-- Additional Baptism Images -->
       <div class="gallery-item baptism" data-category="baptism">
         <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('img/baptism.jpg') }}" alt="Baptism Reception" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+          <img src="{{ asset('public/img/baptism.jpg') }}" alt="Baptism Reception" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
           <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
             <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
               <h3 class="text-lg font-bold mb-2">Baptism Reception</h3>
