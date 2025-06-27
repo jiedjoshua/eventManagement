@@ -74,7 +74,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
       <!-- Card -->
       <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
-        <img src="{{ asset('img/wedding.webp') }}" alt="Weddings" class="w-full h-52 object-cover rounded-t" />
+        <img src="{{ asset('public/img/wedding.webp') }}" alt="Weddings" class="w-full h-52 object-cover rounded-t" />
         <div class="p-4">
           <h5 class="text-xl font-semibold">Weddings</h5>
           <p class="text-gray-600 text-sm mt-2">Beautiful and memorable wedding event planning tailored to your dreams.</p>
@@ -82,7 +82,7 @@
       </div>
 
       <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
-        <img src="{{ asset('img/birthday.jpg') }}" alt="Birthdays" class="w-full h-52 object-cover rounded-t" />
+        <img src="{{ asset('public/img/birthday.jpg') }}" alt="Birthdays" class="w-full h-52 object-cover rounded-t" />
         <div class="p-4">
           <h5 class="text-xl font-semibold">Birthdays</h5>
           <p class="text-gray-600 text-sm mt-2">Fun and exciting birthday celebrations customized for all ages.</p>
@@ -90,7 +90,7 @@
       </div>
 
       <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
-        <img src="{{ asset('img/debut.webp') }}" alt="Debuts" class="w-full h-52 object-cover rounded-t" />
+        <img src="{{ asset('public/img/debut.webp') }}" alt="Debuts" class="w-full h-52 object-cover rounded-t" />
         <div class="p-4">
           <h5 class="text-xl font-semibold">Debuts</h5>
           <p class="text-gray-600 text-sm mt-2">Elegant debut parties that mark this special milestone with style.</p>
@@ -98,7 +98,7 @@
       </div>
 
       <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
-        <img src="{{ asset('img/baptism.jpg') }}" alt="Baptisms" class="w-full h-52 object-cover rounded-t" />
+        <img src="{{ asset('public/img/baptism.jpg') }}" alt="Baptisms" class="w-full h-52 object-cover rounded-t" />
         <div class="p-4">
           <h5 class="text-xl font-semibold">Baptisms</h5>
           <p class="text-gray-600 text-sm mt-2">Graceful baptism events that celebrate faith and family.</p>
