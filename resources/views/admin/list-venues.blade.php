@@ -75,7 +75,7 @@
             <!-- Venue Image -->
             <div class="relative h-48 bg-gray-200">
                 @if($venue->main_image)
-                <img src="{{ asset($venue->main_image) }}"
+                <img src="{{ asset(str_replace('public/', '', $venue->main_image)) }}"
                     alt="{{ $venue->name }}"
                     class="w-full h-full object-cover">
                 @else
@@ -806,8 +806,12 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Type</label>
-                            <input type="text" name="spaces[${spaceCounter}][type]" required
+                            <select name="spaces[${spaceCounter}][type]" required
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Select Type</option>
+                                <option value="indoor">Indoor</option>
+                                <option value="outdoor">Outdoor</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Capacity</label>
@@ -833,7 +837,7 @@
                         const detailsHtml = `
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <img src="/${venue.main_image}" alt="${venue.name}" class="w-full h-64 object-cover rounded-lg">
+                                    <img src="/${venue.main_image.replace('public/', '')}" alt="${venue.name}" class="w-full h-64 object-cover rounded-lg">
                                 </div>
                                 <div class="space-y-4">
                                     <div>
@@ -891,7 +895,7 @@
                                         <span class="text-sm font-medium text-gray-500">Gallery:</span>
                                         <div class="mt-2 grid grid-cols-3 gap-2">
                                             ${venue.gallery.map(image => `
-                                                <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                                <img src="/${image.image_path.replace('public/', '')}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
                                             `).join('')}
                                         </div>
                                     </div>
@@ -1007,7 +1011,7 @@
                     <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image</p>
-                    ${venue.main_image ? `<img src="/${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
+                    ${venue.main_image ? `<img src="/${venue.main_image.replace('public/', '')}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
                 </div>
 
                 <!-- Gallery Images -->
@@ -1022,7 +1026,7 @@
                         <div class="grid grid-cols-3 gap-2">
                             ${venue.gallery.map(image => `
                                 <div class="relative">
-                                    <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                    <img src="/${image.image_path.replace('public/', '')}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
                                     <button type="button" onclick="removeGalleryImage('${image.id}')" 
                                         class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
                                         ×
@@ -1065,8 +1069,12 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Type</label>
-                                        <input type="text" name="edit_spaces[${space.id}][type]" value="${space.type}" required
+                                        <select name="edit_spaces[${space.id}][type]" required
                                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option value="">Select Type</option>
+                                            <option value="indoor" ${space.type === 'indoor' ? 'selected' : ''}>Indoor</option>
+                                            <option value="outdoor" ${space.type === 'outdoor' ? 'selected' : ''}>Outdoor</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Capacity</label>
@@ -1158,8 +1166,12 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Type</label>
-                            <input type="text" name="new_spaces[${editSpaceCounter}][type]" required
+                            <select name="new_spaces[${editSpaceCounter}][type]" required
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Select Type</option>
+                                <option value="indoor">Indoor</option>
+                                <option value="outdoor">Outdoor</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Capacity</label>
