@@ -41,7 +41,7 @@ nav.navbar {
 .hero-image {
   position: relative;
   height: 90vh;
-  background: url('/img/car1.jpg') no-repeat center center/cover;
+  background: url('/public/img/car1.jpg') no-repeat center center/cover;
 }
 
 .hero-image .overlay {
