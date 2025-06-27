@@ -1470,7 +1470,7 @@
 
         /* Terms and Privacy Policy Modal Styles */
         #termsModal, #privacyModal {
-            display: none;
+            display: none !important;
             position: fixed;
             z-index: 9999;
             left: 0;
@@ -1483,6 +1483,16 @@
             align-items: center;
             padding: 20px;
             animation: fadeIn 0.3s ease;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #termsModal.show, #privacyModal.show {
+            display: flex !important;
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         @keyframes fadeIn {
@@ -1505,6 +1515,9 @@
             overflow-y: auto;
             position: relative;
             transform: scale(1);
+            display: block !important;
+            margin: 0 !important;
+            flex-direction: unset !important;
         }
 
         @keyframes modalSlideIn {
@@ -1709,4 +1722,12 @@
                 height: 35px;
                 font-size: 24px;
             }
+        }
+
+        #termsModal:not(.show) .modal-content, #privacyModal:not(.show) .modal-content {
+            display: none !important;
+        }
+
+        #termsModal.show .modal-content, #privacyModal.show .modal-content {
+            display: block !important;
         }
