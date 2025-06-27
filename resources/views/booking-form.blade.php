@@ -592,27 +592,27 @@
         // Modal functions for Terms and Privacy Policy
         function openTermsModal() {
             const modal = document.getElementById('termsModal');
-            modal.style.display = 'flex';
+            modal.classList.add('show');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
             modal.focus(); // Focus on modal for accessibility
         }
 
         function closeTermsModal() {
             const modal = document.getElementById('termsModal');
-            modal.style.display = 'none';
+            modal.classList.remove('show');
             document.body.style.overflow = 'auto'; // Restore scrolling
         }
 
         function openPrivacyModal() {
             const modal = document.getElementById('privacyModal');
-            modal.style.display = 'flex';
+            modal.classList.add('show');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
             modal.focus(); // Focus on modal for accessibility
         }
 
         function closePrivacyModal() {
             const modal = document.getElementById('privacyModal');
-            modal.style.display = 'none';
+            modal.classList.remove('show');
             document.body.style.overflow = 'auto'; // Restore scrolling
         }
 
@@ -635,10 +635,10 @@
                 const termsModal = document.getElementById('termsModal');
                 const privacyModal = document.getElementById('privacyModal');
                 
-                if (termsModal.style.display === 'flex') {
+                if (termsModal.classList.contains('show')) {
                     closeTermsModal();
                 }
-                if (privacyModal.style.display === 'flex') {
+                if (privacyModal.classList.contains('show')) {
                     closePrivacyModal();
                 }
             }
