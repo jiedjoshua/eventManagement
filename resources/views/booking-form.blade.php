@@ -317,7 +317,7 @@
                     <div class="form-group">
                         <div class="addon-item">
                             <input type="checkbox" id="terms" name="terms" required>
-                            <span>I agree to the <a href="/terms-and-conditions" target="_blank" style="color: #3498db; text-decoration: underline;"><strong>terms and conditions</strong></a> and <a href="/privacy-policy" target="_blank" style="color: #3498db; text-decoration: underline;"><strong>privacy policy</strong></a></span>
+                            <span>I agree to the <a href="javascript:void(0)" onclick="openTermsModal()" style="color: #3498db; text-decoration: underline;"><strong>terms and conditions</strong></a> and <a href="javascript:void(0)" onclick="openPrivacyModal()" style="color: #3498db; text-decoration: underline;"><strong>privacy policy</strong></a></span>
                         </div>
                     </div>
                 </div>
@@ -344,5 +344,280 @@
     Venue locations are displayed using OpenStreetMap iframe.
     No API key required - completely free and open source.
     -->
+
+    <!-- Terms and Conditions Modal -->
+    <div class="modal" id="termsModal">
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>📋 Terms and Conditions</h2>
+                <button type="button" class="modal-close" onclick="closeTermsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="project-notice" style="background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                    <strong>⚠️ IMPORTANT NOTICE:</strong> This is a capstone/thesis project for academic testing purposes only. 
+                    This is NOT a real commercial website. All data entered is for demonstration and testing purposes only.
+                </div>
+
+                <div class="section">
+                    <h3>1. Project Purpose</h3>
+                    <p>This Event Management System is a capstone/thesis project developed for academic purposes. It is designed to demonstrate web development skills, database management, and user interface design. This is NOT a real commercial service.</p>
+                </div>
+
+                <div class="section">
+                    <h3>2. Academic Use Only</h3>
+                    <p>This platform is intended solely for:</p>
+                    <ul>
+                        <li>Academic demonstration and testing</li>
+                        <li>Capstone project evaluation</li>
+                        <li>Educational purposes</li>
+                        <li>Portfolio showcase</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>3. No Real Services</h3>
+                    <p>Please note that:</p>
+                    <ul>
+                        <li>No real event booking services are provided</li>
+                        <li>No actual payments will be processed</li>
+                        <li>No real venues or services are available</li>
+                        <li>All data is for demonstration purposes only</li>
+                        <li>No real events will be coordinated</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>4. Data Usage</h3>
+                    <h4>4.1 Test Data Only</h4>
+                    <ul>
+                        <li>All information entered is considered test data</li>
+                        <li>Personal information may be used for demonstration purposes</li>
+                        <li>Data may be reset or cleared during development</li>
+                        <li>No real personal information should be entered</li>
+                    </ul>
+
+                    <h4>4.2 Data Protection</h4>
+                    <ul>
+                        <li>While this is a test project, we still respect privacy</li>
+                        <li>Test data will not be shared outside academic context</li>
+                        <li>Database may be reset periodically for testing</li>
+                        <li>No commercial use of entered data</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>5. User Responsibilities</h3>
+                    <ul>
+                        <li>Use only test/fake data when entering information</li>
+                        <li>Do not enter real personal or financial information</li>
+                        <li>Understand this is for academic demonstration only</li>
+                        <li>Report any bugs or issues for project improvement</li>
+                        <li>Use the system responsibly and ethically</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>6. No Liability</h3>
+                    <ul>
+                        <li>This is an academic project with no commercial liability</li>
+                        <li>No warranties are provided for system functionality</li>
+                        <li>Use at your own risk for testing purposes</li>
+                        <li>No compensation for any issues or data loss</li>
+                    </ul>
+                </div>
+
+                <div class="highlight" style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; border-radius: 5px;">
+                    <strong>Academic Notice:</strong> This terms and conditions document is created for academic demonstration purposes. 
+                    This is NOT a legally binding document for a real commercial service. This is part of a capstone/thesis project 
+                    to demonstrate understanding of legal documentation in web development.
+                </div>
+
+                <div class="contact-info" style="background-color: #e8f4fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4>Project Information</h4>
+                    <p><strong>Project Type:</strong> Capstone/Thesis Project</p>
+                    <p><strong>Purpose:</strong> Academic demonstration and testing</p>
+                    <p><strong>Status:</strong> Educational project - NOT a real service</p>
+                    <p><strong>Contact:</strong> Student developer or academic institution</p>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-primary" onclick="closeTermsModal()">I Understand and Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal" id="privacyModal">
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>🔒 Privacy Policy</h2>
+                <button type="button" class="modal-close" onclick="closePrivacyModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="project-notice" style="background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                    <strong>⚠️ IMPORTANT NOTICE:</strong> This is a capstone/thesis project for academic testing purposes only. 
+                    This is NOT a real commercial website. All data entered is for demonstration and testing purposes only.
+                </div>
+
+                <div class="section">
+                    <h3>1. Introduction</h3>
+                    <p>This Privacy Policy explains how this Event Management System (a capstone/thesis project) handles information during academic testing and demonstration. This is NOT a real commercial service, and all data handling is for educational purposes only.</p>
+                </div>
+
+                <div class="section">
+                    <h3>2. Project Purpose</h3>
+                    <p>This system is developed as an academic project to demonstrate:</p>
+                    <ul>
+                        <li>Web development skills and best practices</li>
+                        <li>Database management and data handling</li>
+                        <li>User interface design and user experience</li>
+                        <li>Privacy policy implementation for educational purposes</li>
+                        <li>Legal documentation in web development</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>3. Information Collection</h3>
+                    <h4>3.1 What We Collect (For Testing Only)</h4>
+                    <ul>
+                        <li>Test user registration information (names, emails, phone numbers)</li>
+                        <li>Demo event booking details</li>
+                        <li>Test venue and service selections</li>
+                        <li>Simulated payment information (not real payments)</li>
+                        <li>System usage data for project evaluation</li>
+                    </ul>
+
+                    <h4>3.2 How We Collect Information</h4>
+                    <ul>
+                        <li>Through user registration forms (test data only)</li>
+                        <li>Event booking forms (demonstration purposes)</li>
+                        <li>System logs for academic evaluation</li>
+                        <li>User interaction data for project assessment</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>4. Use of Information</h3>
+                    <h4>4.1 Academic Purposes Only</h4>
+                    <ul>
+                        <li>Demonstrate system functionality</li>
+                        <li>Evaluate project performance</li>
+                        <li>Showcase development skills</li>
+                        <li>Academic portfolio purposes</li>
+                        <li>Project presentation and defense</li>
+                    </ul>
+
+                    <h4>4.2 What We Do NOT Do</h4>
+                    <ul>
+                        <li>We do not process real payments</li>
+                        <li>We do not provide real event services</li>
+                        <li>We do not share data with third parties</li>
+                        <li>We do not use data for commercial purposes</li>
+                        <li>We do not sell or monetize any information</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>5. Data Storage and Security</h3>
+                    <h4>5.1 Storage</h4>
+                    <ul>
+                        <li>Data is stored in a local development database</li>
+                        <li>No cloud storage or external services used</li>
+                        <li>Database may be reset during development</li>
+                        <li>No long-term data retention policy</li>
+                    </ul>
+
+                    <h4>5.2 Security Measures</h4>
+                    <ul>
+                        <li>Basic security practices implemented for demonstration</li>
+                        <li>Password hashing for educational purposes</li>
+                        <li>No real security certifications or guarantees</li>
+                        <li>Standard web development security practices</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>6. Data Sharing and Disclosure</h3>
+                    <ul>
+                        <li>No data is shared with third parties</li>
+                        <li>No commercial data sharing agreements</li>
+                        <li>Data may be shown during academic presentations</li>
+                        <li>Project screenshots may be used in portfolio</li>
+                        <li>No real personal information should be entered</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>7. User Rights and Choices</h3>
+                    <h4>7.1 For Test Users</h4>
+                    <ul>
+                        <li>Use only fake/test data when registering</li>
+                        <li>Do not enter real personal information</li>
+                        <li>Understand this is for demonstration only</li>
+                        <li>Report any issues for project improvement</li>
+                    </ul>
+
+                    <h4>7.2 Data Access</h4>
+                    <ul>
+                        <li>Test users can view their demo data</li>
+                        <li>No real personal data processing</li>
+                        <li>Database may be cleared for testing</li>
+                        <li>No formal data access requests needed</li>
+                    </ul>
+                </div>
+
+                <div class="highlight" style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; border-radius: 5px;">
+                    <strong>Academic Notice:</strong> This privacy policy is created for academic demonstration purposes. 
+                    This is NOT a legally binding privacy policy for a real commercial service. This is part of a capstone/thesis 
+                    project to demonstrate understanding of privacy policy implementation in web development.
+                </div>
+
+                <div class="contact-info" style="background-color: #e8f4fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4>Project Information</h4>
+                    <p><strong>Project Type:</strong> Capstone/Thesis Project</p>
+                    <p><strong>Purpose:</strong> Academic demonstration and testing</p>
+                    <p><strong>Data Usage:</strong> Test data only - no real personal information</p>
+                    <p><strong>Contact:</strong> Student developer or academic institution</p>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-primary" onclick="closePrivacyModal()">I Understand and Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions for Terms and Privacy Policy
+        function openTermsModal() {
+            document.getElementById('termsModal').style.display = 'flex';
+        }
+
+        function closeTermsModal() {
+            document.getElementById('termsModal').style.display = 'none';
+        }
+
+        function openPrivacyModal() {
+            document.getElementById('privacyModal').style.display = 'flex';
+        }
+
+        function closePrivacyModal() {
+            document.getElementById('privacyModal').style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const termsModal = document.getElementById('termsModal');
+            const privacyModal = document.getElementById('privacyModal');
+            
+            if (event.target === termsModal) {
+                closeTermsModal();
+            }
+            if (event.target === privacyModal) {
+                closePrivacyModal();
+            }
+        }
+    </script>
 </body>
 </html>
