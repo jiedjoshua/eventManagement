@@ -426,8 +426,11 @@ function createVenueCard(venue) {
         currency: 'PHP'
     }).format(price);
 
+    // Handle the public/ prefix in image path
+    const imagePath = venue.main_image.startsWith('public/') ? venue.main_image.substring(7) : venue.main_image;
+
     card.innerHTML = `
-        <img src="${venue.main_image}" alt="${venue.name}" class="venue-image">
+        <img src="/${imagePath}" alt="${venue.name}" class="venue-image">
         <span class="venue-tag">${venueTypeDisplay}</span>
         <div class="venue-content">
             <h3 class="venue-title">${venue.name}</h3>
@@ -500,7 +503,9 @@ async function openVenueModal(venueId) {
 
         // Update modal content
         const modalImage = document.getElementById('modalVenueImage');
-        modalImage.src = `/${venue.main_image}`; // Add forward slash to make path relative to root
+        // Handle the public/ prefix in image path
+        const imagePath = venue.main_image.startsWith('public/') ? venue.main_image.substring(7) : venue.main_image;
+        modalImage.src = `/${imagePath}`;
         modalImage.alt = venue.name || 'Venue Image'; // Add fallback alt text
 
         document.getElementById('modalVenueTitle').textContent = venue.name;
@@ -533,9 +538,11 @@ async function openVenueModal(venueId) {
         // Update gallery with proper path handling
         const galleryContainer = document.querySelector('.venue-gallery');
         if (venue.gallery && venue.gallery.length > 0) {
-            galleryContainer.innerHTML = venue.gallery.map(item => `
-                <img src="/${item.image_path}" class="gallery-img" alt="Venue Image">
-            `).join('');
+            galleryContainer.innerHTML = venue.gallery.map(item => {
+                // Handle the public/ prefix in gallery image paths
+                const galleryImagePath = item.image_path.startsWith('public/') ? item.image_path.substring(7) : item.image_path;
+                return `<img src="/${galleryImagePath}" class="gallery-img" alt="Venue Image">`;
+            }).join('');
         } else {
             galleryContainer.innerHTML = '<p>No gallery images available</p>';
         }
