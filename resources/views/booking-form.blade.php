@@ -591,19 +591,29 @@
     <script>
         // Modal functions for Terms and Privacy Policy
         function openTermsModal() {
-            document.getElementById('termsModal').style.display = 'flex';
+            const modal = document.getElementById('termsModal');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            modal.focus(); // Focus on modal for accessibility
         }
 
         function closeTermsModal() {
-            document.getElementById('termsModal').style.display = 'none';
+            const modal = document.getElementById('termsModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
         }
 
         function openPrivacyModal() {
-            document.getElementById('privacyModal').style.display = 'flex';
+            const modal = document.getElementById('privacyModal');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            modal.focus(); // Focus on modal for accessibility
         }
 
         function closePrivacyModal() {
-            document.getElementById('privacyModal').style.display = 'none';
+            const modal = document.getElementById('privacyModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
         }
 
         // Close modals when clicking outside
@@ -618,6 +628,31 @@
                 closePrivacyModal();
             }
         }
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const termsModal = document.getElementById('termsModal');
+                const privacyModal = document.getElementById('privacyModal');
+                
+                if (termsModal.style.display === 'flex') {
+                    closeTermsModal();
+                }
+                if (privacyModal.style.display === 'flex') {
+                    closePrivacyModal();
+                }
+            }
+        });
+
+        // Prevent modal content clicks from closing the modal
+        document.addEventListener('click', function(event) {
+            const termsModal = document.getElementById('termsModal');
+            const privacyModal = document.getElementById('privacyModal');
+            
+            if (event.target.closest('.modal-content')) {
+                event.stopPropagation();
+            }
+        });
     </script>
 </body>
 </html>
