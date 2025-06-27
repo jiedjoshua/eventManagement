@@ -168,7 +168,6 @@ class VenueController extends Controller
                 'type' => $request->type,
                 'capacity' => $request->capacity,
                 'price_range' => $request->price_range,
-                'rating' => 0,
                 'description' => $request->description,
                 'main_image' => $mainImagePath,
                 'address' => $request->address,
@@ -221,10 +220,25 @@ class VenueController extends Controller
 
     public function adminShow(Venue $venue)
     {
-        return response()->json([
-            'success' => true,
-            'venue' => $venue->load(['spaces', 'gallery'])
-        ]);
+        try {
+            $venue->load(['spaces', 'gallery']);
+            
+            return response()->json([
+                'success' => true,
+                'venue' => $venue
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Venue adminShow failed: ' . $e->getMessage(), [
+                'venue_id' => $venue->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load venue details. Please try again.'
+            ], 500);
+        }
     }
 
     public function update(Request $request, Venue $venue)

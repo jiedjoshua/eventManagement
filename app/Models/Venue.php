@@ -12,7 +12,6 @@ class Venue extends Model
         'type',
         'capacity',
         'price_range',
-        'rating',
         'description',
         'main_image',
         'address',
