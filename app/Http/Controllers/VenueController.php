@@ -38,12 +38,32 @@ class VenueController extends Controller
 
     public function show(Venue $venue)
     {
-        $venue->load(['spaces', 'gallery']);
-        
-        return response()->json([
-            'success' => true,
-            'data' => $venue
-        ]);
+        try {
+            // Check if venue is active
+            if (!$venue->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Venue not found or inactive'
+                ], 404);
+            }
+
+            $venue->load(['spaces', 'gallery']);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $venue
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Venue show failed: ' . $e->getMessage(), [
+                'venue_id' => $venue->id ?? 'unknown',
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load venue details'
+            ], 500);
+        }
     }
 
     // ADMIN SIDE

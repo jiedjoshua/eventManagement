@@ -88,10 +88,6 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::put('/admin/venues/{venue}', [VenueController::class, 'update'])->name('admin.venues.update');
     Route::delete('/admin/venues/{venue}', [VenueController::class, 'destroy'])->name('admin.venues.destroy');
 
-    // Public venue routes (for API)
-    Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
-    Route::get('/venues/{venue}', [VenueController::class, 'show'])->name('venues.show');
-
     Route::get('/admin/account-settings', [SuperAdminController::class, 'accountSettings'])->name('admin.account-settings');
 
     // Event Management Routes
@@ -180,13 +176,6 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/invite/decline/{eventId}', [InviteController::class, 'decline'])->name('invite.decline');
 Route::get('/invite/{eventId}', [InviteController::class, 'show'])->name('invite.confirm');
 Route::get('/invite/accept/{eventId}', [InviteController::class, 'accept'])->name('invite.accept');
-
-//Venue Routes
-Route::prefix('venues')->group(function () {
-    Route::get('/', [VenueController::class, 'index']);
-    Route::get('/{venue}', [VenueController::class, 'show']);
-    Route::post('/', [VenueController::class, 'store']);
-});
 
 // Package Routes
 Route::get('/api/packages', [PackageController::class, 'getPackages']);
