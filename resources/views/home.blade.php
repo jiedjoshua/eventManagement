@@ -10,11 +10,11 @@
 <body class="font-sans">
 
 <!-- Navbar -->
-<nav class="bg-white shadow-sm fixed top-0 w-full z-50 py-6">
+<nav class="bg-white shadow-sm fixed top-0 w-full z-50 py-4 lg:py-6">
   <div class="container mx-auto px-4 flex items-center justify-between">
     
     <!-- Left: Logo -->
-    <a href="#" class="text-xl font-bold">CrwdCtrl</a>
+    <a href="#" class="text-lg lg:text-xl font-bold">CrwdCtrl</a>
 
     <!-- Mobile Menu Button -->
     <button id="menu-btn" class="lg:hidden text-gray-700 focus:outline-none">
@@ -23,7 +23,7 @@
       </svg>
     </button>
 
-    <!-- Center Nav + Right Buttons -->
+    <!-- Desktop Navigation -->
     <div class="hidden lg:flex justify-between items-center w-full ml-12">
       <!-- Center Nav Links -->
       <ul class="flex space-x-6 items-center mx-auto">
@@ -53,56 +53,80 @@
       </div>
     </div>
   </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="lg:hidden hidden bg-white border-t">
+    <div class="px-4 py-2 space-y-1">
+      <a href="#home" class="block py-2 text-gray-700 hover:text-[#EF7C79]">Home</a>
+      <a href="{{ route('services') }}" class="block py-2 text-gray-700 hover:text-[#EF7C79]">Services</a>
+      <a href="{{ route('gallery') }}" class="block py-2 text-gray-700 hover:text-[#EF7C79]">Gallery</a>
+      <a href="{{ route('about') }}" class="block py-2 text-gray-700 hover:text-[#EF7C79]">About</a>
+      <a href="{{ route('contact') }}" class="block py-2 text-gray-700 hover:text-[#EF7C79]">Contact</a>
+      <div class="border-t pt-2 mt-2">
+        @auth
+          @if(auth()->user()->role === 'super_admin')
+            <a href="{{ route('admin.dashboard') }}" class="block py-2 text-gray-700 hover:text-[#EF7C79]">Dashboard</a>
+          @elseif(auth()->user()->role === 'event_manager')
+            <a href="{{ route('manager.dashboard') }}" class="block py-2 text-gray-700 hover:text-[#EF7C79]">Dashboard</a>
+          @else
+            <a href="{{ route('user.dashboard') }}" class="block py-2 text-gray-700 hover:text-[#EF7C79]">Dashboard</a>
+          @endif
+        @else
+          <form action="{{ route('login') }}" method="GET">
+            <button type="submit" class="w-full text-left py-2 text-gray-700 hover:text-[#EF7C79]">Login</button>
+          </form>
+        @endauth
+        <a href="{{ route('book-now') }}" class="block py-2 text-[#EF7C79] font-semibold">Book Now</a>
+      </div>
+    </div>
+  </div>
 </nav>
 
-
-
-
 <!-- Hero Section -->
-<section class="flex items-center justify-center text-center text-white relative" style="background: url('{{ asset('public/img/car1.jpg') }}') no-repeat center center/cover; height: 90vh;">
+<section class="flex items-center justify-center text-center text-white relative" style="background: url('{{ asset('public/img/car1.jpg') }}') no-repeat center center/cover; height: 90vh; margin-top: 60px;">
   <div class="absolute inset-0 bg-black bg-opacity-40"></div>
-  <div class="relative z-10">
-    <h1 class="text-4xl md:text-5xl font-bold">Celebrate Life's Special Moments</h1>
-    <p class="text-lg mt-2">We make your dream events come true — weddings, birthdays, and more!</p>
-    <a href="{{ route('book-now') }}" class="inline-block mt-4 bg-[#EF7C79] hover:bg-[#D76C69] text-white rounded-full px-6 py-2">Book Now</a>
+  <div class="relative z-10 px-4">
+    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Celebrate Life's Special Moments</h1>
+    <p class="text-base md:text-lg mt-2 mb-6">We make your dream events come true — weddings, birthdays, and more!</p>
+    <a href="{{ route('book-now') }}" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white rounded-full px-6 py-3 text-sm md:text-base">Book Now</a>
   </div>
 </section>
 
 <!-- Event Services -->
-<section class="py-20 bg-gray-100 text-center">
+<section class="py-16 md:py-20 bg-gray-100 text-center">
   <div class="container mx-auto px-4">
-    <h2 class="text-3xl font-bold mb-10">Our Event Services</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+    <h2 class="text-2xl md:text-3xl font-bold mb-8 md:mb-10">Our Event Services</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       <!-- Card -->
       <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
-        <img src="{{ asset('public/img/wedding.webp') }}" alt="Weddings" class="w-full h-52 object-cover rounded-t" />
-        <div class="p-4">
-          <h5 class="text-xl font-semibold">Weddings</h5>
-          <p class="text-gray-600 text-sm mt-2">Beautiful and memorable wedding event planning tailored to your dreams.</p>
+        <img src="{{ asset('public/img/wedding.webp') }}" alt="Weddings" class="w-full h-40 md:h-52 object-cover rounded-t" />
+        <div class="p-3 md:p-4">
+          <h5 class="text-lg md:text-xl font-semibold">Weddings</h5>
+          <p class="text-gray-600 text-xs md:text-sm mt-2">Beautiful and memorable wedding event planning tailored to your dreams.</p>
         </div>
       </div>
 
       <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
-        <img src="{{ asset('public/img/birthday.jpg') }}" alt="Birthdays" class="w-full h-52 object-cover rounded-t" />
-        <div class="p-4">
-          <h5 class="text-xl font-semibold">Birthdays</h5>
-          <p class="text-gray-600 text-sm mt-2">Fun and exciting birthday celebrations customized for all ages.</p>
+        <img src="{{ asset('public/img/birthday.jpg') }}" alt="Birthdays" class="w-full h-40 md:h-52 object-cover rounded-t" />
+        <div class="p-3 md:p-4">
+          <h5 class="text-lg md:text-xl font-semibold">Birthdays</h5>
+          <p class="text-gray-600 text-xs md:text-sm mt-2">Fun and exciting birthday celebrations customized for all ages.</p>
         </div>
       </div>
 
       <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
-        <img src="{{ asset('public/img/debut.webp') }}" alt="Debuts" class="w-full h-52 object-cover rounded-t" />
-        <div class="p-4">
-          <h5 class="text-xl font-semibold">Debuts</h5>
-          <p class="text-gray-600 text-sm mt-2">Elegant debut parties that mark this special milestone with style.</p>
+        <img src="{{ asset('public/img/debut.webp') }}" alt="Debuts" class="w-full h-40 md:h-52 object-cover rounded-t" />
+        <div class="p-3 md:p-4">
+          <h5 class="text-lg md:text-xl font-semibold">Debuts</h5>
+          <p class="text-gray-600 text-xs md:text-sm mt-2">Elegant debut parties that mark this special milestone with style.</p>
         </div>
       </div>
 
       <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
-        <img src="{{ asset('public/img/baptism.jpg') }}" alt="Baptisms" class="w-full h-52 object-cover rounded-t" />
-        <div class="p-4">
-          <h5 class="text-xl font-semibold">Baptisms</h5>
-          <p class="text-gray-600 text-sm mt-2">Graceful baptism events that celebrate faith and family.</p>
+        <img src="{{ asset('public/img/baptism.jpg') }}" alt="Baptisms" class="w-full h-40 md:h-52 object-cover rounded-t" />
+        <div class="p-3 md:p-4">
+          <h5 class="text-lg md:text-xl font-semibold">Baptisms</h5>
+          <p class="text-gray-600 text-xs md:text-sm mt-2">Graceful baptism events that celebrate faith and family.</p>
         </div>
       </div>
     </div>
@@ -110,23 +134,20 @@
 </section>
 
 <!-- Who We Are -->
-<section class="py-20 text-center">
+<section class="py-16 md:py-20 text-center">
   <div class="container mx-auto px-4">
-    <h2 class="text-3xl font-bold mb-4">Who We Are</h2>
-    <p class="text-lg text-gray-600">We're passionate about delivering the best service to our customers with honesty and integrity.</p>
+    <h2 class="text-2xl md:text-3xl font-bold mb-4">Who We Are</h2>
+    <p class="text-base md:text-lg text-gray-600">We're passionate about delivering the best service to our customers with honesty and integrity.</p>
   </div>
 </section>
 
-
-
-
 <!-- Contact Section -->
-<section id="contact" class="py-20 bg-gray-100">
+<section id="contact" class="py-16 md:py-20 bg-gray-100">
   <div class="max-w-4xl mx-auto px-4 text-center">
-    <h2 class="text-3xl font-bold mb-6">Get in Touch</h2>
-    <p class="text-lg mb-4">📞 +63 912 345 6789</p>
-    <p class="text-lg mb-4">✉️ hello@crwdctrl.ph</p>
-    <p class="text-lg">📍 Bataan, Philippines</p>
+    <h2 class="text-2xl md:text-3xl font-bold mb-6">Get in Touch</h2>
+    <p class="text-base md:text-lg mb-4">📞 +63 912 345 6789</p>
+    <p class="text-base md:text-lg mb-4">✉️ hello@crwdctrl.ph</p>
+    <p class="text-base md:text-lg">📍 Bataan, Philippines</p>
   </div>
 </section>
 
@@ -136,9 +157,20 @@
 </footer>
 
 <script>
-  // Basic mobile menu toggle
+  // Mobile menu toggle
   document.getElementById('menu-btn').addEventListener('click', function() {
-    document.getElementById('menu').classList.toggle('hidden');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenu.classList.toggle('hidden');
+  });
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(event) {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuBtn = document.getElementById('menu-btn');
+    
+    if (!mobileMenu.contains(event.target) && !menuBtn.contains(event.target)) {
+      mobileMenu.classList.add('hidden');
+    }
   });
 </script>
 
