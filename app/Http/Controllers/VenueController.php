@@ -159,7 +159,7 @@ class VenueController extends Controller
             // Handle main image upload to public/img directory
             $mainImage = $request->file('main_image');
             $mainImageName = time() . '_' . $mainImage->getClientOriginalName();
-            $mainImagePath = 'img/' . $mainImageName;
+            $mainImagePath = 'public/img/' . $mainImageName;
             $mainImage->move(public_path('img'), $mainImageName);
 
             // Create venue
@@ -181,7 +181,7 @@ class VenueController extends Controller
             if ($request->hasFile('gallery_images')) {
                 foreach ($request->file('gallery_images') as $index => $image) {
                     $galleryImageName = time() . '_' . $index . '_' . $image->getClientOriginalName();
-                    $galleryImagePath = 'img/gallery/' . $galleryImageName;
+                    $galleryImagePath = 'public/img/gallery/' . $galleryImageName;
                     $image->move(public_path('img/gallery'), $galleryImageName);
                     
                     VenueGallery::create([
@@ -259,14 +259,14 @@ class VenueController extends Controller
             // Handle main image update
             if ($request->hasFile('main_image')) {
                 // Delete old image if it exists in public directory
-                if ($venue->main_image && file_exists(public_path($venue->main_image))) {
-                    unlink(public_path($venue->main_image));
+                if ($venue->main_image && file_exists(public_path(str_replace('public/', '', $venue->main_image)))) {
+                    unlink(public_path(str_replace('public/', '', $venue->main_image)));
                 }
                 
                 // Upload new image
                 $mainImage = $request->file('main_image');
                 $mainImageName = time() . '_' . $mainImage->getClientOriginalName();
-                $mainImagePath = 'img/' . $mainImageName;
+                $mainImagePath = 'public/img/' . $mainImageName;
                 $mainImage->move(public_path('img'), $mainImageName);
                 $data['main_image'] = $mainImagePath;
             }
@@ -290,8 +290,8 @@ class VenueController extends Controller
                     $galleryImage = VenueGallery::find($imageId);
                     if ($galleryImage && $galleryImage->venue_id == $venue->id) {
                         // Delete file from public directory
-                        if (file_exists(public_path($galleryImage->image_path))) {
-                            unlink(public_path($galleryImage->image_path));
+                        if (file_exists(public_path(str_replace('public/', '', $galleryImage->image_path)))) {
+                            unlink(public_path(str_replace('public/', '', $galleryImage->image_path)));
                         }
                         $galleryImage->delete();
                     }
@@ -304,7 +304,7 @@ class VenueController extends Controller
                 
                 foreach ($request->file('gallery_images') as $index => $image) {
                     $galleryImageName = time() . '_' . ($existingGalleryCount + $index) . '_' . $image->getClientOriginalName();
-                    $galleryImagePath = 'img/gallery/' . $galleryImageName;
+                    $galleryImagePath = 'public/img/gallery/' . $galleryImageName;
                     $image->move(public_path('img/gallery'), $galleryImageName);
                     
                     VenueGallery::create([
@@ -396,14 +396,14 @@ class VenueController extends Controller
     {
         try {
             // Delete main image from public directory
-            if ($venue->main_image && file_exists(public_path($venue->main_image))) {
-                unlink(public_path($venue->main_image));
+            if ($venue->main_image && file_exists(public_path(str_replace('public/', '', $venue->main_image)))) {
+                unlink(public_path(str_replace('public/', '', $venue->main_image)));
             }
 
             // Delete gallery images from public directory
             foreach ($venue->gallery as $galleryImage) {
-                if (file_exists(public_path($galleryImage->image_path))) {
-                    unlink(public_path($galleryImage->image_path));
+                if (file_exists(public_path(str_replace('public/', '', $galleryImage->image_path)))) {
+                    unlink(public_path(str_replace('public/', '', $galleryImage->image_path)));
                 }
             }
 
