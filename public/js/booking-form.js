@@ -427,7 +427,12 @@ function createVenueCard(venue) {
     }).format(price);
 
     // Handle the public/ prefix in image path
-    const imagePath = venue.main_image.startsWith('public/') ? venue.main_image.substring(7) : venue.main_image;
+    let imagePath = venue.main_image;
+    if (imagePath.startsWith('/public/')) {
+        imagePath = imagePath.substring(8); // Remove '/public/' prefix
+    } else if (imagePath.startsWith('public/')) {
+        imagePath = imagePath.substring(7); // Remove 'public/' prefix
+    }
 
     card.innerHTML = `
         <img src="/${imagePath}" alt="${venue.name}" class="venue-image">
@@ -504,7 +509,12 @@ async function openVenueModal(venueId) {
         // Update modal content
         const modalImage = document.getElementById('modalVenueImage');
         // Handle the public/ prefix in image path
-        const imagePath = venue.main_image.startsWith('public/') ? venue.main_image.substring(7) : venue.main_image;
+        let imagePath = venue.main_image;
+        if (imagePath.startsWith('/public/')) {
+            imagePath = imagePath.substring(8); // Remove '/public/' prefix
+        } else if (imagePath.startsWith('public/')) {
+            imagePath = imagePath.substring(7); // Remove 'public/' prefix
+        }
         modalImage.src = `/${imagePath}`;
         modalImage.alt = venue.name || 'Venue Image'; // Add fallback alt text
 
@@ -540,7 +550,12 @@ async function openVenueModal(venueId) {
         if (venue.gallery && venue.gallery.length > 0) {
             galleryContainer.innerHTML = venue.gallery.map(item => {
                 // Handle the public/ prefix in gallery image paths
-                const galleryImagePath = item.image_path.startsWith('public/') ? item.image_path.substring(7) : item.image_path;
+                let galleryImagePath = item.image_path;
+                if (galleryImagePath.startsWith('/public/')) {
+                    galleryImagePath = galleryImagePath.substring(8); // Remove '/public/' prefix
+                } else if (galleryImagePath.startsWith('public/')) {
+                    galleryImagePath = galleryImagePath.substring(7); // Remove 'public/' prefix
+                }
                 return `<img src="/${galleryImagePath}" class="gallery-img" alt="Venue Image">`;
             }).join('');
         } else {
