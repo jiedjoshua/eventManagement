@@ -71,7 +71,7 @@
       
       <!-- Wedding Services -->
       <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <img src="{{ asset('img/wedding.webp') }}" alt="Wedding Planning" class="w-full h-64 object-cover">
+        <img src="{{ asset('public/img/wedding.webp') }}" alt="Wedding Planning" class="w-full h-64 object-cover">
         <div class="p-8">
           <h3 class="text-2xl font-bold text-gray-800 mb-4">Wedding Planning</h3>
           <p class="text-gray-600 mb-6">Create the wedding of your dreams with our comprehensive planning services. From intimate ceremonies to grand celebrations, we handle every detail.</p>
@@ -116,7 +116,7 @@
 
       <!-- Birthday Services -->
       <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <img src="{{ asset('img/birthday.jpg') }}" alt="Birthday Celebrations" class="w-full h-64 object-cover">
+        <img src="{{ asset('public/img/birthday.jpg') }}" alt="Birthday Celebrations" class="w-full h-64 object-cover">
         <div class="p-8">
           <h3 class="text-2xl font-bold text-gray-800 mb-4">Birthday Celebrations</h3>
           <p class="text-gray-600 mb-6">Make every birthday unforgettable with our creative and personalized celebration planning. From kids' parties to milestone birthdays.</p>

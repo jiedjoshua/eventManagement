@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CrwdCtrl</title>
-  <link href="css/home.css" rel="stylesheet">
+ <link href="{{ asset('css/home.css') }}" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="font-sans">
@@ -57,8 +57,9 @@
 
 
 
+
 <!-- Hero Section -->
-<section class="hero-image flex items-center justify-center text-center text-white relative">
+<section class="flex items-center justify-center text-center text-white relative" style="background: url('{{ asset('public/img/car1.jpg') }}') no-repeat center center/cover; height: 90vh;">
   <div class="absolute inset-0 bg-black bg-opacity-40"></div>
   <div class="relative z-10">
     <h1 class="text-4xl md:text-5xl font-bold">Celebrate Life's Special Moments</h1>
