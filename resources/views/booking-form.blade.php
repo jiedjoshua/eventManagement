@@ -317,7 +317,7 @@
                     <div class="form-group">
                         <div class="addon-item">
                             <input type="checkbox" id="terms" name="terms" required>
-                            <span>I agree to the <strong>terms and conditions</strong> and privacy policy</span>
+                            <span>I agree to the <a href="/terms-and-conditions" target="_blank" style="color: #3498db; text-decoration: underline;"><strong>terms and conditions</strong></a> and <a href="/privacy-policy" target="_blank" style="color: #3498db; text-decoration: underline;"><strong>privacy policy</strong></a></span>
                         </div>
                     </div>
                 </div>
