@@ -15,10 +15,97 @@ class SuperAdminController extends Controller
 
     public function index()
     {
+        // Basic statistics
         $totalUsers = User::count();
-        $users = User::paginate(15);
+        $totalEvents = \App\Models\Event::count();
+        $totalBookings = \App\Models\Booking::count();
+        $pendingBookings = \App\Models\Booking::where('status', 'pending')->count();
+        
+        // Upcoming events (next 30 days)
+        $upcomingEvents = \App\Models\Event::where('event_date', '>=', now())
+            ->where('event_date', '<=', now()->addDays(30))
+            ->count();
+        
+        // Total revenue from paid bookings
+        $totalRevenue = \App\Models\Booking::where('payment_status', 'paid')
+            ->sum('total_price');
+        
+        // Recent bookings (last 5)
+        $recentBookings = \App\Models\Booking::with('user')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+        
+        // Upcoming events list (next 10)
+        $upcomingEventsList = \App\Models\Event::with('venue')->withCount('guests')
+            ->where('event_date', '>=', now())
+            ->orderBy('event_date', 'asc')
+            ->limit(10)
+            ->get();
+        
+        // Chart data - Events by month (last 6 months)
+        $eventsChartData = $this->getEventsChartData();
+        
+        // Chart data - Revenue by month (last 6 months)
+        $revenueChartData = $this->getRevenueChartData();
 
-        return view('admin.dashboard', compact('totalUsers', 'users'));
+        return view('admin.dashboard', compact(
+            'totalUsers',
+            'totalEvents', 
+            'totalBookings',
+            'pendingBookings',
+            'upcomingEvents',
+            'totalRevenue',
+            'recentBookings',
+            'upcomingEventsList',
+            'eventsChartData',
+            'revenueChartData'
+        ));
+    }
+
+    private function getEventsChartData()
+    {
+        $months = [];
+        $data = [];
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $months[] = $date->format('M Y');
+            
+            $count = \App\Models\Event::whereYear('event_date', $date->year)
+                ->whereMonth('event_date', $date->month)
+                ->count();
+            
+            $data[] = $count;
+        }
+        
+        return [
+            'labels' => $months,
+            'data' => $data
+        ];
+    }
+
+    private function getRevenueChartData()
+    {
+        $months = [];
+        $data = [];
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $months[] = $date->format('M Y');
+            
+            $revenue = \App\Models\Booking::where('payment_status', 'paid')
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->sum('total_price');
+            
+            $data[] = $revenue;
+        }
+        
+        return [
+            'labels' => $months,
+            'data' => $data
+        ];
     }
 
     public function listUsers(Request $request)

@@ -16,7 +16,7 @@
       <p class="mb-1 text-gray-600">Total Due: <span class="font-semibold text-indigo-700">₱{{ number_format($booking->amount_due, 2) }}</span></p>
       <p class="mb-4 text-gray-600">Already Paid: <span class="font-semibold text-green-700">₱{{ number_format($booking->amount_paid, 2) }}</span></p>
       
-      <form id="payment-form" method="POST" action="">
+      <form id="payment-form" method="POST" action="{{ route('booking.pay', $booking->id) }}">
         @csrf
         @if($booking->payment_status === 'pending')
             <div class="mb-4">
@@ -82,39 +82,55 @@
   </main>
 
   <script>
-    const stripe = Stripe('{{ env('STRIPE_KEY') }}');
-    const elements = stripe.elements();
-    const cardElement = elements.create('card');
-    cardElement.mount('#card-element');
+    @if(config('services.stripe.key'))
+        const stripe = Stripe('{{ config('services.stripe.key') }}');
+        const elements = stripe.elements();
+        const cardElement = elements.create('card');
+        cardElement.mount('#card-element');
 
-    const cardHolderName = document.getElementById('card-holder-name');
-    const cardButton = document.getElementById('card-button');
-    const paymentForm = document.getElementById('payment-form');
-    const autofillBtn = document.getElementById('autofill-btn');
-    const testCardInfo = document.getElementById('test-card-info');
+        const cardHolderName = document.getElementById('card-holder-name');
+        const cardButton = document.getElementById('card-button');
+        const paymentForm = document.getElementById('payment-form');
+        const autofillBtn = document.getElementById('autofill-btn');
+        const testCardInfo = document.getElementById('test-card-info');
 
-    cardButton.addEventListener('click', async (e) => {
-      cardButton.disabled = true;
-      cardButton.textContent = 'Processing...';
-      const { paymentMethod, error } = await stripe.createPaymentMethod(
-        'card', cardElement, {
-          billing_details: { name: cardHolderName.value }
-        }
-      );
-      if (error) {
-        alert(error.message);
-        cardButton.disabled = false;
-        cardButton.textContent = '{{ $buttonText }}';
-      } else {
-        document.getElementById('paymentMethod').value = paymentMethod.id;
-        paymentForm.submit();
-      }
-    });
+        cardButton.addEventListener('click', async (e) => {
+          cardButton.disabled = true;
+          cardButton.textContent = 'Processing...';
+          const { paymentMethod, error } = await stripe.createPaymentMethod(
+            'card', cardElement, {
+              billing_details: { name: cardHolderName.value }
+            }
+          );
+          if (error) {
+            alert(error.message);
+            cardButton.disabled = false;
+            cardButton.textContent = '{{ $buttonText }}';
+          } else {
+            document.getElementById('paymentMethod').value = paymentMethod.id;
+            paymentForm.submit();
+          }
+        });
 
-    autofillBtn.addEventListener('click', function() {
-      testCardInfo.classList.remove('hidden');
-      cardHolderName.value = "Test User";
-    });
+        autofillBtn.addEventListener('click', function() {
+          testCardInfo.classList.remove('hidden');
+          cardHolderName.value = "Test User";
+        });
+    @else
+        // Stripe not configured - show error message
+        document.addEventListener('DOMContentLoaded', function() {
+            const cardElement = document.getElementById('card-element');
+            const cardButton = document.getElementById('card-button');
+            const autofillBtn = document.getElementById('autofill-btn');
+            
+            cardElement.innerHTML = '<div class="p-4 bg-red-50 border border-red-200 rounded-md"><p class="text-red-800 font-semibold">Payment System Not Configured</p><p class="text-red-600 text-sm mt-1">Stripe payment gateway is not configured. Please contact the administrator.</p></div>';
+            cardButton.disabled = true;
+            cardButton.textContent = 'Payment Unavailable';
+            cardButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            cardButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+            autofillBtn.style.display = 'none';
+        });
+    @endif
 
     function copyToClipboard(text) {
       navigator.clipboard.writeText(text).then(function() {

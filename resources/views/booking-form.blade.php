@@ -303,7 +303,7 @@
                                     <strong>Venue Cost:</strong> <span id="summaryVenuePrice">₱0</span>
                                 </div>
                                 <div class="summary-item total-price">
-                                    <strong>Total Estimated Cost:</strong> <span id="summaryTotalPrice">₱0</span>
+                                    <strong>Total Estimated Cost: </strong> <span id="summaryTotalPrice">₱0</span>
                                 </div>
                             </div>
                         </div>

@@ -26,6 +26,7 @@ return [
 
     'resend' => [
         'key' => env('RESEND_KEY'),
+        'api_key' => env('RESEND_API_KEY'),
     ],
 
     'slack' => [
@@ -35,8 +36,9 @@ return [
         ],
     ],
 
-  'resend' => [
-    'api_key' => env('RESEND_API_KEY'),
-],
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+    ],
 
 ];
