@@ -21,6 +21,11 @@ class Venue extends Model
         'is_active'
     ];
 
+    protected $casts = [
+        'price_range' => 'decimal:2',
+        'is_active' => 'boolean'
+    ];
+
     public function spaces(): HasMany
     {
         return $this->hasMany(VenueSpace::class);

@@ -11,8 +11,7 @@ class VenueSpace extends Model
         'venue_id',
         'name',
         'type',
-        'capacity',
-        'icon'
+        'capacity'
     ];
 
     public function venue(): BelongsTo

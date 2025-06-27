@@ -200,7 +200,6 @@ class VenueController extends Controller
                         'name' => $spaceData['name'],
                         'type' => $spaceData['type'],
                         'capacity' => $spaceData['capacity'],
-                        'icon' => $spaceData['icon'] ?? null,
                     ]);
                 }
             }
@@ -338,7 +337,6 @@ class VenueController extends Controller
                         'name' => $spaceData['name'],
                         'type' => $spaceData['type'],
                         'capacity' => $spaceData['capacity'],
-                        'icon' => $spaceData['icon'] ?? null,
                     ]);
                 }
             }
