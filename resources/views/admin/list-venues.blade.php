@@ -75,13 +75,19 @@
             <!-- Venue Image -->
             <div class="relative h-48 bg-gray-200">
                 @if($venue->main_image)
-                <img src="{{ asset(str_replace('public/', '', $venue->main_image)) }}"
+                @php
+                    $imagePath = $venue->main_image;
+                    if (strpos($imagePath, 'public/') === 0) {
+                        $imagePath = substr($imagePath, 7); // Remove 'public/' prefix
+                    }
+                @endphp
+                <img src="{{ asset($imagePath) }}"
                     alt="{{ $venue->name }}"
                     class="w-full h-full object-cover">
                 @else
                 <div class="w-full h-full flex items-center justify-center text-gray-400">
                     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z"></path>
                     </svg>
                 </div>
                 @endif
@@ -837,7 +843,7 @@
                         const detailsHtml = `
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <img src="/${venue.main_image.replace('public/', '')}" alt="${venue.name}" class="w-full h-64 object-cover rounded-lg">
+                                    <img src="/${venue.main_image.startsWith('public/') ? venue.main_image.substring(7) : venue.main_image}" alt="${venue.name}" class="w-full h-64 object-cover rounded-lg">
                                 </div>
                                 <div class="space-y-4">
                                     <div>
@@ -895,7 +901,13 @@
                                         <span class="text-sm font-medium text-gray-500">Gallery:</span>
                                         <div class="mt-2 grid grid-cols-3 gap-2">
                                             ${venue.gallery.map(image => `
-                                                <img src="/${image.image_path.replace('public/', '')}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                                <div class="relative">
+                                                    <img src="/${image.image_path.startsWith('public/') ? image.image_path.substring(7) : image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                                    <button type="button" onclick="removeGalleryImage('${image.id}')" 
+                                                        class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
+                                                        ×
+                                                    </button>
+                                                </div>
                                             `).join('')}
                                         </div>
                                     </div>
@@ -1011,7 +1023,7 @@
                     <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image</p>
-                    ${venue.main_image ? `<img src="/${venue.main_image.replace('public/', '')}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
+                    ${venue.main_image ? `<img src="/${venue.main_image.startsWith('public/') ? venue.main_image.substring(7) : venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
                 </div>
 
                 <!-- Gallery Images -->
@@ -1026,7 +1038,7 @@
                         <div class="grid grid-cols-3 gap-2">
                             ${venue.gallery.map(image => `
                                 <div class="relative">
-                                    <img src="/${image.image_path.replace('public/', '')}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                    <img src="/${image.image_path.startsWith('public/') ? image.image_path.substring(7) : image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
                                     <button type="button" onclick="removeGalleryImage('${image.id}')" 
                                         class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
                                         ×
