@@ -332,7 +332,7 @@
         <div class="confirmation hidden" id="confirmation">
             <div class="success-icon">✓</div>
             <h2>🎉 Booking Request Submitted!</h2>
-            <p>Thank you for choosing us for your special event. We'll review your request and get back to you within 24 hours with a detailed quote and next steps.</p>
+            <p>Thank you for choosing us for your special event. We'll review your request and get back to you within 24 hours.</p>
             <br>
             <p><strong>Booking Reference:</strong><span id="bookingRef"></span></p>
         </div>

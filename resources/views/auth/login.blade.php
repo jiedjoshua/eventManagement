@@ -58,7 +58,7 @@
    
     <!-- Right Side: Background Image with Text Overlay -->
     <div class="hidden md:flex md:w-1/2 relative bg-cover bg-center"
-        style="background-image: url('img/login.jpeg');">
+        style="background-image: url('/public/img/login.jpeg');">
     <!-- Overlay -->
     <div class="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
 

@@ -13,7 +13,7 @@
     <div class="flex min-h-screen">
   <!-- Left Side: Background Image -->
 <div class="hidden md:flex md:w-1/2 relative bg-cover bg-center min-h-screen"
-     style="background-image: url('img/login.jpeg');">
+     style="background-image: url('/public/img/login.jpeg');">
   <div class="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
   <div class="relative z-10 flex flex-1 items-center justify-center text-center text-white p-10">
     <div>
