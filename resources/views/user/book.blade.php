@@ -92,8 +92,16 @@
         }
     }">
     <header class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">My Events - Booked Events</h1>
-      <p class="text-gray-600 mt-2">Manage the events you are hosting or have booked.</p>
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">My Events - Booked Events</h1>
+          <p class="text-gray-600 mt-2">Manage the events you are hosting or have booked.</p>
+        </div>
+        <a href="{{ route('book-now') }}" 
+           class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-semibold">
+          📅 Book New Event
+        </a>
+      </div>
     </header>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -107,6 +115,7 @@
       ];
       $statusClass = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
       $isPast = \Carbon\Carbon::parse($booking->event_date)->endOfDay()->lt(now());
+      $isCompleted = $booking->event && $booking->event->status === 'completed';
       @endphp
 
       <div class="bg-white rounded-lg shadow-md p-5 flex flex-col justify-between">
@@ -120,10 +129,10 @@
             {{ \Carbon\Carbon::parse($booking->start_time)->format('g:i A') }}
           </p>
           <p class="text-gray-600 mb-1">
-            <strong>Venue:</strong> {{ ucwords($booking->venue->name) }}
+            <strong>Venue:</strong> {{ ucwords($booking->venue->name ?? 'Not specified') }}
           </p>
           <p class="text-gray-600 mb-1">
-            <strong>Package:</strong> {{ ucwords($booking->package->name) }}
+            <strong>Package:</strong> {{ ucwords($booking->package->name ?? 'Not specified') }}
           </p>
           <p class="text-gray-600 mb-2">
             <strong>Reference:</strong> {{ strtoupper($booking->reference) }}
@@ -135,11 +144,17 @@
         </div>
 
         <div class="mt-4 flex flex-wrap gap-2">
-          @if($isPast)
+          @if($isCompleted)
+            @if($booking->event)
             <a href="{{ route('feedback.create', $booking->event->id) }}"
                class="flex-1 bg-yellow-600 text-white text-sm py-2 rounded hover:bg-yellow-700 transition text-center">
               Give Feedback
             </a>
+            @endif
+          @elseif($isPast)
+            <span class="flex-1 bg-gray-400 text-white text-sm py-2 rounded cursor-not-allowed text-center">
+              Event Not Ended
+            </span>
           @else
             <button type="button"
               @click="showModal = true; currentBooking = {{ $booking->toJson() }}"
@@ -154,11 +169,13 @@
               Guest List
             </button>
 
+            @if($booking->event)
             <button type="button"
               @click="showQRModal = true; inviteLink = '{{ route('invite.confirm', $booking->event->id) }}'"
               class="flex-1 bg-indigo-600 text-white text-sm py-2 rounded hover:bg-indigo-700 transition">
               QR / Invitations
             </button>
+            @endif
             @endif
           @endif
         </div>
@@ -231,16 +248,24 @@
               <h4 class="font-semibold text-lg mb-4">Venue & Package Details</h4>
               <div class="space-y-3">
                 <p><span class="font-medium">Venue:</span>
-                  <span x-text="currentBooking?.venue?.name?.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')"></span>
+                  <span x-text="currentBooking?.venue?.name ? 
+                        currentBooking.venue.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 
+                        'Not specified'"></span>
                 </p>
                 <p><span class="font-medium">Package:</span>
-                  <span x-text="currentBooking?.package?.name?.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')"></span>
+                  <span x-text="currentBooking?.package?.name ? 
+                        currentBooking.package.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 
+                        'Not specified'"></span>
                 </p>
                 <p><span class="font-medium">Package Price:</span>
-                  <span x-text="'₱' + Number(currentBooking?.package_price_at_booking).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
+                  <span x-text="currentBooking?.package_price_at_booking ? 
+                        '₱' + Number(currentBooking.package_price_at_booking).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 
+                        'Not specified'"></span>
                 </p>
                 <p><span class="font-medium">Total Price:</span>
-                  <span x-text="'₱' + Number(currentBooking?.total_price).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
+                  <span x-text="currentBooking?.total_price ? 
+                        '₱' + Number(currentBooking.total_price).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 
+                        'Not specified'"></span>
                 </p>
               </div>
             </div>

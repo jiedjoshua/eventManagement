@@ -18,10 +18,80 @@
 
     <h1 class="text-3xl font-bold mb-6">Events</h1>
 
-    <!-- Search -->
-    <div class="mb-4">
-      <input type="text" placeholder="Search events..." class="w-full px-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+    <!-- Search Form -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <form method="GET" action="{{ route('manager.showEvent') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <input type="text" 
+                       name="search" 
+                       id="search" 
+                       value="{{ request('search') }}"
+                       placeholder="Event Name, Customer..."
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select name="status" 
+                        id="status" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Statuses</option>
+                    <option value="upcoming" {{ request('status') === 'upcoming' ? 'selected' : '' }}>Upcoming</option>
+                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="event_type" class="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
+                <select name="event_type" 
+                        id="event_type" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Types</option>
+                    <option value="wedding" {{ request('event_type') === 'wedding' ? 'selected' : '' }}>Wedding</option>
+                    <option value="birthday" {{ request('event_type') === 'birthday' ? 'selected' : '' }}>Birthday</option>
+                    <option value="baptism" {{ request('event_type') === 'baptism' ? 'selected' : '' }}>Baptism</option>
+                    <option value="debut" {{ request('event_type') === 'debut' ? 'selected' : '' }}>Debut</option>
+                    <option value="corporate" {{ request('event_type') === 'corporate' ? 'selected' : '' }}>Corporate</option>
+                </select>
+            </div>
+            
+            <div class="flex items-end space-x-2">
+                <button type="submit" 
+                        class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    Search
+                </button>
+                <a href="{{ route('manager.showEvent') }}" 
+                   class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    Clear
+                </a>
+            </div>
+        </form>
     </div>
+
+    <!-- Results Summary -->
+    @if(request('search') || request('status') || request('event_type'))
+        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-blue-800">
+                    <span class="font-medium">{{ $events->count() }}</span> event(s) found
+                    @if(request('search'))
+                        for "<span class="font-medium">{{ request('search') }}</span>"
+                    @endif
+                    @if(request('status'))
+                        with status "<span class="font-medium">{{ ucfirst(request('status')) }}</span>"
+                    @endif
+                    @if(request('event_type'))
+                        of type "<span class="font-medium">{{ ucfirst(request('event_type')) }}</span>"
+                    @endif
+                </div>
+                <a href="{{ route('manager.showEvent') }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                    Clear filters
+                </a>
+            </div>
+        </div>
+    @endif
 
     <table class="min-w-full border border-gray-300 bg-white rounded">
   <thead class="bg-gray-50">
@@ -178,7 +248,13 @@
     </tr>
     @empty
     <tr>
-      <td colspan="7" class="text-center py-4 text-gray-500">No events found.</td>
+      <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+        @if(request('search') || request('status') || request('event_type'))
+            No events found matching your search criteria.
+        @else
+            No events found.
+        @endif
+      </td>
     </tr>
     @endforelse
   </tbody>

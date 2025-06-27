@@ -98,6 +98,11 @@ class EventController extends Controller
             // Calculate total price
             $booking->total_price = $booking->package_price_at_booking + $booking->addons_price_at_booking;
 
+            // Validate that total price is greater than 0
+            if ($booking->total_price <= 0) {
+                throw new \Exception('Total price must be greater than 0. Please check package and addon prices.');
+            }
+
             // Set initial status
             $booking->status = 'pending';
 

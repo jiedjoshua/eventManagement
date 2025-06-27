@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Test</title>
+  <title>CrwdCtrl</title>
   <link href="css/home.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -28,10 +28,10 @@
       <!-- Center Nav Links -->
       <ul class="flex space-x-6 items-center mx-auto">
         <li><a href="#home" class="nav-link text-gray-700 hover:text-[#EF7C79]">Home</a></li>
-        <li><a href="#services" class="nav-link text-gray-700 hover:text-[#EF7C79]">Services</a></li>
-        <li><a href="#gallery" class="nav-link text-gray-700 hover:text-[#EF7C79]">Gallery</a></li>
-        <li><a href="#about" class="nav-link text-gray-700 hover:text-[#EF7C79]">About</a></li>
-        <li><a href="#contact" class="nav-link text-gray-700 hover:text-[#EF7C79]">Contact</a></li>
+        <li><a href="{{ route('services') }}" class="nav-link text-gray-700 hover:text-[#EF7C79]">Services</a></li>
+        <li><a href="{{ route('gallery') }}" class="nav-link text-gray-700 hover:text-[#EF7C79]">Gallery</a></li>
+        <li><a href="{{ route('about') }}" class="nav-link text-gray-700 hover:text-[#EF7C79]">About</a></li>
+        <li><a href="{{ route('contact') }}" class="nav-link text-gray-700 hover:text-[#EF7C79]">Contact</a></li>
       </ul>
 
       <!-- Right Buttons -->
@@ -124,7 +124,7 @@
   <div class="max-w-4xl mx-auto px-4 text-center">
     <h2 class="text-3xl font-bold mb-6">Get in Touch</h2>
     <p class="text-lg mb-4">📞 +63 912 345 6789</p>
-    <p class="text-lg mb-4">✉️ hello@eventease.ph</p>
+    <p class="text-lg mb-4">✉️ hello@crwdctrl.ph</p>
     <p class="text-lg">📍 Bataan, Philippines</p>
   </div>
 </section>

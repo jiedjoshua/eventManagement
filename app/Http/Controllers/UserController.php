@@ -111,15 +111,15 @@ class UserController extends Controller
 
     public function bookedEvents()
     {
-        $bookedEvents = Booking::with(['venue', 'package'])
+        $bookedEvents = Booking::with(['venue', 'package', 'event', 'payments'])
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
 
         return view('user.book', [
-    'bookedEvents' => $bookedEvents,
-    'activePage' => 'booked-events'
-]);
+            'bookedEvents' => $bookedEvents,
+            'activePage' => 'booked-events'
+        ]);
     }
 
     public function editBooking($reference)

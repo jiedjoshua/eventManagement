@@ -1,4 +1,3 @@
-
         * {
             margin: 0;
             padding: 0;
@@ -524,7 +523,26 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: auto;
+            margin-top: 15px;
+            gap: 15px;
+        }
+
+        .venue-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .venue-actions span {
+            flex: 1;
+        }
+
+        .venue-price {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1em;
+            text-align: left;
         }
 
         .view-more-btn {
@@ -662,10 +680,33 @@
         }
 
         .venue-map {
-            height: 250px;
-            border-radius: 10px;
+            width: 100%;
+            height: 300px;
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
+        }
+
+        .venue-directions {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .venue-directions .btn {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .venue-directions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
         }
 
         /* Venue Step Styles */
@@ -814,25 +855,36 @@
         }
 
         .space-item {
-            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .space-item-icon {
-            font-size: 2rem;
+            background: #f8f9fa;
+            border-radius: 8px;
             margin-bottom: 10px;
         }
 
+        .space-item-type {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            min-width: 80px;
+            text-align: center;
+        }
+
         .space-item-name {
-            font-weight: 500;
+            font-weight: 600;
             color: #333;
+            flex: 1;
         }
 
         .space-item-capacity {
-            font-size: 0.9rem;
             color: #666;
+            font-size: 14px;
         }
 
         @keyframes fadeIn {
@@ -978,6 +1030,11 @@
 
             .venue-map {
                 height: 200px;
+            }
+
+            .venue-directions .btn {
+                padding: 10px 20px;
+                font-size: 14px;
             }
 
             /* Navigation */
@@ -1356,9 +1413,46 @@
         }
 
         .addon-list li::before {
-            content: '✓';
+            content: "•";
             color: #667eea;
             font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        .pricing-breakdown {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+        }
+
+        .pricing-breakdown .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .pricing-breakdown .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-breakdown .total-price {
+            border-top: 2px solid #667eea;
+            border-bottom: none;
+            margin-top: 10px;
+            padding-top: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pricing-breakdown .total-price span {
+            color: #667eea;
+            font-size: 1.2em;
         }
 
         @media (max-width: 768px) {

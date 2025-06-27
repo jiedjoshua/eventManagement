@@ -30,7 +30,8 @@ protected $fillable = [
         'cancel_reason',
         'cancelled_at',
         'approved_at',
-        'rejected_at'
+        'rejected_at',
+        'completed_at'
     ];
 
     protected $casts = [
@@ -43,6 +44,7 @@ protected $fillable = [
         'cancelled_at' => 'datetime',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function user()
@@ -73,5 +75,10 @@ protected $fillable = [
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class);
+    }
+
+    public function venue()
+    {
+        return $this->belongsTo(\App\Models\Venue::class);
     }
 }

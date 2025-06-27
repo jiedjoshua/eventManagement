@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Event Dashboard - Event Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -40,6 +41,12 @@
                 <p class="mt-4 font-semibold text-gray-900">Guest List Preview</p>
                 <a href="{{ route('events.guests', ['event' => $event->id]) }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">View full guest list</a>
             </div>
+            @if($event->status === 'completed')
+            <div>
+                <p class="mt-4 font-semibold text-gray-900">Event Feedback</p>
+                <a href="{{ route('manager.event.feedbacks', ['event' => $event->id]) }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">View Event Feedbacks</a>
+            </div>
+            @endif
         </nav>
         <div class="px-6 py-4 border-t">
            
@@ -53,12 +60,23 @@
     <main class="flex-1 p-8 overflow-y-auto">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
             <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <div class="text-sm text-gray-600 bg-white px-4 py-2 rounded shadow font-medium">
-                Philippine Time: <span id="ph-time" class="font-semibold text-gray-800"></span>
+            <div class="flex items-center gap-4">
+                <!-- Event Status Badge -->
+                <div class="text-sm bg-white px-4 py-2 rounded shadow font-medium">
+                    <span class="font-semibold text-gray-800">Event Status: </span>
+                    @if($event->status === 'completed')
+                        <span class="text-green-600 font-bold">COMPLETED</span>
+                    @else
+                        <span class="text-blue-600 font-bold">ACTIVE</span>
+                    @endif
+                </div>
+                <div class="text-sm text-gray-600 bg-white px-4 py-2 rounded shadow font-medium">
+                    Philippine Time: <span id="ph-time" class="font-semibold text-gray-800"></span>
+                </div>
             </div>
         </div>
 <!-- Quick Actions Card -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <a href="{{ route('events.qrScanner', ['event' => $event->id]) }}"
                class="block w-full text-center px-4 py-4 bg-indigo-600 text-white rounded-xl font-semibold shadow hover:bg-indigo-700 transition">
                 <span class="block text-lg mb-1">QR Scanner</span>
@@ -79,6 +97,18 @@
                 <span class="block text-lg mb-1">Full Guest List</span>
                 <span class="text-xs">See all invited guests</span>
             </a>
+            @if($event->status !== 'completed')
+            <button onclick="endEvent({{ $event->id }})"
+               class="block w-full text-center px-4 py-4 bg-red-600 text-white rounded-xl font-semibold shadow hover:bg-red-700 transition">
+                <span class="block text-lg mb-1">End Event</span>
+                <span class="text-xs">Mark event as completed</span>
+            </button>
+            @else
+            <div class="block w-full text-center px-4 py-4 bg-gray-400 text-white rounded-xl font-semibold shadow">
+                <span class="block text-lg mb-1">Event Ended</span>
+                <span class="text-xs">Event is completed</span>
+            </div>
+            @endif
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           
@@ -144,6 +174,25 @@
         </div>
     </div>
 </div>
+
+@if($event->status === 'completed')
+<!-- Event Feedback Section -->
+<div class="mt-8">
+    <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-semibold text-indigo-700 mb-4">Event Feedback</h2>
+        <div class="flex gap-4">
+            <a href="{{ route('manager.event.feedbacks', ['event' => $event->id]) }}"
+               class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-semibold">
+                📊 View Event Feedbacks
+            </a>
+            <a href="{{ route('manager.feedback.analytics') }}"
+               class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-semibold">
+                📈 Feedback Analytics
+            </a>
+        </div>
+    </div>
+</div>
+@endif
     </main>
 
     <script>
@@ -165,6 +214,32 @@
         }
         updatePhilippineTime();
         setInterval(updatePhilippineTime, 1000);
+
+        // End Event Function
+        function endEvent(eventId) {
+            if (confirm('Are you sure you want to end this event? This will mark the event as completed and enable feedback collection from guests.')) {
+                fetch(`/manager/events/${eventId}/end`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Event has been marked as completed! Guests can now provide feedback.');
+                        location.reload(); // Refresh the page to show updated status
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to end event'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error ending event. Please try again.');
+                });
+            }
+        }
 
         const rsvpCtx = document.getElementById('rsvpChart').getContext('2d');
 new Chart(rsvpCtx, {

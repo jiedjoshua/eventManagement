@@ -23,7 +23,7 @@
                     @foreach ($feedbacks as $feedback)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <a href="{{ route('manager.feedback.event', $feedback->event_id) }}" class="text-indigo-600 hover:underline">
+                                <a href="{{ route('manager.event.feedbacks', ['event' => $feedback->event_id]) }}" class="text-indigo-600 hover:underline">
                                     {{ $events[$feedback->event_id]->event_name ?? 'Unknown' }}
                                 </a>
                             </td>

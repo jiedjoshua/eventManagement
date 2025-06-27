@@ -1,6 +1,79 @@
 <x-manager-layout title="Booked Events" :active-page="'booked-events'">
         <h1 class="text-3xl font-bold mb-8">Booked Events</h1>
 
+        <!-- Search Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <form method="GET" action="{{ route('manager.bookedEvents') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" 
+                           name="search" 
+                           id="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Reference, Event Name, Customer..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select name="status" 
+                            id="status" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Statuses</option>
+                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="event_type" class="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
+                    <select name="event_type" 
+                            id="event_type" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Types</option>
+                        <option value="wedding" {{ request('event_type') === 'wedding' ? 'selected' : '' }}>Wedding</option>
+                        <option value="birthday" {{ request('event_type') === 'birthday' ? 'selected' : '' }}>Birthday</option>
+                        <option value="baptism" {{ request('event_type') === 'baptism' ? 'selected' : '' }}>Baptism</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-end space-x-2">
+                    <button type="submit" 
+                            class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        Search
+                    </button>
+                    <a href="{{ route('manager.bookedEvents') }}" 
+                       class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Summary -->
+        @if(request('search') || request('status') || request('event_type'))
+            <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-blue-800">
+                        <span class="font-medium">{{ $bookings->count() }}</span> booking(s) found
+                        @if(request('search'))
+                            for "<span class="font-medium">{{ request('search') }}</span>"
+                        @endif
+                        @if(request('status'))
+                            with status "<span class="font-medium">{{ ucfirst(request('status')) }}</span>"
+                        @endif
+                        @if(request('event_type'))
+                            of type "<span class="font-medium">{{ ucfirst(request('event_type')) }}</span>"
+                        @endif
+                    </div>
+                    <a href="{{ route('manager.bookedEvents') }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                        Clear filters
+                    </a>
+                </div>
+            </div>
+        @endif
+
         <!-- Booking List -->
         <div class="bg-white rounded-lg shadow-md">
             <div class="overflow-x-auto">
@@ -9,6 +82,7 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guest Count</th>
@@ -17,7 +91,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($bookings as $booking)
+                        @forelse($bookings as $booking)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {{ $booking->reference }}
@@ -26,7 +100,10 @@
                                 {{ $booking->event_name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $booking->event_type }}
+                                {{ $booking->user->first_name }} {{ $booking->user->last_name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ ucfirst($booking->event_type) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ date('M d, Y', strtotime($booking->event_date)) }}<br>
@@ -67,7 +144,17 @@
                                 </div>
                             </td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                @if(request('search') || request('status') || request('event_type'))
+                                    No bookings found matching your search criteria.
+                                @else
+                                    No bookings found.
+                                @endif
+                            </td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -126,17 +213,30 @@
 
                     // Safely handle selected_addons
                     let addonsHtml = '<li>No add-ons selected</li>';
-                    if (booking.selected_addons) {
+                    if (booking.selected_addons && typeof booking.selected_addons === 'string' && booking.selected_addons.trim() !== '') {
                         try {
                             const addons = JSON.parse(booking.selected_addons);
                             if (Array.isArray(addons) && addons.length > 0) {
                                 addonsHtml = addons.map(addon =>
                                     `<li class="text-base">${addon}</li>`
                                 ).join('');
+                            } else if (typeof addons === 'object' && addons !== null) {
+                                // Handle case where addons might be an object
+                                const addonNames = Object.values(addons).filter(name => name && name.trim() !== '');
+                                if (addonNames.length > 0) {
+                                    addonsHtml = addonNames.map(addon =>
+                                        `<li class="text-base">${addon}</li>`
+                                    ).join('');
+                                }
                             }
                         } catch (e) {
                             console.log('Error parsing addons:', e);
-                            addonsHtml = '<li>Error loading add-ons</li>';
+                            // Try to display as plain text if JSON parsing fails
+                            if (typeof booking.selected_addons === 'string' && booking.selected_addons.trim() !== '') {
+                                addonsHtml = `<li class="text-base">${booking.selected_addons}</li>`;
+                            } else {
+                                addonsHtml = '<li>No add-ons selected</li>';
+                            }
                         }
                     }
 
@@ -208,7 +308,6 @@
             const modal = document.getElementById('viewModal');
             modal.classList.add('hidden');
         }
-
 
         function showRejectModal(bookingId) {
             const modal = document.getElementById('rejectModal');

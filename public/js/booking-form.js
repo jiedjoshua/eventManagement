@@ -1,4 +1,3 @@
-
 let currentStep = 1;
 const totalSteps = 4;
 
@@ -296,9 +295,58 @@ if (selectedPackageCard) {
     // Dietary Requirements
     const dietary = document.getElementById('foodPreferences').value;
     document.getElementById('summaryDietary').textContent = dietary || 'None specified';
+
+    // Calculate and display pricing
+    calculateAndDisplayPricing();
 }
 
+// Calculate and display pricing information
+function calculateAndDisplayPricing() {
+    let packagePrice = 0;
+    let addonsPrice = 0;
+    let venuePrice = 0;
 
+    // Get package price
+    const selectedPackageCard = document.querySelector('.package-card.selected');
+    if (selectedPackageCard) {
+        const packagePriceText = selectedPackageCard.querySelector('.package-price').textContent;
+        // Extract price from "From ₱X" format
+        const priceMatch = packagePriceText.match(/₱([\d,]+)/);
+        if (priceMatch) {
+            packagePrice = parseInt(priceMatch[1].replace(/,/g, ''));
+        }
+    }
+
+    // Get add-ons price from database
+    const selectedAddons = document.querySelectorAll('input[name="addons[]"]:checked');
+    addonsPrice = 0;
+    selectedAddons.forEach(addon => {
+        // Get addon price from the data attribute or use default
+        const addonId = addon.value;
+        const addonElement = addon.closest('.addon-item');
+        if (addonElement && addonElement.dataset.price) {
+            addonsPrice += parseFloat(addonElement.dataset.price);
+        } else {
+            // Fallback to default price if not available
+            addonsPrice += 50;
+        }
+    });
+
+    // Get venue price from selected venue card
+    const selectedVenueCard = document.querySelector('.venue-card.selected');
+    if (selectedVenueCard && selectedVenueCard.dataset.venuePrice) {
+        venuePrice = parseFloat(selectedVenueCard.dataset.venuePrice);
+    }
+
+    // Calculate total
+    const totalPrice = packagePrice + addonsPrice + venuePrice;
+
+    // Display prices
+    document.getElementById('summaryPackagePrice').textContent = `₱${packagePrice.toLocaleString()}`;
+    document.getElementById('summaryAddonsPrice').textContent = `₱${addonsPrice.toLocaleString()}`;
+    document.getElementById('summaryVenuePrice').textContent = `₱${venuePrice.toLocaleString()}`;
+    document.getElementById('summaryTotalPrice').textContent = `₱${totalPrice.toLocaleString()}`;
+}
 
 // First declare all the variables and constants
 let selectedVenue = null;
@@ -363,12 +411,20 @@ function createVenueCard(venue) {
     const card = document.createElement('div');
     card.className = 'venue-card';
     card.dataset.venueId = venue.id;
+    card.dataset.venuePrice = venue.price_range; // Store price for calculations
 
     const venueTypeDisplay = {
         'indoor': 'Indoor Venue',
         'outdoor': 'Outdoor Venue',
         'both': 'Indoor & Outdoor Venue'
     }[venue.type];
+
+    // Format price for display
+    const price = parseFloat(venue.price_range);
+    const formattedPrice = new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
 
     card.innerHTML = `
         <img src="${venue.main_image}" alt="${venue.name}" class="venue-image">
@@ -377,7 +433,10 @@ function createVenueCard(venue) {
             <h3 class="venue-title">${venue.name}</h3>
             <p class="venue-description">${venue.description}</p>
             <div class="venue-actions">
-                <span>Capacity: ${venue.capacity}</span>
+                <div class="venue-info">
+                    <span>Capacity: ${venue.capacity}</span>
+                    <span class="venue-price">${formattedPrice}</span>
+                </div>
                 <button type="button" class="view-more-btn">View Details</button>
             </div>
         </div>
@@ -391,6 +450,8 @@ function createVenueCard(venue) {
             document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('selected'));
             this.classList.add('selected');
             selectedVenue = venue.id;
+            // Update pricing when venue is selected
+            calculateAndDisplayPricing();
         }
     });
 
@@ -446,24 +507,45 @@ async function openVenueModal(venueId) {
         document.getElementById('modalVenueType').textContent =
             venue.type.charAt(0).toUpperCase() + venue.type.slice(1);
         document.getElementById('modalVenueCapacity').textContent = venue.capacity;
-        document.getElementById('modalVenuePrice').textContent = venue.price_range;
-        document.getElementById('modalVenueRating').textContent = venue.rating;
+        
+        // Format and display actual price
+        const price = parseFloat(venue.price_range);
+        const formattedPrice = new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(price);
+        document.getElementById('modalVenuePrice').textContent = formattedPrice;
 
-        // Update spaces
+        // Update spaces with proper null checks
         const spacesContainer = document.getElementById('modalVenueSpaces');
-        spacesContainer.innerHTML = venue.spaces.map(space => `
-            <div class="space-item">
-                <div class="space-item-icon">${space.icon}</div>
-                <div class="space-item-name">${space.name}</div>
-                <div class="space-item-capacity">Up to ${space.capacity} guests</div>
-            </div>
-        `).join('');
+        if (venue.spaces && venue.spaces.length > 0) {
+            spacesContainer.innerHTML = venue.spaces.map(space => `
+                <div class="space-item">
+                    <div class="space-item-type">${space.type || 'Unknown'}</div>
+                    <div class="space-item-name">${space.name || 'Unnamed Space'}</div>
+                    <div class="space-item-capacity">Up to ${space.capacity || 0} guests</div>
+                </div>
+            `).join('');
+        } else {
+            spacesContainer.innerHTML = '<p>No specific spaces available</p>';
+        }
 
         // Update gallery with proper path handling
         const galleryContainer = document.querySelector('.venue-gallery');
-        galleryContainer.innerHTML = venue.gallery.map(item => `
-            <img src="/${item.image_path}" class="gallery-img" alt="Venue Image">
-        `).join('');
+        if (venue.gallery && venue.gallery.length > 0) {
+            galleryContainer.innerHTML = venue.gallery.map(item => `
+                <img src="/${item.image_path}" class="gallery-img" alt="Venue Image">
+            `).join('');
+        } else {
+            galleryContainer.innerHTML = '<p>No gallery images available</p>';
+        }
+
+        // Initialize map if venue has coordinates
+        if (venue.latitude && venue.longitude) {
+            showVenueMap(venue.latitude, venue.longitude, venue.name);
+        } else {
+            document.getElementById('modalVenueMap').innerHTML = '<p>Location map not available</p>';
+        }
 
         // Show modal
         modal.classList.add('active');
@@ -520,7 +602,7 @@ async function openPackageModal(packageId) {
 
         // Update modal content
         document.querySelector('.package-modal-title').textContent = package.title || 'Untitled Package';
-        document.querySelector('.package-modal-price').textContent = `From $${new Intl.NumberFormat('en-US').format(package.price || 0)}`;
+        document.querySelector('.package-modal-price').textContent = `From ₱${new Intl.NumberFormat('en-PH').format(package.price || 0)}`;
 
         const featuresHtml = package.features.map(feature => `
             <div class="package-modal-feature">
@@ -556,6 +638,7 @@ function selectPackage(packageId) {
         }
     });
      populateBookingSummary();
+     calculateAndDisplayPricing();
 }
 
 // Update packages when event type changes
@@ -566,6 +649,16 @@ document.getElementById('eventType').addEventListener('change', function () {
     // Clear any selected package when event type changes
     document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
     document.querySelectorAll('input[name="package"]').forEach(input => input.checked = false);
+    
+    // Update pricing
+    calculateAndDisplayPricing();
+});
+
+// Add event listeners for addon changes
+document.addEventListener('change', function(e) {
+    if (e.target.name === 'addons[]') {
+        calculateAndDisplayPricing();
+    }
 });
 
 // Close modal on escape key
@@ -634,7 +727,7 @@ async function loadPackagesForEventType(eventType) {
         packagesContainer.innerHTML = packages.map(package => `
     <div class="package-card" data-package="${package.id}">
         <div class="package-title">${package.title || 'Untitled Package'}</div>
-        <div class="package-price">From $${new Intl.NumberFormat('en-US').format(package.price || 0)}</div>
+        <div class="package-price">From ₱${new Intl.NumberFormat('en-PH').format(package.price || 0)}</div>
         <p class="package-description">${package.description || 'No description available'}</p>
         <div class="package-features">
             ${(package.features || []).map(feature => `
@@ -696,3 +789,84 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+// Google Maps functionality
+let venueMapData = null;
+
+// Show venue location with iframe map (no API key required)
+function showVenueMap(latitude, longitude, venueName) {
+    const mapContainer = document.getElementById('modalVenueMap');
+    
+    // Clear existing content
+    mapContainer.innerHTML = '';
+    
+    // Create iframe for OpenStreetMap (no API key required)
+    const iframe = document.createElement('iframe');
+    // Fix coordinate formatting - ensure proper decimal places and separation
+    const lat = parseFloat(latitude).toFixed(6);
+    const lng = parseFloat(longitude).toFixed(6);
+    const bboxWest = (parseFloat(longitude) - 0.01).toFixed(6);
+    const bboxSouth = (parseFloat(latitude) - 0.01).toFixed(6);
+    const bboxEast = (parseFloat(longitude) + 0.01).toFixed(6);
+    const bboxNorth = (parseFloat(latitude) + 0.01).toFixed(6);
+    
+    iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bboxWest},${bboxSouth},${bboxEast},${bboxNorth}&layer=mapnik&marker=${lat},${lng}`;
+    iframe.style.width = '100%';
+    iframe.style.height = '300px';
+    iframe.style.border = '0';
+    iframe.style.borderRadius = '12px';
+    iframe.allowFullscreen = true;
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    
+    // Add fallback content if iframe fails to load
+    iframe.onerror = () => {
+        showFallbackLocation(latitude, longitude, venueName);
+    };
+    
+    mapContainer.appendChild(iframe);
+    
+    // Store venue data for directions
+    venueMapData = { latitude, longitude, name: venueName };
+}
+
+// Fallback location display
+function showFallbackLocation(latitude, longitude, venueName) {
+    const mapContainer = document.getElementById('modalVenueMap');
+    mapContainer.innerHTML = `
+        <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #dee2e6;">
+            <h4 style="margin-bottom: 15px; color: #333;">📍 Venue Location</h4>
+            <p style="margin-bottom: 10px; font-weight: 600; color: #555;">${venueName}</p>
+            <p style="margin-bottom: 8px; color: #666;">Coordinates: ${latitude}, ${longitude}</p>
+            <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #e1e5e9;">
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                    <strong>📍 Location Details:</strong><br>
+                    Latitude: ${latitude}<br>
+                    Longitude: ${longitude}
+                </p>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="getDirections()" style="margin-top: 10px;">
+                🗺️ Get Directions
+            </button>
+        </div>
+    `;
+    
+    // Store venue data for directions
+    venueMapData = { latitude, longitude, name: venueName };
+}
+
+// Get directions function
+function getDirections() {
+    if (!venueMapData) {
+        alert('Venue location not available');
+        return;
+    }
+    
+    const { latitude, longitude, name } = venueMapData;
+    
+    // Create Google Maps directions URL
+    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+    
+    // Open in new tab
+    window.open(directionsUrl, '_blank');
+}

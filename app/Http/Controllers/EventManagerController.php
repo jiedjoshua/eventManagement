@@ -59,22 +59,78 @@ class EventManagerController extends Controller
         ]);
     }
 
-    public function showEvent()
+    public function showEvent(Request $request)
     {
-        $events = Event::with(['user', 'booking'])->get();
+        $query = Event::with(['user', 'booking']);
+
+        // Search by event name or customer name
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('event_name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('first_name', 'like', "%{$search}%")
+                               ->orWhere('last_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by event type
+        if ($request->filled('event_type')) {
+            $query->where('event_type', $request->event_type);
+        }
+
+        $events = $query->orderBy('event_date', 'desc')->get();
         $venues = \App\Models\Venue::where('is_active', true)->orderBy('name')->get();
+        
         return view('manager.manage-events.events', compact('events', 'venues'));
     }
 
     // BOOKING //
-    public function showBooked()
+    public function showBooked(Request $request)
     {
-        $bookings = Booking::orderBy('created_at', 'desc')->get();
+        $query = Booking::with(['user', 'venue', 'package'])->orderBy('created_at', 'desc');
+
+        // Search by reference, event name, or customer name
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('reference', 'like', "%{$search}%")
+                  ->orWhere('event_name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('first_name', 'like', "%{$search}%")
+                               ->orWhere('last_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by event type
+        if ($request->filled('event_type')) {
+            $query->where('event_type', $request->event_type);
+        }
+
+        $bookings = $query->get();
+        
         return view('manager.manage-events.booked-events', compact('bookings'));
     }
 
     public function approve(Booking $booking)
     {
+        // Ensure the booking has a valid total price
+        if ($booking->total_price <= 0) {
+            return redirect()->back()->with('error', 'Cannot approve booking with zero or invalid total price. Please check package and addon prices.');
+        }
+
         // Update booking status
         $booking->update([
             'status' => 'approved',
@@ -108,7 +164,7 @@ class EventManagerController extends Controller
 
         //  Send notification/email to user with payment link
 
-        return redirect()->back()->with('success', 'Booking approved and event created successfully');
+        return redirect()->back()->with('success', 'Booking approved and event created successfully. Amount due: ₱' . number_format($booking->total_price, 2));
     }
 
     public function reject(Request $request, Booking $booking)
@@ -386,26 +442,30 @@ class EventManagerController extends Controller
     public function deleteEvent(Event $event)
     {
         try {
-            // Also update the associated booking status if it exists
-            if ($event->booking) {
-                $event->booking->update([
-                    'status' => 'cancelled',
-                    'cancelled_at' => now()
-                ]);
-            }
-
             $event->delete();
+            return response()->json(['success' => true, 'message' => 'Event deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error deleting event: ' . $e->getMessage()]);
+        }
+    }
+
+    public function endEvent(Event $event)
+    {
+        try {
+            $event->update([
+                'status' => 'completed',
+                'completed_at' => now()
+            ]);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Event deleted successfully!'
+                'success' => true, 
+                'message' => 'Event marked as completed successfully'
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete event: ' . $e->getMessage()
-            ], 500);
+                'success' => false, 
+                'message' => 'Error ending event: ' . $e->getMessage()
+            ]);
         }
     }
 }

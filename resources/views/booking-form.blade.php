@@ -160,12 +160,8 @@
                                     <span id="modalVenueCapacity"></span>
                                 </div>
                                 <div class="detail-item">
-                                    <span>💰 Price Range:</span>
+                                    <span>💰 Price:</span>
                                     <span id="modalVenuePrice"></span>
-                                </div>
-                                <div class="detail-item">
-                                    <span>⭐ Rating:</span>
-                                    <span id="modalVenueRating"></span>
                                 </div>
                             </div>
 
@@ -184,6 +180,11 @@
                             <h3>Location</h3>
                             <div class="venue-map" id="modalVenueMap">
                                 <!-- Map will be loaded here -->
+                            </div>
+                            <div class="venue-directions">
+                                <button type="button" class="btn btn-primary" id="getDirectionsBtn" onclick="getDirections()">
+                                    🗺️ Get Directions
+                                </button>
                             </div>
 
                             <button type="button" class="btn btn-primary" onclick="selectVenue()">Select This Venue</button>
@@ -210,9 +211,9 @@
         <label>Add-on Services</label>
         <div class="addons">
             @foreach($addons as $addon)
-            <div class="addon-item">
+            <div class="addon-item" data-price="{{ $addon->price }}">
                 <input type="checkbox" id="addon_{{ $addon->id }}" name="addons[]" value="{{ $addon->id }}">
-                <span>{{ $addon->display_name }}</span>
+                <span>{{ $addon->display_name }} - ₱{{ number_format($addon->price, 2) }}</span>
             </div>
             @endforeach
         </div>
@@ -288,6 +289,24 @@
                                 <strong>Dietary Requirements:</strong> <span id="summaryDietary"></span>
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <h3>Pricing Summary</h3>
+                            <div class="pricing-breakdown">
+                                <div class="summary-item">
+                                    <strong>Package Cost:</strong> <span id="summaryPackagePrice">₱0</span>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Add-on Services:</strong> <span id="summaryAddonsPrice">₱0</span>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Venue Cost:</strong> <span id="summaryVenuePrice">₱0</span>
+                                </div>
+                                <div class="summary-item total-price">
+                                    <strong>Total Estimated Cost: </strong> <span id="summaryTotalPrice">₱0</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -320,5 +339,10 @@
     </div>
 
     <script src="{{ asset('js/booking-form.js') }}"></script>
+    <!-- 
+    VENUE MAPS:
+    Venue locations are displayed using OpenStreetMap iframe.
+    No API key required - completely free and open source.
+    -->
 </body>
 </html>

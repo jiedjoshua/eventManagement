@@ -18,7 +18,27 @@ use App\Http\Controllers\EventAdminController;
 
 Route::get('/', function () {
     return view('home');
-});
+})->name('home');
+
+Route::get('/services', function () {
+    return view('services');
+})->name('services');
+
+Route::get('/packages', function () {
+    return view('packages');
+})->name('packages');
+
+Route::get('/gallery', function () {
+    return view('gallery');
+})->name('gallery');
+
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -92,6 +112,7 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/manager/upcoming-events', [EventManagerController::class, 'upcomingEvents'])->name('manager.upcomingEvents');
     Route::get('/manager/events/{event}/details', [EventManagerController::class, 'details'])->name('events.details');
     Route::patch('/manager/events/{event}/reschedule', [EventManagerController::class, 'reschedule'])->name('manager.events.reschedule');
+    Route::post('/manager/events/{event}/end', [EventManagerController::class, 'endEvent'])->name('manager.events.end');
 
     Route::get('/events/{event}/dashboard', [EventController::class, 'showDashboard'])->name('events.dashboard');
     Route::get('/events/{event}/qrscanner', [EventController::class, 'showQRScanner'])->name('events.qrScanner');
@@ -130,7 +151,7 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/manager/venue-calendar/bookings', [VenueController::class, 'getManagerCalendarBookings'])->name('manager.venue-calendar.bookings');
 
     Route::get('/manager/feedback-analytics', [ManagerFeedbackController::class, 'analytics'])->name('manager.feedback.analytics');
-    Route::get('/manager/feedbacks/{event}', [ManagerFeedbackController::class, 'eventFeedbacks'])->name('manager.feedback.event');
+    Route::get('/manager/events/{event}/feedbacks', [ManagerFeedbackController::class, 'eventFeedbacks'])->name('manager.event.feedbacks');
     Route::get('/manager/event-summary', [ManagerFeedbackController::class, 'eventSummary'])->name('manager.event.summary');
 });
 
@@ -184,12 +205,11 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/booking/{booking}/pay', [PaymentController::class, 'showBookingPayment'])->name('booking.pay')->middleware('auth');
 Route::post('/booking/{booking}/pay', [PaymentController::class, 'processBookingPayment'])->middleware('auth');
 Route::get('/payment/success', function () {
-    return view('user.payment-success');
+    return view('user.payment.payment-success');
 })->name('payment.success');
 
 Route::get('/user/payment-history', [PaymentController::class, 'paymentHistory'])
     ->name('user.paymentHistory')
     ->middleware('auth');
-
 
 require __DIR__ . '/auth.php';
