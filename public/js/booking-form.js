@@ -500,14 +500,7 @@ async function openVenueModal(venueId) {
 
         // Update modal content
         const modalImage = document.getElementById('modalVenueImage');
-        // Handle the public/ prefix in image path
-        let imagePath = venue.main_image;
-        if (imagePath.startsWith('/public/')) {
-            imagePath = imagePath.substring(8); // Remove '/public/' prefix
-        } else if (imagePath.startsWith('public/')) {
-            imagePath = imagePath.substring(7); // Remove 'public/' prefix
-        }
-        modalImage.src = `/${imagePath}`;
+        modalImage.src = venue.main_image; // Use the same logic as venue grid
         modalImage.alt = venue.name || 'Venue Image'; // Add fallback alt text
 
         document.getElementById('modalVenueTitle').textContent = venue.name;
@@ -540,16 +533,9 @@ async function openVenueModal(venueId) {
         // Update gallery with proper path handling
         const galleryContainer = document.querySelector('.venue-gallery');
         if (venue.gallery && venue.gallery.length > 0) {
-            galleryContainer.innerHTML = venue.gallery.map(item => {
-                // Handle the public/ prefix in gallery image paths
-                let galleryImagePath = item.image_path;
-                if (galleryImagePath.startsWith('/public/')) {
-                    galleryImagePath = galleryImagePath.substring(8); // Remove '/public/' prefix
-                } else if (galleryImagePath.startsWith('public/')) {
-                    galleryImagePath = galleryImagePath.substring(7); // Remove 'public/' prefix
-                }
-                return `<img src="/${galleryImagePath}" class="gallery-img" alt="Venue Image">`;
-            }).join('');
+            galleryContainer.innerHTML = venue.gallery.map(item => `
+                <img src="${item.image_path}" class="gallery-img" alt="Venue Image">
+            `).join('');
         } else {
             galleryContainer.innerHTML = '<p>No gallery images available</p>';
         }
