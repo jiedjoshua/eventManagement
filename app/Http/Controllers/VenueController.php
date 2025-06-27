@@ -19,7 +19,11 @@ class VenueController extends Controller
         $query = Venue::with(['spaces', 'gallery'])->where('is_active', true);
         
         if ($type && $type !== 'both') {
-            $query->where('type', $type);
+            // Show venues that match the selected type OR venues with type 'both'
+            $query->where(function($q) use ($type) {
+                $q->where('type', $type)
+                  ->orWhere('type', 'both');
+            });
         }
 
         $venues = $query->get();
