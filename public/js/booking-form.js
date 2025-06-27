@@ -426,16 +426,8 @@ function createVenueCard(venue) {
         currency: 'PHP'
     }).format(price);
 
-    // Handle the public/ prefix in image path
-    let imagePath = venue.main_image;
-    if (imagePath.startsWith('/public/')) {
-        imagePath = imagePath.substring(8); // Remove '/public/' prefix
-    } else if (imagePath.startsWith('public/')) {
-        imagePath = imagePath.substring(7); // Remove 'public/' prefix
-    }
-
     card.innerHTML = `
-        <img src="/${imagePath}" alt="${venue.name}" class="venue-image">
+        <img src="${venue.main_image}" alt="${venue.name}" class="venue-image">
         <span class="venue-tag">${venueTypeDisplay}</span>
         <div class="venue-content">
             <h3 class="venue-title">${venue.name}</h3>
