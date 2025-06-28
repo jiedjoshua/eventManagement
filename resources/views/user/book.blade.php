@@ -119,11 +119,10 @@
               </button>
 
               @if($booking->status === 'approved')
-              <button type="button"
-                class="flex-1 bg-purple-600 text-white text-sm py-2 rounded hover:bg-purple-700 transition"
-                @click="openModal('{{ $booking->reference }}')">
+              <a href="{{ route('user.guest-list', $booking->reference) }}"
+                class="flex-1 bg-purple-600 text-white text-sm py-2 rounded hover:bg-purple-700 transition text-center">
                 Guest List
-              </button>
+              </a>
 
               @if($booking->event)
               <button type="button"

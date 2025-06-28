@@ -174,7 +174,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments');
     Route::get('/user/account-settings', [UserController::class, 'showAccountSettings'])->name('user.accountSettings');
     Route::get('user/events/{event}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
-Route::post('user/events/{event}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+    Route::post('user/events/{event}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+    Route::get('/user/bookings/{reference}/guest-list', [UserController::class, 'showGuestList'])->name('user.guest-list');
 });
 Route::get('/user/events/attending', [UserController::class, 'attendingEvents'])->name('user.attendingEvents');
 
