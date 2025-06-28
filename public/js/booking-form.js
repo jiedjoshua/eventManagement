@@ -58,6 +58,17 @@ function selectVenue() {
     }
 }
 
+// Immediately expose selectVenue to global scope
+window.selectVenue = selectVenue;
+
+// Also add a fallback mechanism for when the function might not be available
+if (typeof window.selectVenue === 'undefined') {
+    window.selectVenue = function() {
+        console.error('selectVenue function not properly loaded');
+        alert('Please refresh the page and try again.');
+    };
+}
+
 // Define other functions that need to be global
 function getDirections() {
     if (!venueMapData) {
@@ -166,7 +177,6 @@ function selectPackage(packageId) {
 }
 
 // Expose functions to global scope immediately
-window.selectVenue = selectVenue;
 window.getDirections = getDirections;
 window.closePackageModal = closePackageModal;
 window.openPackageModal = openPackageModal;
@@ -987,6 +997,19 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && packageModal.classList.contains('active')) {
             closePackageModal();
+        }
+    });
+
+    // Add event listener for venue selection button
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.getAttribute('data-action') === 'select-venue') {
+            e.preventDefault();
+            if (typeof selectVenue === 'function') {
+                selectVenue();
+            } else {
+                console.error('selectVenue function not available');
+                alert('Please refresh the page and try again.');
+            }
         }
     });
 });
