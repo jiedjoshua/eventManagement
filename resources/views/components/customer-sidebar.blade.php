@@ -1,8 +1,15 @@
 @props(['activePage' => ''])
 
-<aside class="w-64 bg-white shadow-lg flex flex-col h-screen">
-    <div class="p-6 text-2xl font-bold text-indigo-600 border-b border-gray-200 flex-shrink-0">
-        {{ $slot }}
+<aside class="w-full h-full bg-white shadow-lg flex flex-col">
+    <!-- Header with close button for mobile -->
+    <div class="p-6 text-2xl font-bold text-indigo-600 border-b border-gray-200 flex-shrink-0 flex items-center justify-between">
+        <span>{{ $slot }}</span>
+        <!-- Close button for mobile -->
+        <button @click="sidebarOpen = false" class="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
     </div>
     
     <!-- Home Button -->
