@@ -351,12 +351,37 @@ function calculateAndDisplayPricing() {
 // First declare all the variables and constants
 let selectedVenue = null;
 let selectedVenueType = null;
-const modal = document.getElementById('venueModal');
-const modalClose = modal.querySelector('.modal-close');
+let modal = null;
+let modalClose = null;
 const venueStep1 = document.getElementById('venueStep1');
 const venueStep2 = document.getElementById('venueStep2');
 const nextVenueStep = document.getElementById('nextVenueStep');
 const backToVenueType = document.getElementById('backToVenueType');
+
+// Initialize modal elements when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    modal = document.getElementById('venueModal');
+    if (modal) {
+        modalClose = modal.querySelector('.modal-close');
+        
+        // Add event listeners for modal
+        if (modalClose) {
+            modalClose.addEventListener('click', closeModal);
+        }
+        
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    }
+});
 
 // Define the functions first
 // 1. Fetch venues function
@@ -490,6 +515,13 @@ backToVenueType.addEventListener('click', () => {
 
 // Modal related functions and event listeners
 async function openVenueModal(venueId) {
+    // Check if modal is properly initialized
+    if (!modal) {
+        console.error('Modal not initialized');
+        alert('Unable to open venue details. Please refresh the page and try again.');
+        return;
+    }
+
     try {
         const response = await fetch(`/venues/${venueId}`);
         const data = await response.json();
@@ -503,13 +535,25 @@ async function openVenueModal(venueId) {
 
         // Update modal content
         const modalImage = document.getElementById('modalVenueImage');
-        modalImage.src = venue.main_image; // Use the same logic as venue grid
-        modalImage.alt = venue.name || 'Venue Image'; // Add fallback alt text
+        if (modalImage) {
+            modalImage.src = venue.main_image; // Use the same logic as venue grid
+            modalImage.alt = venue.name || 'Venue Image'; // Add fallback alt text
+        }
 
-        document.getElementById('modalVenueTitle').textContent = venue.name;
-        document.getElementById('modalVenueType').textContent =
-            venue.type.charAt(0).toUpperCase() + venue.type.slice(1);
-        document.getElementById('modalVenueCapacity').textContent = venue.capacity;
+        const modalTitle = document.getElementById('modalVenueTitle');
+        if (modalTitle) {
+            modalTitle.textContent = venue.name;
+        }
+
+        const modalType = document.getElementById('modalVenueType');
+        if (modalType) {
+            modalType.textContent = venue.type.charAt(0).toUpperCase() + venue.type.slice(1);
+        }
+
+        const modalCapacity = document.getElementById('modalVenueCapacity');
+        if (modalCapacity) {
+            modalCapacity.textContent = venue.capacity;
+        }
         
         // Format and display actual price
         const price = parseFloat(venue.price_range);
@@ -517,41 +561,53 @@ async function openVenueModal(venueId) {
             style: 'currency',
             currency: 'PHP'
         }).format(price);
-        document.getElementById('modalVenuePrice').textContent = formattedPrice;
+        
+        const modalPrice = document.getElementById('modalVenuePrice');
+        if (modalPrice) {
+            modalPrice.textContent = formattedPrice;
+        }
 
         // Update spaces with proper null checks
         const spacesContainer = document.getElementById('modalVenueSpaces');
-        if (venue.spaces && venue.spaces.length > 0) {
-            spacesContainer.innerHTML = venue.spaces.map(space => `
-                <div class="space-item">
-                    <div class="space-item-type">${space.type || 'Unknown'}</div>
-                    <div class="space-item-name">${space.name || 'Unnamed Space'}</div>
-                    <div class="space-item-capacity">Up to ${space.capacity || 0} guests</div>
-                </div>
-            `).join('');
-        } else {
-            spacesContainer.innerHTML = '<p>No specific spaces available</p>';
+        if (spacesContainer) {
+            if (venue.spaces && venue.spaces.length > 0) {
+                spacesContainer.innerHTML = venue.spaces.map(space => `
+                    <div class="space-item">
+                        <div class="space-item-type">${space.type || 'Unknown'}</div>
+                        <div class="space-item-name">${space.name || 'Unnamed Space'}</div>
+                        <div class="space-item-capacity">Up to ${space.capacity || 0} guests</div>
+                    </div>
+                `).join('');
+            } else {
+                spacesContainer.innerHTML = '<p>No specific spaces available</p>';
+            }
         }
 
         // Update gallery with proper path handling
         const galleryContainer = document.querySelector('.venue-gallery');
-        if (venue.gallery && venue.gallery.length > 0) {
-            galleryContainer.innerHTML = venue.gallery.map(item => `
-                <img src="${item.image_path}" class="gallery-img" alt="Venue Image">
-            `).join('');
-        } else {
-            galleryContainer.innerHTML = '<p>No gallery images available</p>';
+        if (galleryContainer) {
+            if (venue.gallery && venue.gallery.length > 0) {
+                galleryContainer.innerHTML = venue.gallery.map(item => `
+                    <img src="${item.image_path}" class="gallery-img" alt="Venue Image">
+                `).join('');
+            } else {
+                galleryContainer.innerHTML = '<p>No gallery images available</p>';
+            }
         }
 
         // Initialize map if venue has coordinates
-        if (venue.latitude && venue.longitude) {
-            showVenueMap(venue.latitude, venue.longitude, venue.name);
-        } else {
-            document.getElementById('modalVenueMap').innerHTML = '<p>Location map not available</p>';
+        const mapContainer = document.getElementById('modalVenueMap');
+        if (mapContainer) {
+            if (venue.latitude && venue.longitude) {
+                showVenueMap(venue.latitude, venue.longitude, venue.name);
+            } else {
+                mapContainer.innerHTML = '<p>Location map not available</p>';
+            }
         }
 
         // Show modal
         modal.classList.add('active');
+        document.body.classList.add('modal-open');
       
     } catch (error) {
         console.error('Error loading venue details:', error);
@@ -560,12 +616,22 @@ async function openVenueModal(venueId) {
 }
 
 function closeModal() {
-    modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
 }
 
 // Add the missing selectVenue function
 function selectVenue() {
-    // Get the venue ID from the modal (we need to store it when opening the modal)
+    // Check if modal exists and has the venue ID
+    if (!modal || !modal.dataset.currentVenueId) {
+        console.error('Modal not found or no venue ID stored');
+        alert('Unable to select venue. Please try again.');
+        return;
+    }
+    
+    // Get the venue ID from the modal
     const venueId = modal.dataset.currentVenueId;
     
     if (venueId) {
@@ -587,7 +653,13 @@ function selectVenue() {
             
             // Show success message
             alert('Venue selected successfully!');
+        } else {
+            console.error('Venue card not found for ID:', venueId);
+            alert('Venue not found. Please try again.');
         }
+    } else {
+        console.error('No venue ID found in modal');
+        alert('Unable to select venue. Please try again.');
     }
 }
 
@@ -595,20 +667,8 @@ function selectVenue() {
 window.selectVenue = selectVenue;
 window.getDirections = getDirections;
 window.closePackageModal = closePackageModal;
-
-modalClose.addEventListener('click', closeModal);
-
-window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        closeModal();
-    }
-});
-
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
-        closeModal();
-    }
-});
+window.openPackageModal = openPackageModal;
+window.selectPackage = selectPackage;
 
 // Package modal functionality
 const packageModal = document.getElementById('packageModal');
