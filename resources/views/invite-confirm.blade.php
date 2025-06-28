@@ -198,9 +198,46 @@
                 opacity: 0;
             }
         }
+        
+        /* Mobile-specific styles for better scrolling */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
+                min-height: 100vh;
+                padding: 1rem;
+            }
+            
+            .glass-card {
+                margin: 1rem 0;
+                padding: 1.5rem;
+            }
+            
+            .text-5xl {
+                font-size: 2.5rem;
+            }
+            
+            .text-3xl {
+                font-size: 1.75rem;
+            }
+            
+            .text-xl {
+                font-size: 1.125rem;
+            }
+            
+            .px-8 {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+            
+            .py-4 {
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+        }
     </style>
 </head>
-<body class="gradient-bg flex items-center justify-center min-h-screen relative overflow-hidden">
+<body class="gradient-bg min-h-screen p-6 relative overflow-x-hidden">
     
     <!-- Morphing Background -->
     <div class="morphing-bg"></div>
@@ -218,7 +255,8 @@
     <div class="absolute bottom-32 right-16 w-24 h-24 bg-white bg-opacity-5 rounded-full floating blur-sm" style="animation-delay: -4s;"></div>
     <div class="absolute top-1/3 right-32 w-16 h-16 bg-white bg-opacity-15 rounded-full floating blur-sm"></div>
     
-    <div class="glass-card p-12 rounded-3xl max-w-lg w-full text-center slide-in floating relative z-10">
+    <div class="flex flex-col items-center justify-center min-h-screen py-8">
+        <div class="glass-card p-12 rounded-3xl max-w-lg w-full text-center slide-in floating relative z-10 my-8">
         
         <!-- Invitation Icon with Pulse Ring -->
         <div class="invitation-icon mb-8 relative inline-block">
@@ -240,6 +278,44 @@
                 Do you want to attend the event
             </p>
             <h2 class="text-3xl font-bold event-name mb-2">{{ ucwords($event->event_name) }}</h2>
+            
+            <!-- Event Details -->
+            <div class="space-y-3 text-white text-opacity-90 text-sm mb-4">
+                <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>{{ \Carbon\Carbon::parse($event->event_date)->format('F d, Y') }}</span>
+                </div>
+                
+                <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>{{ \Carbon\Carbon::parse($event->start_time)->format('g:i A') }}</span>
+                </div>
+                
+                <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    @if($event->venue && $event->venue->latitude && $event->venue->longitude)
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ $event->venue->latitude }},{{ $event->venue->longitude }}" 
+                           target="_blank" 
+                           class="hover:text-blue-200 hover:underline transition-colors duration-200 cursor-pointer"
+                           title="Get directions to {{ ucwords($event->venue_name) }}">
+                            {{ ucwords($event->venue_name) }}
+                            <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>
+                    @else
+                        <span>{{ ucwords($event->venue_name) }}</span>
+                    @endif
+                </div>
+            </div>
+            
             <div class="flex items-center justify-center text-white text-opacity-80 text-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -270,6 +346,7 @@
         <div class="absolute -top-2 -right-2 w-8 h-8 border-r-2 border-t-2 border-white border-opacity-30 rounded-tr-2xl"></div>
         <div class="absolute -bottom-2 -left-2 w-8 h-8 border-l-2 border-b-2 border-white border-opacity-30 rounded-bl-2xl"></div>
         <div class="absolute -bottom-2 -right-2 w-8 h-8 border-r-2 border-b-2 border-white border-opacity-30 rounded-br-2xl"></div>
+    </div>
     </div>
 
     <script>

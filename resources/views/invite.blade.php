@@ -137,9 +137,33 @@ use Carbon\Carbon;
     @keyframes rotate {
       100% { transform: rotate(360deg); }
     }
+    
+    /* Mobile-specific styles for better scrolling */
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: 100vh;
+        padding: 1rem;
+      }
+      
+      .glass-effect {
+        margin: 1rem 0;
+        padding: 1.5rem;
+      }
+      
+      .qr-container {
+        padding: 15px;
+      }
+      
+      .qr-wrapper {
+        width: 120px !important;
+        height: 120px !important;
+      }
+    }
   </style>
 </head>
-<body class="gradient-bg min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+<body class="gradient-bg min-h-screen p-6 relative overflow-x-hidden">
 
   <!-- Animated Background Elements -->
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -156,7 +180,8 @@ use Carbon\Carbon;
   <div class="absolute bottom-20 right-10 w-32 h-32 bg-white bg-opacity-5 rounded-full floating-animation" style="animation-delay: -4s;"></div>
   <div class="absolute top-1/3 right-20 w-16 h-16 bg-white bg-opacity-15 rounded-full floating-animation"></div>
 
-  <div class="glass-effect p-10 rounded-3xl shadow-2xl text-center max-w-lg w-full slide-up glow-effect relative">
+  <div class="flex flex-col items-center justify-center min-h-screen py-8">
+    <div class="glass-effect p-10 rounded-3xl shadow-2xl text-center max-w-lg w-full slide-up glow-effect relative my-8">
     
     <!-- Invitation Header -->
     <div class="mb-8">
@@ -193,15 +218,19 @@ use Carbon\Carbon;
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
-          <a href="https://www.google.com/maps/dir/?api=1&destination={{ $event->venue_latitude }},{{ $event->venue_longitude }}" 
-             target="_blank" 
-             class="font-medium hover:text-blue-600 hover:underline transition-colors duration-200 cursor-pointer"
-             title="Get directions to {{ ucwords($event->venue_name) }}">
-            {{ ucwords($event->venue_name) }}
-            <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-            </svg>
-          </a>
+          @if($event->venue && $event->venue->latitude && $event->venue->longitude)
+            <a href="https://www.google.com/maps/dir/?api=1&destination={{ $event->venue->latitude }},{{ $event->venue->longitude }}" 
+               target="_blank" 
+               class="font-medium hover:text-blue-600 hover:underline transition-colors duration-200 cursor-pointer"
+               title="Get directions to {{ ucwords($event->venue_name) }}">
+              {{ ucwords($event->venue_name) }}
+              <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              </svg>
+            </a>
+          @else
+            <span class="font-medium">{{ ucwords($event->venue_name) }}</span>
+          @endif
         </div>
       </div>
     </div>
@@ -224,16 +253,13 @@ use Carbon\Carbon;
      <a href="{{ route('user.dashboard') }}" class="btn-hover bg-white text-purple-700 font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg mt-8 inline-block">
   Back to Dashboard
 </a>
-    
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-      </svg>
-    </button>
 
     <!-- Decorative Corner Elements -->
     <div class="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-white border-opacity-30 rounded-tl-lg"></div>
     <div class="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-white border-opacity-30 rounded-tr-lg"></div>
     <div class="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-white border-opacity-30 rounded-bl-lg"></div>
     <div class="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-white border-opacity-30 rounded-br-lg"></div>
+  </div>
   </div>
 
   <script>
