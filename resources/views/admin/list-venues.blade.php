@@ -78,7 +78,7 @@
                 @php
                     $imagePath = $venue->main_image;
                     if (strpos($imagePath, 'public/') === 0) {
-                        $imagePath = substr($imagePath, 7); // Remove 'public/' prefix
+                        $imagePath = '/' . $imagePath; // Add leading slash instead of removing public/
                     }
                 @endphp
                 <img src="{{ asset($imagePath) }}"
@@ -843,7 +843,7 @@
                         const detailsHtml = `
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <img src="/${venue.main_image.startsWith('public/') ? venue.main_image.substring(7) : venue.main_image}" alt="${venue.name}" class="w-full h-64 object-cover rounded-lg">
+                                    <img src="/${venue.main_image}" alt="${venue.name}" class="w-full h-64 object-cover rounded-lg">
                                 </div>
                                 <div class="space-y-4">
                                     <div>
@@ -902,7 +902,7 @@
                                         <div class="mt-2 grid grid-cols-3 gap-2">
                                             ${venue.gallery.map(image => `
                                                 <div class="relative">
-                                                    <img src="/${image.image_path.startsWith('public/') ? image.image_path.substring(7) : image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                                    <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
                                                     <button type="button" onclick="removeGalleryImage('${image.id}')" 
                                                         class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
                                                         ×
@@ -1023,7 +1023,7 @@
                     <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image</p>
-                    ${venue.main_image ? `<img src="/${venue.main_image.startsWith('public/') ? venue.main_image.substring(7) : venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
+                    ${venue.main_image ? `<img src="/${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
                 </div>
 
                 <!-- Gallery Images -->
@@ -1038,7 +1038,7 @@
                         <div class="grid grid-cols-3 gap-2">
                             ${venue.gallery.map(image => `
                                 <div class="relative">
-                                    <img src="/${image.image_path.startsWith('public/') ? image.image_path.substring(7) : image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                    <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
                                     <button type="button" onclick="removeGalleryImage('${image.id}')" 
                                         class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
                                         ×
