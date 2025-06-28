@@ -19,19 +19,26 @@ const backToVenueType = document.getElementById('backToVenueType');
 
 // Define the selectVenue function immediately and expose it globally
 function selectVenue() {
+    console.log('selectVenue function called'); // Debug log
+    
     // Check if modal exists and has the venue ID
     if (!modal || !modal.dataset.currentVenueId) {
         console.error('Modal not found or no venue ID stored');
+        console.log('Modal:', modal); // Debug log
+        console.log('Modal dataset:', modal ? modal.dataset : 'Modal not found'); // Debug log
         alert('Unable to select venue. Please try again.');
         return;
     }
     
     // Get the venue ID from the modal
     const venueId = modal.dataset.currentVenueId;
+    console.log('Venue ID from modal:', venueId); // Debug log
     
     if (venueId) {
         // Find the venue card and select it
         const venueCard = document.querySelector(`.venue-card[data-venue-id="${venueId}"]`);
+        console.log('Found venue card:', venueCard); // Debug log
+        
         if (venueCard) {
             // Remove selection from other cards
             document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('selected'));
@@ -39,9 +46,12 @@ function selectVenue() {
             // Select this venue card
             venueCard.classList.add('selected');
             selectedVenue = venueId;
+            console.log('Venue selected successfully:', selectedVenue); // Debug log
             
             // Update pricing
-            calculateAndDisplayPricing();
+            if (typeof calculateAndDisplayPricing === 'function') {
+                calculateAndDisplayPricing();
+            }
             
             // Close the modal
             closeModal();
@@ -50,6 +60,7 @@ function selectVenue() {
             alert('Venue selected successfully!');
         } else {
             console.error('Venue card not found for ID:', venueId);
+            console.log('Available venue cards:', document.querySelectorAll('.venue-card')); // Debug log
             alert('Venue not found. Please try again.');
         }
     } else {
@@ -548,6 +559,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 closeModal();
             }
         });
+
+        // Add event listener for venue selection button using event delegation
+        modal.addEventListener('click', function(e) {
+            console.log('Modal click event:', e.target); // Debug log
+            console.log('Data action:', e.target.getAttribute('data-action')); // Debug log
+            
+            if (e.target && e.target.getAttribute('data-action') === 'select-venue') {
+                console.log('Select venue button clicked!'); // Debug log
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof selectVenue === 'function') {
+                    selectVenue();
+                } else {
+                    console.error('selectVenue function not available');
+                    alert('Please refresh the page and try again.');
+                }
+            }
+        });
     }
 });
 
@@ -997,19 +1026,6 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && packageModal.classList.contains('active')) {
             closePackageModal();
-        }
-    });
-
-    // Add event listener for venue selection button
-    document.addEventListener('click', function(e) {
-        if (e.target && e.target.getAttribute('data-action') === 'select-venue') {
-            e.preventDefault();
-            if (typeof selectVenue === 'function') {
-                selectVenue();
-            } else {
-                console.error('selectVenue function not available');
-                alert('Please refresh the page and try again.');
-            }
         }
     });
 });
