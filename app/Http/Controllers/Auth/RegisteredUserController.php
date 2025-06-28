@@ -34,8 +34,11 @@ class RegisteredUserController extends Controller
         'first_name'   => ['required', 'string', 'max:255'],
         'last_name'    => ['required', 'string', 'max:255'],
         'email'        => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
-        'phone_number' => ['required', 'string', 'max:20'],
+        'phone_number' => ['required', 'string', 'regex:/^[0-9]{10,11}$/', 'max:11'],
         'password'     => ['required', 'confirmed', Rules\Password::defaults()],
+    ], [
+        'phone_number.regex' => 'The phone number must be 10-11 digits.',
+        'phone_number.max' => 'The phone number cannot exceed 11 digits.',
     ]);
 
     // Create the user
@@ -55,7 +58,14 @@ class RegisteredUserController extends Controller
     // Log the user in
     Auth::login($user);
 
-    // Redirect based on role
+    // Check if there's an intended URL (like from invitation page)
+    $intended = session('url.intended');
+    if ($intended) {
+        session()->forget('url.intended');
+        return redirect($intended);
+    }
+
+    // Redirect based on role if no intended URL
     switch ($user->role) {
         case 'super_admin':
             return redirect()->route('superadmin.dashboard');
