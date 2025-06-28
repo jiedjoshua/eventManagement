@@ -19,21 +19,26 @@ class InviteController extends Controller
     $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
     $userId = Auth::id();
 
-    // Check if user already accepted
+    // Check if user already responded
     $pivot = $event->users()->where('user_id', $userId)->first();
 
-    if ($pivot && $pivot->pivot->rsvp_status === 'accepted') {
-        // Generate QR code
-        $qrData = json_encode([
-            'event_id' => $event->id,
-            'user_id' => $userId,
-            'timestamp' => now()->toIso8601String(),
-        ]);
+    if ($pivot) {
+        if ($pivot->pivot->rsvp_status === 'accepted') {
+            // Generate QR code
+            $qrData = json_encode([
+                'event_id' => $event->id,
+                'user_id' => $userId,
+                'timestamp' => now()->toIso8601String(),
+            ]);
 
-        $qrCode = QrCode::size(132)->generate($qrData);
+            $qrCode = QrCode::size(132)->generate($qrData);
 
-        // Show invite page with QR code directly
-        return view('invite', compact('event', 'qrCode'));
+            // Show invite page with QR code directly
+            return view('invite', compact('event', 'qrCode'));
+        } else if ($pivot->pivot->rsvp_status === 'declined') {
+            // Show declined page
+            return view('invite-declined', compact('event'));
+        }
     }
 
     // Otherwise, show RSVP confirmation page (accept/decline)
@@ -89,14 +94,27 @@ class InviteController extends Controller
         return redirect()->guest(route('login', ['redirect' => url()->current()]));
     }
 
-    $event = Event::findOrFail($eventId);
+    $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
     $userId = Auth::id();
 
-    // Update RSVP to declined
-    $event->users()->updateExistingPivot($userId, [
-        'rsvp_status' => 'declined',
-        'updated_at' => now()
-    ]);
+    // Get RSVP status if exists
+    $pivot = $event->users()->where('user_id', $userId)->first();
+
+    if ($pivot) {
+        // Update existing RSVP to declined
+        $event->users()->updateExistingPivot($userId, [
+            'rsvp_status' => 'declined',
+            'updated_at' => now()
+        ]);
+    } else {
+        // Attach user with declined status
+        $event->users()->attach($userId, [
+            'rsvp_status' => 'declined',
+            'plus_one' => false,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+    }
 
     return view('invite-declined', compact('event'));
 }
