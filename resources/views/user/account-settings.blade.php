@@ -98,4 +98,5 @@
         </form>
       </div>
     </div>
+  </main>
 </x-customer-layout>
