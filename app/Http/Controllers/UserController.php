@@ -177,4 +177,30 @@ class UserController extends Controller
         $user = Auth::user();
         return view('user.account-settings', compact('user'));
     }
+
+    public function showGuestList($reference)
+    {
+        // Find the booking by reference and ensure it belongs to the authenticated user
+        $booking = Booking::where('reference', $reference)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        // Get the associated event
+        $event = $booking->event;
+        
+        if (!$event) {
+            return redirect()->back()->with('error', 'No event found for this booking.');
+        }
+
+        // Get only guests who accepted the RSVP
+        $acceptedGuests = $event->guests()
+            ->wherePivot('rsvp_status', 'accepted')
+            ->select('users.id', 'first_name', 'last_name', 'email')
+            ->withPivot('checked_in_at')
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get();
+
+        return view('user.guest-list', compact('booking', 'event', 'acceptedGuests'));
+    }
 }
