@@ -7,6 +7,174 @@ const progressFill = document.getElementById('progressFill');
 const form = document.getElementById('bookingForm');
 const confirmation = document.getElementById('confirmation');
 
+// First declare all the variables and constants
+let selectedVenue = null;
+let selectedVenueType = null;
+let modal = null;
+let modalClose = null;
+const venueStep1 = document.getElementById('venueStep1');
+const venueStep2 = document.getElementById('venueStep2');
+const nextVenueStep = document.getElementById('nextVenueStep');
+const backToVenueType = document.getElementById('backToVenueType');
+
+// Define the selectVenue function immediately and expose it globally
+function selectVenue() {
+    // Check if modal exists and has the venue ID
+    if (!modal || !modal.dataset.currentVenueId) {
+        console.error('Modal not found or no venue ID stored');
+        alert('Unable to select venue. Please try again.');
+        return;
+    }
+    
+    // Get the venue ID from the modal
+    const venueId = modal.dataset.currentVenueId;
+    
+    if (venueId) {
+        // Find the venue card and select it
+        const venueCard = document.querySelector(`.venue-card[data-venue-id="${venueId}"]`);
+        if (venueCard) {
+            // Remove selection from other cards
+            document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('selected'));
+            
+            // Select this venue card
+            venueCard.classList.add('selected');
+            selectedVenue = venueId;
+            
+            // Update pricing
+            calculateAndDisplayPricing();
+            
+            // Close the modal
+            closeModal();
+            
+            // Show success message
+            alert('Venue selected successfully!');
+        } else {
+            console.error('Venue card not found for ID:', venueId);
+            alert('Venue not found. Please try again.');
+        }
+    } else {
+        console.error('No venue ID found in modal');
+        alert('Unable to select venue. Please try again.');
+    }
+}
+
+// Define other functions that need to be global
+function getDirections() {
+    if (!venueMapData) {
+        alert('Venue location not available');
+        return;
+    }
+    
+    const { latitude, longitude, name } = venueMapData;
+    
+    // Create Google Maps directions URL
+    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+    
+    // Open in new tab
+    window.open(directionsUrl, '_blank');
+}
+
+function closePackageModal() {
+    const packageModal = document.getElementById('packageModal');
+    if (packageModal) {
+        packageModal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+}
+
+function openPackageModal(packageId) {
+    // Package modal functionality
+    const packageModal = document.getElementById('packageModal');
+    
+    if (!packageModal) {
+        console.error('Package modal not found');
+        return;
+    }
+    
+    (async () => {
+        try {
+            const response = await fetch(`/api/packages/${packageId}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error('Failed to fetch package details');
+            }
+
+            const package = data.data;
+
+            // Update modal content
+            const titleElement = document.querySelector('.package-modal-title');
+            if (titleElement) {
+                titleElement.textContent = package.title || 'Untitled Package';
+            }
+            
+            const priceElement = document.querySelector('.package-modal-price');
+            if (priceElement) {
+                priceElement.textContent = `From ₱${new Intl.NumberFormat('en-PH').format(package.price || 0)}`;
+            }
+
+            const featuresHtml = package.features.map(feature => `
+                <div class="package-modal-feature">
+                    <span class="feature-icon">${feature.icon || '✓'}</span>
+                    <div class="feature-content">
+                        <div class="feature-title">${feature.title || 'Unnamed Feature'}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            const featuresElement = document.querySelector('.package-modal-features');
+            if (featuresElement) {
+                featuresElement.innerHTML = featuresHtml;
+            }
+
+            // Show modal
+            packageModal.classList.add('active');
+            document.body.classList.add('modal-open');
+        } catch (error) {
+            console.error('Error loading package details:', error);
+            alert('Failed to load package details. Please try again.');
+        }
+    })();
+}
+
+function selectPackage(packageId) {
+    document.querySelectorAll('.package-card').forEach(card => {
+        card.classList.remove('selected');
+        if (card.dataset.package === packageId.toString()) {
+            card.classList.add('selected');
+            card.querySelector('input[type="radio"]').checked = true;
+        }
+    });
+    
+    // Update summary and pricing if functions exist
+    if (typeof populateBookingSummary === 'function') {
+        populateBookingSummary();
+    }
+    if (typeof calculateAndDisplayPricing === 'function') {
+        calculateAndDisplayPricing();
+    }
+}
+
+// Expose functions to global scope immediately
+window.selectVenue = selectVenue;
+window.getDirections = getDirections;
+window.closePackageModal = closePackageModal;
+window.openPackageModal = openPackageModal;
+window.selectPackage = selectPackage;
+
+// Google Maps functionality
+let venueMapData = null;
+
 // Package selection
 document.querySelectorAll('.package-card').forEach(card => {
     card.addEventListener('click', function () {
@@ -348,16 +516,6 @@ function calculateAndDisplayPricing() {
     document.getElementById('summaryTotalPrice').textContent = `₱${totalPrice.toLocaleString()}`;
 }
 
-// First declare all the variables and constants
-let selectedVenue = null;
-let selectedVenueType = null;
-let modal = null;
-let modalClose = null;
-const venueStep1 = document.getElementById('venueStep1');
-const venueStep2 = document.getElementById('venueStep2');
-const nextVenueStep = document.getElementById('nextVenueStep');
-const backToVenueType = document.getElementById('backToVenueType');
-
 // Initialize modal elements when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     modal = document.getElementById('venueModal');
@@ -622,117 +780,66 @@ function closeModal() {
     }
 }
 
-// Add the missing selectVenue function
-function selectVenue() {
-    // Check if modal exists and has the venue ID
-    if (!modal || !modal.dataset.currentVenueId) {
-        console.error('Modal not found or no venue ID stored');
-        alert('Unable to select venue. Please try again.');
-        return;
-    }
+// Show venue location with iframe map (no API key required)
+function showVenueMap(latitude, longitude, venueName) {
+    const mapContainer = document.getElementById('modalVenueMap');
     
-    // Get the venue ID from the modal
-    const venueId = modal.dataset.currentVenueId;
+    // Clear existing content
+    mapContainer.innerHTML = '';
     
-    if (venueId) {
-        // Find the venue card and select it
-        const venueCard = document.querySelector(`.venue-card[data-venue-id="${venueId}"]`);
-        if (venueCard) {
-            // Remove selection from other cards
-            document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('selected'));
-            
-            // Select this venue card
-            venueCard.classList.add('selected');
-            selectedVenue = venueId;
-            
-            // Update pricing
-            calculateAndDisplayPricing();
-            
-            // Close the modal
-            closeModal();
-            
-            // Show success message
-            alert('Venue selected successfully!');
-        } else {
-            console.error('Venue card not found for ID:', venueId);
-            alert('Venue not found. Please try again.');
-        }
-    } else {
-        console.error('No venue ID found in modal');
-        alert('Unable to select venue. Please try again.');
-    }
+    // Create iframe for OpenStreetMap (no API key required)
+    const iframe = document.createElement('iframe');
+    // Fix coordinate formatting - ensure proper decimal places and separation
+    const lat = parseFloat(latitude).toFixed(6);
+    const lng = parseFloat(longitude).toFixed(6);
+    const bboxWest = (parseFloat(longitude) - 0.01).toFixed(6);
+    const bboxSouth = (parseFloat(latitude) - 0.01).toFixed(6);
+    const bboxEast = (parseFloat(longitude) + 0.01).toFixed(6);
+    const bboxNorth = (parseFloat(latitude) + 0.01).toFixed(6);
+    
+    iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bboxWest},${bboxSouth},${bboxEast},${bboxNorth}&layer=mapnik&marker=${lat},${lng}`;
+    iframe.style.width = '100%';
+    iframe.style.height = '300px';
+    iframe.style.border = '0';
+    iframe.style.borderRadius = '12px';
+    iframe.allowFullscreen = true;
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    
+    // Add fallback content if iframe fails to load
+    iframe.onerror = () => {
+        showFallbackLocation(latitude, longitude, venueName);
+    };
+    
+    mapContainer.appendChild(iframe);
+    
+    // Store venue data for directions
+    venueMapData = { latitude, longitude, name: venueName };
 }
 
-// Make functions available globally
-window.selectVenue = selectVenue;
-window.getDirections = getDirections;
-window.closePackageModal = closePackageModal;
-window.openPackageModal = openPackageModal;
-window.selectPackage = selectPackage;
-
-// Package modal functionality
-const packageModal = document.getElementById('packageModal');
-
-async function openPackageModal(packageId) {
-    try {
-        const response = await fetch(`/api/packages/${packageId}`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error('Failed to fetch package details');
-        }
-
-        const package = data.data;
-
-        // Update modal content
-        document.querySelector('.package-modal-title').textContent = package.title || 'Untitled Package';
-        document.querySelector('.package-modal-price').textContent = `From ₱${new Intl.NumberFormat('en-PH').format(package.price || 0)}`;
-
-        const featuresHtml = package.features.map(feature => `
-            <div class="package-modal-feature">
-                <span class="feature-icon">${feature.icon || '✓'}</span>
-                <div class="feature-content">
-                    <div class="feature-title">${feature.title || 'Unnamed Feature'}</div>
-                </div>
+// Fallback location display
+function showFallbackLocation(latitude, longitude, venueName) {
+    const mapContainer = document.getElementById('modalVenueMap');
+    mapContainer.innerHTML = `
+        <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #dee2e6;">
+            <h4 style="margin-bottom: 15px; color: #333;">📍 Venue Location</h4>
+            <p style="margin-bottom: 10px; font-weight: 600; color: #555;">${venueName}</p>
+            <p style="margin-bottom: 8px; color: #666;">Coordinates: ${latitude}, ${longitude}</p>
+            <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #e1e5e9;">
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                    <strong>📍 Location Details:</strong><br>
+                    Latitude: ${latitude}<br>
+                    Longitude: ${longitude}
+                </p>
             </div>
-        `).join('');
-
-        document.querySelector('.package-modal-features').innerHTML = featuresHtml;
-
-        // Show modal
-        packageModal.classList.add('active');
-        document.body.classList.add('modal-open');
-    } catch (error) {
-        console.error('Error loading package details:', error);
-        alert('Failed to load package details. Please try again.');
-    }
-}
-
-function closePackageModal() {
-    packageModal.classList.remove('active');
-    document.body.classList.remove('modal-open');
-}
-
-function selectPackage(packageId) {
-    document.querySelectorAll('.package-card').forEach(card => {
-        card.classList.remove('selected');
-        if (card.dataset.package === packageId.toString()) {
-            card.classList.add('selected');
-            card.querySelector('input[type="radio"]').checked = true;
-        }
-    });
-     populateBookingSummary();
-     calculateAndDisplayPricing();
+            <button type="button" class="btn btn-primary" onclick="getDirections()" style="margin-top: 10px;">
+                🗺️ Get Directions
+            </button>
+        </div>
+    `;
+    
+    // Store venue data for directions
+    venueMapData = { latitude, longitude, name: venueName };
 }
 
 // Update packages when event type changes
@@ -883,84 +990,3 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
-
-// Google Maps functionality
-let venueMapData = null;
-
-// Show venue location with iframe map (no API key required)
-function showVenueMap(latitude, longitude, venueName) {
-    const mapContainer = document.getElementById('modalVenueMap');
-    
-    // Clear existing content
-    mapContainer.innerHTML = '';
-    
-    // Create iframe for OpenStreetMap (no API key required)
-    const iframe = document.createElement('iframe');
-    // Fix coordinate formatting - ensure proper decimal places and separation
-    const lat = parseFloat(latitude).toFixed(6);
-    const lng = parseFloat(longitude).toFixed(6);
-    const bboxWest = (parseFloat(longitude) - 0.01).toFixed(6);
-    const bboxSouth = (parseFloat(latitude) - 0.01).toFixed(6);
-    const bboxEast = (parseFloat(longitude) + 0.01).toFixed(6);
-    const bboxNorth = (parseFloat(latitude) + 0.01).toFixed(6);
-    
-    iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bboxWest},${bboxSouth},${bboxEast},${bboxNorth}&layer=mapnik&marker=${lat},${lng}`;
-    iframe.style.width = '100%';
-    iframe.style.height = '300px';
-    iframe.style.border = '0';
-    iframe.style.borderRadius = '12px';
-    iframe.allowFullscreen = true;
-    iframe.loading = 'lazy';
-    iframe.referrerPolicy = 'no-referrer-when-downgrade';
-    
-    // Add fallback content if iframe fails to load
-    iframe.onerror = () => {
-        showFallbackLocation(latitude, longitude, venueName);
-    };
-    
-    mapContainer.appendChild(iframe);
-    
-    // Store venue data for directions
-    venueMapData = { latitude, longitude, name: venueName };
-}
-
-// Fallback location display
-function showFallbackLocation(latitude, longitude, venueName) {
-    const mapContainer = document.getElementById('modalVenueMap');
-    mapContainer.innerHTML = `
-        <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #dee2e6;">
-            <h4 style="margin-bottom: 15px; color: #333;">📍 Venue Location</h4>
-            <p style="margin-bottom: 10px; font-weight: 600; color: #555;">${venueName}</p>
-            <p style="margin-bottom: 8px; color: #666;">Coordinates: ${latitude}, ${longitude}</p>
-            <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #e1e5e9;">
-                <p style="margin: 0; color: #666; font-size: 14px;">
-                    <strong>📍 Location Details:</strong><br>
-                    Latitude: ${latitude}<br>
-                    Longitude: ${longitude}
-                </p>
-            </div>
-            <button type="button" class="btn btn-primary" onclick="getDirections()" style="margin-top: 10px;">
-                🗺️ Get Directions
-            </button>
-        </div>
-    `;
-    
-    // Store venue data for directions
-    venueMapData = { latitude, longitude, name: venueName };
-}
-
-// Get directions function
-function getDirections() {
-    if (!venueMapData) {
-        alert('Venue location not available');
-        return;
-    }
-    
-    const { latitude, longitude, name } = venueMapData;
-    
-    // Create Google Maps directions URL
-    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-    
-    // Open in new tab
-    window.open(directionsUrl, '_blank');
-}
