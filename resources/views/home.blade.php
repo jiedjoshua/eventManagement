@@ -97,38 +97,41 @@
   <div class="container mx-auto px-4">
     <h2 class="text-2xl md:text-3xl font-bold mb-8 md:mb-10">Our Event Services</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-      <!-- Card -->
-      <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
+      <!-- Wedding Card -->
+      <a href="{{ route('packages') }}?type=wedding" class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer block">
         <img src="{{ asset('public/img/wedding.webp') }}" alt="Weddings" class="w-full h-40 md:h-52 object-cover rounded-t" />
         <div class="p-3 md:p-4">
           <h5 class="text-lg md:text-xl font-semibold">Weddings</h5>
           <p class="text-gray-600 text-xs md:text-sm mt-2">Beautiful and memorable wedding event planning tailored to your dreams.</p>
         </div>
-      </div>
+      </a>
 
-      <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
+      <!-- Birthday Card -->
+      <a href="{{ route('packages') }}?type=birthday" class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer block">
         <img src="{{ asset('public/img/birthday.jpg') }}" alt="Birthdays" class="w-full h-40 md:h-52 object-cover rounded-t" />
         <div class="p-3 md:p-4">
           <h5 class="text-lg md:text-xl font-semibold">Birthdays</h5>
           <p class="text-gray-600 text-xs md:text-sm mt-2">Fun and exciting birthday celebrations customized for all ages.</p>
         </div>
-      </div>
+      </a>
 
-      <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
+      <!-- Debut Card -->
+      <a href="{{ route('packages') }}?type=debut" class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer block">
         <img src="{{ asset('public/img/debut.webp') }}" alt="Debuts" class="w-full h-40 md:h-52 object-cover rounded-t" />
         <div class="p-3 md:p-4">
           <h5 class="text-lg md:text-xl font-semibold">Debuts</h5>
           <p class="text-gray-600 text-xs md:text-sm mt-2">Elegant debut parties that mark this special milestone with style.</p>
         </div>
-      </div>
+      </a>
 
-      <div class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer">
+      <!-- Baptism Card -->
+      <a href="{{ route('packages') }}?type=baptism" class="bg-white rounded shadow hover:shadow-lg transition duration-300 cursor-pointer block">
         <img src="{{ asset('public/img/baptism.jpg') }}" alt="Baptisms" class="w-full h-40 md:h-52 object-cover rounded-t" />
         <div class="p-3 md:p-4">
           <h5 class="text-lg md:text-xl font-semibold">Baptisms</h5>
           <p class="text-gray-600 text-xs md:text-sm mt-2">Graceful baptism events that celebrate faith and family.</p>
         </div>
-      </div>
+      </a>
     </div>
   </div>
 </section>
