@@ -498,6 +498,9 @@ async function openVenueModal(venueId) {
         }
         const venue = data.data;
 
+        // Store the venue ID in the modal's dataset for the selectVenue function
+        modal.dataset.currentVenueId = venueId;
+
         // Update modal content
         const modalImage = document.getElementById('modalVenueImage');
         modalImage.src = venue.main_image; // Use the same logic as venue grid
@@ -558,6 +561,34 @@ async function openVenueModal(venueId) {
 
 function closeModal() {
     modal.classList.remove('active');
+}
+
+// Add the missing selectVenue function
+function selectVenue() {
+    // Get the venue ID from the modal (we need to store it when opening the modal)
+    const venueId = modal.dataset.currentVenueId;
+    
+    if (venueId) {
+        // Find the venue card and select it
+        const venueCard = document.querySelector(`.venue-card[data-venue-id="${venueId}"]`);
+        if (venueCard) {
+            // Remove selection from other cards
+            document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('selected'));
+            
+            // Select this venue card
+            venueCard.classList.add('selected');
+            selectedVenue = venueId;
+            
+            // Update pricing
+            calculateAndDisplayPricing();
+            
+            // Close the modal
+            closeModal();
+            
+            // Show success message
+            alert('Venue selected successfully!');
+        }
+    }
 }
 
 modalClose.addEventListener('click', closeModal);
