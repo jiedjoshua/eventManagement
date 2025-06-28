@@ -186,8 +186,6 @@
                                     🗺️ Get Directions
                                 </button>
                             </div>
-
-                            <button type="button" class="btn btn-primary" data-action="select-venue">Select This Venue</button>
                         </div>
                     </div>
                 </div>
