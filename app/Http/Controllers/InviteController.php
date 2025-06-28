@@ -16,7 +16,7 @@ class InviteController extends Controller
         return redirect()->guest(route('login', ['redirect' => url()->current()]));
     }
 
-    $event = Event::with('venue')->findOrFail($eventId);
+    $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
     $userId = Auth::id();
 
     // Check if user already accepted
@@ -47,7 +47,7 @@ class InviteController extends Controller
         return redirect()->guest(route('login', ['redirect' => url()->current()]));
     }
 
-    $event = Event::with('venue')->findOrFail($eventId);
+    $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
     $userId = Auth::id();
     
     // Get RSVP status if exists

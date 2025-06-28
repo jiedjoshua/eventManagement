@@ -218,18 +218,22 @@ use Carbon\Carbon;
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
-          @if($event->venue && $event->venue->latitude && $event->venue->longitude)
-            <a href="https://www.google.com/maps/dir/?api=1&destination={{ $event->venue->latitude }},{{ $event->venue->longitude }}" 
+          @php
+              $venue = $event->venue ?? ($event->booking->venue ?? null);
+              $venueName = ucwords($event->venue_name);
+          @endphp
+          @if($venue && $venue->latitude && $venue->longitude)
+            <a href="https://www.google.com/maps/dir/?api=1&destination={{ $venue->latitude }},{{ $venue->longitude }}" 
                target="_blank" 
                class="font-medium hover:text-blue-600 hover:underline transition-colors duration-200 cursor-pointer"
-               title="Get directions to {{ ucwords($event->venue_name) }}">
-              {{ ucwords($event->venue_name) }}
+               title="Get directions to {{ $venueName }}">
+              {{ $venueName }}
               <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
               </svg>
             </a>
           @else
-            <span class="font-medium">{{ ucwords($event->venue_name) }}</span>
+            <span class="font-medium">{{ $venueName }}</span>
           @endif
         </div>
       </div>

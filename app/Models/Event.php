@@ -79,6 +79,13 @@ protected $fillable = [
 
     public function venue()
     {
-        return $this->belongsTo(\App\Models\Venue::class);
+        return $this->hasOneThrough(
+            \App\Models\Venue::class,
+            \App\Models\Booking::class,
+            'id', // Foreign key on bookings table
+            'id', // Foreign key on venues table
+            'booking_id', // Local key on events table
+            'venue_id' // Local key on bookings table
+        );
     }
 }
