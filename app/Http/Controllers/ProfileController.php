@@ -36,7 +36,7 @@ class ProfileController extends Controller
         } elseif ($user->role === 'event_manager') {
             return redirect()->route('manager.account-settings')->with('status', 'profile-updated');
         } else {
-            return redirect()->route('profile.edit')->with('status', 'profile-updated');
+            return redirect()->route('user.accountSettings')->with('status', 'profile-updated');
         }
     }
 
