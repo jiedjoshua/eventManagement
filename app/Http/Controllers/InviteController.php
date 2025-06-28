@@ -13,7 +13,9 @@ class InviteController extends Controller
    public function show($eventId)
 {
     if (!Auth::check()) {
-        return redirect()->guest(route('login', ['redirect' => url()->current()]));
+        // Store the intended URL so user returns here after registration
+        session(['url.intended' => url()->current()]);
+        return redirect()->route('login');
     }
 
     $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
@@ -49,7 +51,9 @@ class InviteController extends Controller
  public function accept($eventId)
 {
     if (!Auth::check()) {
-        return redirect()->guest(route('login', ['redirect' => url()->current()]));
+        // Store the intended URL so user returns here after registration
+        session(['url.intended' => url()->current()]);
+        return redirect()->route('login');
     }
 
     $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
@@ -91,7 +95,9 @@ class InviteController extends Controller
    public function decline($eventId)
 {
     if (!Auth::check()) {
-        return redirect()->guest(route('login', ['redirect' => url()->current()]));
+        // Store the intended URL so user returns here after registration
+        session(['url.intended' => url()->current()]);
+        return redirect()->route('login');
     }
 
     $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
