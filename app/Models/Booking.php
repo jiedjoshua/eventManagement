@@ -26,7 +26,10 @@ class Booking extends Model
         'addons_price_at_booking',
         'total_price',
         'status',
-        'rejection_reason'
+        'rejection_reason',
+        'amount_due',
+        'amount_paid',
+        'payment_status'
     ];
 
     protected $casts = [
@@ -37,6 +40,8 @@ class Booking extends Model
         'package_price_at_booking' => 'decimal:2',
         'addons_price_at_booking' => 'decimal:2',
         'total_price' => 'decimal:2',
+        'amount_due' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
