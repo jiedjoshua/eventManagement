@@ -182,12 +182,12 @@
                                 <!-- Map will be loaded here -->
                             </div>
                             <div class="venue-directions">
-                                <button type="button" class="btn btn-primary" id="getDirectionsBtn" onclick="getDirections()">
+                                <button type="button" class="btn btn-primary" id="getDirectionsBtn">
                                     🗺️ Get Directions
                                 </button>
                             </div>
 
-                            <button type="button" class="btn btn-primary" onclick="selectVenue()">Select This Venue</button>
+                            <button type="button" class="btn btn-primary" id="selectVenueBtn">Select This Venue</button>
                         </div>
                     </div>
                 </div>
@@ -221,7 +221,7 @@
 
     <div class="package-modal" id="packageModal">
     <div class="package-modal-content">
-        <button type="button" class="package-modal-close" onclick="closePackageModal()">&times;</button>
+        <button type="button" class="package-modal-close">&times;</button>
         <div class="modal-body">
             <h2 class="package-modal-title"></h2>
             <div class="package-modal-price"></div>

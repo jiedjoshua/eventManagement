@@ -591,6 +591,11 @@ function selectVenue() {
     }
 }
 
+// Make functions available globally
+window.selectVenue = selectVenue;
+window.getDirections = getDirections;
+window.closePackageModal = closePackageModal;
+
 modalClose.addEventListener('click', closeModal);
 
 window.addEventListener('click', (e) => {
@@ -605,7 +610,20 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
+// Add event listeners for venue modal buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Get Directions button
+    const getDirectionsBtn = document.getElementById('getDirectionsBtn');
+    if (getDirectionsBtn) {
+        getDirectionsBtn.addEventListener('click', getDirections);
+    }
 
+    // Select Venue button
+    const selectVenueBtn = document.getElementById('selectVenueBtn');
+    if (selectVenueBtn) {
+        selectVenueBtn.addEventListener('click', selectVenue);
+    }
+});
 
 // Package modal functionality
 const packageModal = document.getElementById('packageModal');
