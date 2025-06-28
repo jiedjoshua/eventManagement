@@ -20,6 +20,7 @@
       <div>
         <p class="font-semibold text-gray-900">Home</p>
         <a href="{{ route('user.dashboard') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Dashboard</a>
+        <a href="{{ route('home') }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Go to Home</a>
       </div>
 
       <div>
