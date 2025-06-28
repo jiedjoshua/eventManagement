@@ -1,5 +1,8 @@
 <x-customer-layout :active-page="'dashboard'" :title="'Dashboard'">
-    <h1 class="text-3xl font-bold mb-8 text-gray-800">Dashboard</h1>
+    <!-- Dashboard Header (hidden on mobile since we have the mobile header) -->
+    <div class="hidden lg:block">
+        <h1 class="text-3xl font-bold mb-8 text-gray-800">Dashboard</h1>
+    </div>
 
     <!-- Cards Row -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-10">
