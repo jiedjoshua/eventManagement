@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Event Invitation</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
@@ -206,11 +207,13 @@
                 overflow-x: hidden;
                 min-height: 100vh;
                 padding: 1rem;
+                font-size: 16px; /* Prevent zoom on iOS */
             }
             
             .glass-card {
                 margin: 1rem 0;
                 padding: 1.5rem;
+                max-width: 95vw;
             }
             
             .text-5xl {
@@ -233,6 +236,25 @@
             .py-4 {
                 padding-top: 0.75rem;
                 padding-bottom: 0.75rem;
+            }
+            
+            /* Ensure buttons are properly sized on mobile */
+            .btn-accept, .btn-decline {
+                min-height: 44px; /* iOS minimum touch target */
+                font-size: 1rem;
+            }
+            
+            /* Adjust spacing for mobile */
+            .space-y-3 > * + * {
+                margin-top: 0.75rem;
+            }
+            
+            .mb-10 {
+                margin-bottom: 2rem;
+            }
+            
+            .mb-8 {
+                margin-bottom: 1.5rem;
             }
         }
     </style>

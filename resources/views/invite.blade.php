@@ -6,7 +6,7 @@ use Carbon\Carbon;
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Invitation for Sample Event</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
   <style>
@@ -145,11 +145,13 @@ use Carbon\Carbon;
         overflow-x: hidden;
         min-height: 100vh;
         padding: 1rem;
+        font-size: 16px; /* Prevent zoom on iOS */
       }
       
       .glass-effect {
         margin: 1rem 0;
         padding: 1.5rem;
+        max-width: 95vw;
       }
       
       .qr-container {
@@ -159,6 +161,30 @@ use Carbon\Carbon;
       .qr-wrapper {
         width: 120px !important;
         height: 120px !important;
+      }
+      
+      /* Ensure buttons are properly sized on mobile */
+      .btn-hover {
+        min-height: 44px; /* iOS minimum touch target */
+        font-size: 1rem;
+      }
+      
+      /* Adjust text sizes for mobile */
+      .text-4xl {
+        font-size: 2rem;
+      }
+      
+      .text-2xl {
+        font-size: 1.5rem;
+      }
+      
+      /* Adjust spacing for mobile */
+      .mb-8 {
+        margin-bottom: 1.5rem;
+      }
+      
+      .p-10 {
+        padding: 1.5rem;
       }
     }
   </style>
