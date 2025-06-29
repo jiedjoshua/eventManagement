@@ -931,7 +931,7 @@ class HomePageController extends Controller
                     'description' => $image['description'] ?? 'Beautiful event',
                     'category' => $image['category'] ?? 'wedding',
                     'alt_text' => $image['alt_text'] ?? 'Gallery Image',
-                    'image_path' => $image['image_path'] ?? '/img/placeholder.jpg'
+                    'image_path' => $image['image_path'] ?? null
                 ];
             }, $galleryImages->service_cards) : $defaultGalleryImages,
             'cta' => [
