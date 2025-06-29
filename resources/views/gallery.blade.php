@@ -109,29 +109,41 @@
 <!-- Gallery Grid -->
 <section class="py-10 md:py-16">
   <div class="container mx-auto px-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6" id="gallery-grid">
-      
-      @foreach($galleryData['images'] as $image)
-        <div class="gallery-item {{ $image['category'] }}" data-category="{{ $image['category'] }}">
-          <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-            @if(isset($image['image_path']) && $image['image_path'])
-              <img src="/public{{ str_replace('/public', '', $image['image_path']) }}" alt="{{ $image['alt_text'] ?? 'Gallery Image' }}" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-            @else
-              <div class="w-full h-48 md:h-64 bg-gray-200 flex items-center justify-center">
-                <span class="text-gray-500 text-lg font-medium">No Image</span>
-              </div>
-            @endif
-            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-              <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-                <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">{{ $image['title'] ?? 'Gallery Image' }}</h3>
-                <p class="text-xs md:text-sm">{{ $image['description'] ?? 'Beautiful event' }}</p>
+    @if(count($galleryData['images']) > 0)
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6" id="gallery-grid">
+        
+        @foreach($galleryData['images'] as $image)
+          <div class="gallery-item {{ $image['category'] }}" data-category="{{ $image['category'] }}">
+            <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
+              @if(isset($image['image_path']) && $image['image_path'])
+                <img src="/public{{ str_replace('/public', '', $image['image_path']) }}" alt="{{ $image['alt_text'] ?? 'Gallery Image' }}" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
+              @else
+                <div class="w-full h-48 md:h-64 bg-gray-200 flex items-center justify-center">
+                  <span class="text-gray-500 text-lg font-medium">No Image</span>
+                </div>
+              @endif
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
+                <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
+                  <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">{{ $image['title'] ?? 'Gallery Image' }}</h3>
+                  <p class="text-xs md:text-sm">{{ $image['description'] ?? 'Beautiful event' }}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      @endforeach
+        @endforeach
 
-    </div>
+      </div>
+    @else
+      <div class="text-center py-16">
+        <div class="bg-gray-100 rounded-lg p-8 max-w-md mx-auto">
+          <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No Images Available</h3>
+          <p class="text-gray-500">No gallery images have been uploaded yet. Please check back later or contact us for more information.</p>
+        </div>
+      </div>
+    @endif
   </div>
 </section>
 
