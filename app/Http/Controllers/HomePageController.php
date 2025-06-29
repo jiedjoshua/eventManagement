@@ -374,8 +374,8 @@ class HomePageController extends Controller
                 // Handle image upload for each service to public/img directory
                 if (isset($serviceData['image']) && $serviceData['image']) {
                     // Delete old image if exists
-                    if (isset($services->service_cards[$index]['image_path']) && file_exists(public_path(str_replace('/public', '', $services->service_cards[$index]['image_path'])))) {
-                        unlink(public_path(str_replace('/public', '', $services->service_cards[$index]['image_path'])));
+                    if (isset($services->service_cards[$index]['image_path']) && file_exists(public_path($services->service_cards[$index]['image_path']))) {
+                        unlink(public_path($services->service_cards[$index]['image_path']));
                     }
 
                     $image = $serviceData['image'];
@@ -682,5 +682,268 @@ class HomePageController extends Controller
         ];
         
         return view('packages', compact('packagesData', 'type'));
+    }
+
+    /**
+     * Manage gallery page CMS
+     */
+    public function manageGalleryPage()
+    {
+        $content = [
+            'gallery_hero' => HomePageContent::where('section', 'gallery_hero')->first(),
+            'gallery_cta' => HomePageContent::where('section', 'gallery_cta')->first(),
+            'gallery_images' => HomePageContent::where('section', 'gallery_images')->first(),
+        ];
+
+        return view('admin.cms.gallery-page', compact('content'));
+    }
+
+    /**
+     * Update gallery page hero section
+     */
+    public function updateGalleryHero(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'hero_title' => 'required|string|max:255',
+            'hero_subtitle' => 'required|string|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $hero = HomePageContent::firstOrCreate(['section' => 'gallery_hero']);
+            
+            $hero->title = $request->hero_title;
+            $hero->subtitle = $request->hero_subtitle;
+            $hero->is_active = true;
+            $hero->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gallery page hero section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update gallery page hero section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update gallery images
+     */
+    public function updateGalleryImages(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'images' => 'required|array|min:1',
+            'images.*.title' => 'required|string|max:255',
+            'images.*.description' => 'required|string|max:500',
+            'images.*.category' => 'required|string|in:wedding,birthday,debut,baptism',
+            'images.*.image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'images.*.alt_text' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $galleryImages = HomePageContent::firstOrCreate(['section' => 'gallery_images']);
+            $galleryImages->is_active = true;
+
+            $images = [];
+            
+            foreach ($request->images as $index => $imageData) {
+                $imageItem = [
+                    'title' => $imageData['title'],
+                    'description' => $imageData['description'],
+                    'category' => $imageData['category'],
+                    'alt_text' => $imageData['alt_text']
+                ];
+
+                // Handle image upload
+                if (isset($imageData['image']) && $imageData['image']) {
+                    // Delete old image if exists
+                    if (isset($galleryImages->service_cards[$index]['image_path']) && file_exists(public_path($galleryImages->service_cards[$index]['image_path']))) {
+                        unlink(public_path($galleryImages->service_cards[$index]['image_path']));
+                    }
+
+                    $image = $imageData['image'];
+                    $imageName = 'gallery_' . $imageData['category'] . '_' . time() . '_' . $index . '.' . $image->getClientOriginalExtension();
+                    $imagePath = '/img/' . $imageName;
+                    
+                    // Move image to public/img directory
+                    $image->move(public_path('img'), $imageName);
+                    $imageItem['image_path'] = $imagePath;
+                } else {
+                    // Keep existing image if no new image uploaded
+                    if (isset($galleryImages->service_cards[$index]['image_path'])) {
+                        $existingPath = $galleryImages->service_cards[$index]['image_path'];
+                        if (strpos($existingPath, '/img/') === 0) {
+                            $imageItem['image_path'] = $existingPath;
+                        } else {
+                            $imageItem['image_path'] = '/img/' . basename($existingPath);
+                        }
+                    }
+                }
+
+                $images[] = $imageItem;
+            }
+
+            $galleryImages->service_cards = $images;
+            $galleryImages->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gallery images updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update gallery images: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update gallery page CTA section
+     */
+    public function updateGalleryCTA(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'cta_title' => 'required|string|max:255',
+            'cta_subtitle' => 'required|string|max:500',
+            'cta_primary_button_text' => 'required|string|max:100',
+            'cta_primary_button_link' => 'required|string|max:255',
+            'cta_secondary_button_text' => 'required|string|max:100',
+            'cta_secondary_button_link' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $cta = HomePageContent::firstOrCreate(['section' => 'gallery_cta']);
+            
+            $cta->title = $request->cta_title;
+            $cta->subtitle = $request->cta_subtitle;
+            $cta->button_text = $request->cta_primary_button_text;
+            $cta->button_link = $request->cta_primary_button_link;
+            $cta->service_cards = [
+                'secondary_button_text' => $request->cta_secondary_button_text,
+                'secondary_button_link' => $request->cta_secondary_button_link
+            ];
+            $cta->is_active = true;
+            $cta->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gallery page CTA section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update gallery page CTA section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display gallery page
+     */
+    public function gallery()
+    {
+        // Get CMS data for gallery
+        $galleryHero = HomePageContent::where('section', 'gallery_hero')->first();
+        $galleryImages = HomePageContent::where('section', 'gallery_images')->first();
+        $galleryCTA = HomePageContent::where('section', 'gallery_cta')->first();
+        
+        // Default content if CMS data doesn't exist
+        $defaultGalleryImages = [
+            [
+                'title' => 'Elegant Wedding',
+                'description' => 'Beautiful outdoor ceremony',
+                'category' => 'wedding',
+                'alt_text' => 'Wedding Celebration',
+                'image_path' => '/img/wedding.webp'
+            ],
+            [
+                'title' => 'Wedding Reception',
+                'description' => 'Magical evening celebration',
+                'category' => 'wedding',
+                'alt_text' => 'Wedding Reception',
+                'image_path' => '/img/wedding.png'
+            ],
+            [
+                'title' => 'Birthday Celebration',
+                'description' => 'Fun and colorful party',
+                'category' => 'birthday',
+                'alt_text' => 'Birthday Party',
+                'image_path' => '/img/birthday.jpg'
+            ],
+            [
+                'title' => '18th Debut',
+                'description' => 'Elegant coming-of-age celebration',
+                'category' => 'debut',
+                'alt_text' => 'Debut Celebration',
+                'image_path' => '/img/debut.webp'
+            ],
+            [
+                'title' => 'Baptism Ceremony',
+                'description' => 'Sacred family celebration',
+                'category' => 'baptism',
+                'alt_text' => 'Baptism Ceremony',
+                'image_path' => '/img/baptism.jpg'
+            ],
+            [
+                'title' => 'Wedding Transportation',
+                'description' => 'Luxury wedding car service',
+                'category' => 'wedding',
+                'alt_text' => 'Wedding Transportation',
+                'image_path' => '/img/car1.jpg'
+            ]
+        ];
+        
+        $galleryData = [
+            'hero' => [
+                'title' => $galleryHero && $galleryHero->is_active ? $galleryHero->title : 'Our Event Gallery',
+                'subtitle' => $galleryHero && $galleryHero->is_active ? $galleryHero->subtitle : 'Explore our collection of beautiful events and celebrations we\'ve helped create'
+            ],
+            'images' => $galleryImages && $galleryImages->is_active ? array_map(function($image) {
+                return [
+                    'title' => $image['title'] ?? 'Gallery Image',
+                    'description' => $image['description'] ?? 'Beautiful event',
+                    'category' => $image['category'] ?? 'wedding',
+                    'alt_text' => $image['alt_text'] ?? 'Gallery Image',
+                    'image_path' => $image['image_path'] ?? '/img/placeholder.jpg'
+                ];
+            }, $galleryImages->service_cards) : $defaultGalleryImages,
+            'cta' => [
+                'title' => $galleryCTA && $galleryCTA->is_active ? $galleryCTA->title : 'Inspired by Our Work?',
+                'subtitle' => $galleryCTA && $galleryCTA->is_active ? $galleryCTA->subtitle : 'Let\'s create your own beautiful memories together',
+                'primary_button_text' => $galleryCTA && $galleryCTA->is_active ? $galleryCTA->button_text : 'Start Planning Your Event',
+                'primary_button_link' => $galleryCTA && $galleryCTA->is_active ? $galleryCTA->button_link : route('book-now'),
+                'secondary_button_text' => $galleryCTA && $galleryCTA->is_active && $galleryCTA->service_cards && isset($galleryCTA->service_cards['secondary_button_text']) ? $galleryCTA->service_cards['secondary_button_text'] : 'Contact Us',
+                'secondary_button_link' => $galleryCTA && $galleryCTA->is_active && $galleryCTA->service_cards && isset($galleryCTA->service_cards['secondary_button_link']) ? $galleryCTA->service_cards['secondary_button_link'] : route('home') . '#contact'
+            ]
+        ];
+        
+        return view('gallery', compact('galleryData'));
     }
 } 

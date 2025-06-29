@@ -25,9 +25,7 @@ Route::get('/services', function () {
 
 Route::get('/packages', [HomePageController::class, 'packages'])->name('packages');
 
-Route::get('/gallery', function () {
-    return view('gallery');
-})->name('gallery');
+Route::get('/gallery', [HomePageController::class, 'gallery'])->name('gallery');
 
 Route::get('/about', function () {
     return view('about');
@@ -82,6 +80,12 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::get('/admin/cms/packages-page', [HomePageController::class, 'managePackagesPage'])->name('admin.cms.packages-page');
     Route::post('/admin/cms/packages-page/hero/update', [HomePageController::class, 'updatePackagesHero'])->name('admin.cms.packages-page.hero.update');
     Route::post('/admin/cms/packages-page/{type}/update', [HomePageController::class, 'updatePackagesType'])->name('admin.cms.packages-page.type.update');
+
+    // Gallery Page CMS Routes
+    Route::get('/admin/cms/gallery-page', [HomePageController::class, 'manageGalleryPage'])->name('admin.cms.gallery-page');
+    Route::post('/admin/cms/gallery-page/hero/update', [HomePageController::class, 'updateGalleryHero'])->name('admin.cms.gallery-page.hero.update');
+    Route::post('/admin/cms/gallery-page/images/update', [HomePageController::class, 'updateGalleryImages'])->name('admin.cms.gallery-page.images.update');
+    Route::post('/admin/cms/gallery-page/cta/update', [HomePageController::class, 'updateGalleryCTA'])->name('admin.cms.gallery-page.cta.update');
 
     // Package Management Routes
     Route::resource('admin/packages', PackageController::class)->names([

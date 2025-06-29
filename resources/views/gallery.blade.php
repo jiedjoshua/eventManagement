@@ -78,8 +78,8 @@
 <!-- Hero Section -->
 <section class="pt-32 pb-10 md:pb-16 bg-gradient-to-r from-[#EF7C79] to-[#D76C69] text-white min-h-[40vh] flex items-center">
   <div class="container mx-auto px-4 text-center w-full">
-    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">Our Event Gallery</h1>
-    <p class="text-base md:text-xl mb-6 md:mb-8">Explore our collection of beautiful events and celebrations we've helped create</p>
+    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">{{ $galleryData['hero']['title'] }}</h1>
+    <p class="text-base md:text-xl mb-6 md:mb-8">{{ $galleryData['hero']['subtitle'] }}</p>
   </div>
 </section>
 
@@ -111,121 +111,19 @@
   <div class="container mx-auto px-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6" id="gallery-grid">
       
-      <!-- Wedding Images -->
-      <div class="gallery-item wedding" data-category="wedding">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/wedding.webp') }}" alt="Wedding Celebration" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">Elegant Wedding</h3>
-              <p class="text-xs md:text-sm">Beautiful outdoor ceremony</p>
+      @foreach($galleryData['images'] as $image)
+        <div class="gallery-item {{ $image['category'] }}" data-category="{{ $image['category'] }}">
+          <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
+            <img src="{{ asset($image['image_path'] ?? '/img/placeholder.jpg') }}" alt="{{ $image['alt_text'] ?? 'Gallery Image' }}" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
+              <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
+                <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">{{ $image['title'] ?? 'Gallery Image' }}</h3>
+                <p class="text-xs md:text-sm">{{ $image['description'] ?? 'Beautiful event' }}</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="gallery-item wedding" data-category="wedding">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/wedding.png') }}" alt="Wedding Reception" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">Wedding Reception</h3>
-              <p class="text-xs md:text-sm">Magical evening celebration</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Birthday Images -->
-      <div class="gallery-item birthday" data-category="birthday">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/birthday.jpg') }}" alt="Birthday Party" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">Birthday Celebration</h3>
-              <p class="text-xs md:text-sm">Fun and colorful party</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Debut Images -->
-      <div class="gallery-item debut" data-category="debut">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/debut.webp') }}" alt="Debut Celebration" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">18th Debut</h3>
-              <p class="text-xs md:text-sm">Elegant coming-of-age celebration</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Baptism Images -->
-      <div class="gallery-item baptism" data-category="baptism">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/baptism.jpg') }}" alt="Baptism Ceremony" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">Baptism Ceremony</h3>
-              <p class="text-xs md:text-sm">Sacred family celebration</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Additional Wedding Images (using car1.jpg as placeholder) -->
-      <div class="gallery-item wedding" data-category="wedding">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/car1.jpg') }}" alt="Wedding Transportation" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">Wedding Transportation</h3>
-              <p class="text-xs md:text-sm">Luxury wedding car service</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Additional Birthday Images -->
-      <div class="gallery-item birthday" data-category="birthday">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/birthday.jpg') }}" alt="Kids Birthday Party" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">Kids Birthday</h3>
-              <p class="text-xs md:text-sm">Magical children's party</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Additional Debut Images -->
-      <div class="gallery-item debut" data-category="debut">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/debut.webp') }}" alt="Debut Reception" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">Debut Reception</h3>
-              <p class="text-xs md:text-sm">Formal dinner celebration</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Additional Baptism Images -->
-      <div class="gallery-item baptism" data-category="baptism">
-        <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-          <img src="{{ asset('public/img/baptism.jpg') }}" alt="Baptism Reception" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
-            <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
-              <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">Baptism Reception</h3>
-              <p class="text-xs md:text-sm">Family gathering celebration</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      @endforeach
 
     </div>
   </div>
@@ -234,11 +132,11 @@
 <!-- Call to Action Section -->
 <section class="py-10 md:py-20 bg-[#EF7C79] text-white">
   <div class="container mx-auto px-4 text-center">
-    <h2 class="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Inspired by Our Work?</h2>
-    <p class="text-base md:text-xl mb-6 md:mb-8">Let's create your own beautiful memories together</p>
+    <h2 class="text-2xl md:text-3xl font-bold mb-3 md:mb-4">{{ $galleryData['cta']['title'] }}</h2>
+    <p class="text-base md:text-xl mb-6 md:mb-8">{{ $galleryData['cta']['subtitle'] }}</p>
     <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-      <a href="{{ route('book-now') }}" class="bg-white text-[#EF7C79] hover:bg-gray-100 rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">Start Planning Your Event</a>
-      <a href="{{ route('home') }}#contact" class="border-2 border-white text-white hover:bg-white hover:text-[#EF7C79] rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">Contact Us</a>
+      <a href="{{ $galleryData['cta']['primary_button_link'] }}" class="bg-white text-[#EF7C79] hover:bg-gray-100 rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">{{ $galleryData['cta']['primary_button_text'] }}</a>
+      <a href="{{ $galleryData['cta']['secondary_button_link'] }}" class="border-2 border-white text-white hover:bg-white hover:text-[#EF7C79] rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">{{ $galleryData['cta']['secondary_button_text'] }}</a>
     </div>
   </div>
 </section>
