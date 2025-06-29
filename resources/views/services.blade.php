@@ -1,3 +1,8 @@
+<?php
+use App\Models\HomePageContent;
+$content = HomePageContent::getAllActive();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,209 +88,113 @@
 </nav>
 
 <!-- Hero Section -->
+@if($content['services_hero']->is_active ?? false)
 <section class="pt-32 pb-16 bg-gradient-to-r from-[#EF7C79] to-[#D76C69] text-white">
   <div class="container mx-auto px-4 text-center">
-    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Our Event Services</h1>
-    <p class="text-base md:text-xl mb-8">Comprehensive event planning and management for every special occasion</p>
-    <a href="{{ route('book-now') }}" class="bg-white text-[#EF7C79] hover:bg-gray-100 rounded-full px-8 py-3 font-semibold transition duration-300">Start Planning Your Event</a>
+    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{{ $content['services_hero']->title ?? 'Our Event Services' }}</h1>
+    <p class="text-base md:text-xl mb-8">{{ $content['services_hero']->subtitle ?? 'Comprehensive event planning and management for every special occasion' }}</p>
+    <a href="{{ $content['services_hero']->button_link ?? route('book-now') }}" class="bg-white text-[#EF7C79] hover:bg-gray-100 rounded-full px-8 py-3 font-semibold transition duration-300">{{ $content['services_hero']->button_text ?? 'Start Planning Your Event' }}</a>
   </div>
 </section>
+@endif
 
 <!-- Main Services Section -->
+@if($content['services_page_services']->is_active ?? false)
 <section class="py-10 md:py-20">
   <div class="container mx-auto px-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
       
-      <!-- Wedding Services -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <img src="{{ asset('public/img/wedding.webp') }}" alt="Wedding Planning" class="w-full h-48 md:h-64 object-cover">
-        <div class="p-5 md:p-8">
-          <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">Wedding Planning</h3>
-          <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Create the wedding of your dreams with our comprehensive planning services. From intimate ceremonies to grand celebrations, we handle every detail.</p>
-          
-          <div class="space-y-2 md:space-y-3 mb-4 md:mb-6">
-            <div class="flex items-center text-sm md:text-base">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Venue selection and coordination</span>
-            </div>
-            <div class="flex items-center text-sm md:text-base">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Catering and menu planning</span>
-            </div>
-            <div class="flex items-center text-sm md:text-base">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Decoration and floral arrangements</span>
-            </div>
-            <div class="flex items-center text-sm md:text-base">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Photography and videography</span>
-            </div>
-            <div class="flex items-center text-sm md:text-base">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Guest list management</span>
+      @if($content['services_page_services']->service_cards ?? false)
+        @foreach($content['services_page_services']->service_cards as $service)
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            @if(isset($service['image_path']))
+              <img src="{{ asset($service['image_path']) }}" alt="{{ $service['title'] }}" class="w-full h-48 md:h-64 object-cover">
+            @else
+              <div class="w-full h-48 md:h-64 bg-gray-200 flex items-center justify-center">
+                <span class="text-gray-500">No Image</span>
+              </div>
+            @endif
+            <div class="p-5 md:p-8">
+              <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">{{ $service['title'] }}</h3>
+              <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">{{ $service['description'] }}</p>
+              
+              <div class="space-y-2 md:space-y-3 mb-4 md:mb-6">
+                @if(isset($service['features']))
+                  @foreach($service['features'] as $feature)
+                    <div class="flex items-center text-sm md:text-base">
+                      <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                      </svg>
+                      <span class="text-gray-700">{{ $feature }}</span>
+                    </div>
+                  @endforeach
+                @endif
+              </div>
+              
+              <a href="{{ route('book-now') }}" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-3 rounded-lg font-semibold transition duration-300">Plan Your {{ ucfirst($service['type']) }}</a>
+              <a href="{{ route('packages', ['type' => $service['type']]) }}" class="inline-block mt-2 bg-white text-[#EF7C79] border border-[#EF7C79] hover:bg-[#EF7C79] hover:text-white px-6 py-2 rounded-lg font-semibold transition duration-300">View Packages</a>
             </div>
           </div>
-          
-          <a href="{{ route('book-now') }}" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-3 rounded-lg font-semibold transition duration-300">Plan Your Wedding</a>
-          <a href="{{ route('packages', ['type' => 'wedding']) }}" class="inline-block mt-2 bg-white text-[#EF7C79] border border-[#EF7C79] hover:bg-[#EF7C79] hover:text-white px-6 py-2 rounded-lg font-semibold transition duration-300">View Packages</a>
-        </div>
-      </div>
-
-      <!-- Birthday Services -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <img src="{{ asset('public/img/birthday.jpg') }}" alt="Birthday Celebrations" class="w-full h-64 object-cover">
-        <div class="p-8">
-          <h3 class="text-2xl font-bold text-gray-800 mb-4">Birthday Celebrations</h3>
-          <p class="text-gray-600 mb-6">Make every birthday unforgettable with our creative and personalized celebration planning. From kids' parties to milestone birthdays.</p>
-          
-          <div class="space-y-3 mb-6">
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Theme-based party planning</span>
+        @endforeach
+      @else
+        <!-- Fallback content if no CMS data -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <img src="{{ asset('public/img/wedding.webp') }}" alt="Wedding Planning" class="w-full h-48 md:h-64 object-cover">
+          <div class="p-5 md:p-8">
+            <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">Wedding Planning</h3>
+            <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Create the wedding of your dreams with our comprehensive planning services. From intimate ceremonies to grand celebrations, we handle every detail.</p>
+            
+            <div class="space-y-2 md:space-y-3 mb-4 md:mb-6">
+              <div class="flex items-center text-sm md:text-base">
+                <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-gray-700">Venue selection and coordination</span>
+              </div>
+              <div class="flex items-center text-sm md:text-base">
+                <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-gray-700">Catering and menu planning</span>
+              </div>
+              <div class="flex items-center text-sm md:text-base">
+                <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-gray-700">Decoration and floral arrangements</span>
+              </div>
+              <div class="flex items-center text-sm md:text-base">
+                <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-gray-700">Photography and videography</span>
+              </div>
+              <div class="flex items-center text-sm md:text-base">
+                <svg class="w-5 h-5 text-[#EF7C79] mr-2 md:mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-gray-700">Guest list management</span>
+              </div>
             </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Entertainment and activities</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Custom cake and dessert setup</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Party favors and decorations</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Photography and memories</span>
-            </div>
+            
+            <a href="{{ route('book-now') }}" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-3 rounded-lg font-semibold transition duration-300">Plan Your Wedding</a>
+            <a href="{{ route('packages', ['type' => 'wedding']) }}" class="inline-block mt-2 bg-white text-[#EF7C79] border border-[#EF7C79] hover:bg-[#EF7C79] hover:text-white px-6 py-2 rounded-lg font-semibold transition duration-300">View Packages</a>
           </div>
-          
-          <a href="{{ route('book-now') }}" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-3 rounded-lg font-semibold transition duration-300">Plan Birthday Party</a>
-          <a href="{{ route('packages', ['type' => 'birthday']) }}" class="inline-block mt-2 bg-white text-[#EF7C79] border border-[#EF7C79] hover:bg-[#EF7C79] hover:text-white px-6 py-2 rounded-lg font-semibold transition duration-300">View Packages</a>
         </div>
-      </div>
-
-      <!-- Debut Services -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <img src="{{ asset('img/debut.webp') }}" alt="Debut Planning" class="w-full h-64 object-cover">
-        <div class="p-8">
-          <h3 class="text-2xl font-bold text-gray-800 mb-4">Debut Planning</h3>
-          <p class="text-gray-600 mb-6">Celebrate the transition to adulthood with an elegant and memorable debut celebration. We create sophisticated events that honor this important milestone.</p>
-          
-          <div class="space-y-3 mb-6">
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Elegant venue selection</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Formal dinner and reception</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Traditional 18 roses and 18 candles</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Professional photography</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Live entertainment and music</span>
-            </div>
-          </div>
-          
-          <a href="{{ route('book-now') }}" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-3 rounded-lg font-semibold transition duration-300">Plan Your Debut</a>
-          <a href="{{ route('packages', ['type' => 'debut']) }}" class="inline-block mt-2 bg-white text-[#EF7C79] border border-[#EF7C79] hover:bg-[#EF7C79] hover:text-white px-6 py-2 rounded-lg font-semibold transition duration-300">View Packages</a>
-        </div>
-      </div>
-
-      <!-- Baptism Services -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <img src="{{ asset('img/baptism.jpg') }}" alt="Baptism Planning" class="w-full h-64 object-cover">
-        <div class="p-8">
-          <h3 class="text-2xl font-bold text-gray-800 mb-4">Baptism Planning</h3>
-          <p class="text-gray-600 mb-6">Celebrate the spiritual journey with a beautiful baptism ceremony and reception. We coordinate with churches and create meaningful celebrations.</p>
-          
-          <div class="space-y-3 mb-6">
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Church coordination</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Reception venue planning</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Catering and refreshments</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Baptism souvenirs and favors</span>
-            </div>
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-[#EF7C79] mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-gray-700">Documentation and photography</span>
-            </div>
-          </div>
-          
-          <a href="{{ route('book-now') }}" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-3 rounded-lg font-semibold transition duration-300">Plan Baptism</a>
-          <a href="{{ route('packages', ['type' => 'baptism']) }}" class="inline-block mt-2 bg-white text-[#EF7C79] border border-[#EF7C79] hover:bg-[#EF7C79] hover:text-white px-6 py-2 rounded-lg font-semibold transition duration-300">View Packages</a>
-        </div>
-      </div>
+      @endif
 
     </div>
   </div>
 </section>
+@endif
 
 <!-- Coming Soon Section -->
+@if($content['services_coming_soon']->is_active ?? false)
 <section class="py-10 md:py-20 bg-gray-50">
   <div class="container mx-auto px-4">
     <div class="text-center">
-      <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8">More Services Coming Soon</h2>
-      <p class="text-base md:text-xl text-gray-600 mb-6 md:mb-8">We're constantly expanding our service offerings to better serve your event planning needs.</p>
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8">{{ $content['services_coming_soon']->title ?? 'More Services Coming Soon' }}</h2>
+      <p class="text-base md:text-xl text-gray-600 mb-6 md:mb-8">{{ $content['services_coming_soon']->subtitle ?? 'We\'re constantly expanding our service offerings to better serve your event planning needs.' }}</p>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-4xl mx-auto">
         <!-- Corporate Events -->
@@ -328,16 +237,18 @@
       
       <div class="mt-12">
         <p class="text-gray-600 mb-6">Stay tuned for updates on our expanded service offerings!</p>
-        <a href="{{ route('home') }}#contact" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-3 rounded-lg font-semibold transition duration-300">Contact Us for Updates</a>
+        <a href="{{ route('contact') }}" class="inline-block bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-3 rounded-lg font-semibold transition duration-300">Contact Us for Updates</a>
       </div>
     </div>
   </div>
 </section>
+@endif
 
 <!-- Why Choose Us Section -->
+@if($content['services_why_choose']->is_active ?? false)
 <section class="py-10 md:py-20">
   <div class="container mx-auto px-4">
-    <h2 class="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">Why Choose CrwdCtrl?</h2>
+    <h2 class="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">{{ $content['services_why_choose']->title ?? 'Why Choose CrwdCtrl?' }}</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 md:gap-8">
       <div class="text-center">
         <div class="w-14 h-14 md:w-16 md:h-16 bg-[#EF7C79] rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
@@ -392,18 +303,21 @@
     </div>
   </div>
 </section>
+@endif
 
 <!-- CTA Section -->
+@if($content['services_cta']->is_active ?? false)
 <section class="py-10 md:py-20 bg-[#EF7C79] text-white">
   <div class="container mx-auto px-4 text-center">
-    <h2 class="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Ready to Start Planning?</h2>
-    <p class="text-base md:text-xl mb-6 md:mb-8">Let's create something extraordinary together</p>
+    <h2 class="text-2xl md:text-3xl font-bold mb-3 md:mb-4">{{ $content['services_cta']->title ?? 'Ready to Start Planning?' }}</h2>
+    <p class="text-base md:text-xl mb-6 md:mb-8">{{ $content['services_cta']->subtitle ?? 'Let\'s create something extraordinary together' }}</p>
     <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-      <a href="{{ route('book-now') }}" class="bg-white text-[#EF7C79] hover:bg-gray-100 rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">Book Your Event</a>
-      <a href="{{ route('home') }}#contact" class="border-2 border-white text-white hover:bg-white hover:text-[#EF7C79] rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">Contact Us</a>
+      <a href="{{ $content['services_cta']->button_link ?? route('book-now') }}" class="bg-white text-[#EF7C79] hover:bg-gray-100 rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">{{ $content['services_cta']->button_text ?? 'Book Your Event' }}</a>
+      <a href="{{ $content['services_cta']->service_cards['secondary_button_link'] ?? route('home') . '#contact' }}" class="border-2 border-white text-white hover:bg-white hover:text-[#EF7C79] rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">{{ $content['services_cta']->service_cards['secondary_button_text'] ?? 'Contact Us' }}</a>
     </div>
   </div>
 </section>
+@endif
 
 <!-- Footer -->
 <footer class="bg-white text-center py-4 md:py-6 border-t">

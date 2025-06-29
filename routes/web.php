@@ -72,6 +72,14 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::post('/admin/cms/contact/update', [HomePageController::class, 'updateContact'])->name('admin.cms.contact.update');
     Route::post('/admin/cms/section/toggle', [HomePageController::class, 'toggleSection'])->name('admin.cms.section.toggle');
 
+    // Services Page CMS Routes
+    Route::get('/admin/cms/services-page', [HomePageController::class, 'manageServicesPage'])->name('admin.cms.services-page');
+    Route::post('/admin/cms/services-page/hero/update', [HomePageController::class, 'updateServicesHero'])->name('admin.cms.services-page.hero.update');
+    Route::post('/admin/cms/services-page/services/update', [HomePageController::class, 'updateServicesPageServices'])->name('admin.cms.services-page.services.update');
+    Route::post('/admin/cms/services-page/coming-soon/update', [HomePageController::class, 'updateServicesComingSoon'])->name('admin.cms.services-page.coming-soon.update');
+    Route::post('/admin/cms/services-page/why-choose/update', [HomePageController::class, 'updateServicesWhyChooseUs'])->name('admin.cms.services-page.why-choose.update');
+    Route::post('/admin/cms/services-page/cta/update', [HomePageController::class, 'updateServicesCTA'])->name('admin.cms.services-page.cta.update');
+
     // Package Management Routes
     Route::resource('admin/packages', PackageController::class)->names([
         'index' => 'admin.packages.index',

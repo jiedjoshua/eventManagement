@@ -92,6 +92,10 @@
                class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'cms' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
                 Home Page CMS
             </a>
+            <a href="{{ route('admin.cms.services-page') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'services-cms' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                Services Page CMS
+            </a>
         </div>
 
         <!-- Settings Section -->
