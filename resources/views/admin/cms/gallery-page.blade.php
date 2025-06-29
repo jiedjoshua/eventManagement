@@ -176,9 +176,13 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
                                 <div class="flex items-center space-x-4">
                                     @if(isset($image['image_path']))
-                                        <img src="{{ asset(str_replace('/public', '', $image['image_path'])) }}" 
+                                        <img src="/public{{ str_replace('/public', '', $image['image_path']) }}" 
                                              alt="{{ $image['alt_text'] }}" 
                                              class="w-20 h-20 object-cover rounded-lg border">
+                                    @else
+                                        <div class="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-lg border">
+                                            <span class="text-gray-500 text-xs">No Image</span>
+                                        </div>
                                     @endif
                                     <input type="file" name="images[{{ $index }}][image]" accept="image/*" 
                                            class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -329,8 +333,13 @@
                 
                 <div class="mt-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
-                    <input type="file" name="images[${index}][image]" accept="image/*" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-lg border">
+                            <span class="text-gray-500 text-xs">No Image</span>
+                        </div>
+                        <input type="file" name="images[${index}][image]" accept="image/*" required
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
                 </div>
             `;
             
