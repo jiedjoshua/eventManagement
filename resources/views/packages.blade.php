@@ -56,49 +56,38 @@
 
 <!-- Packages Section -->
 <section class="py-20 bg-gray-50 min-h-[40vh]">
-  <div class="container mx-auto px-4">
+  <div class="container mx-auto px-4 py-16">
     @php
       $type = request('type');
-      $packages = [
-        'wedding' => [
-          ['name' => 'Classic Wedding', 'price' => '₱50,000', 'features' => ['Venue coordination', 'Basic decor', 'On-the-day coordination']],
-          ['name' => 'Elegant Wedding', 'price' => '₱100,000', 'features' => ['Premium venue', 'Full floral design', 'Photo & video coverage']],
-          ['name' => 'Luxury Wedding', 'price' => '₱200,000', 'features' => ['5-star venue', 'Luxury styling', 'Live band & emcee']],
-        ],
-        'birthday' => [
-          ['name' => 'Kids Party', 'price' => '₱15,000', 'features' => ['Theme decor', 'Party host', 'Games & prizes']],
-          ['name' => 'Teen Bash', 'price' => '₱25,000', 'features' => ['DJ & lights', 'Photo booth', 'Custom cake']],
-          ['name' => 'Milestone Birthday', 'price' => '₱40,000', 'features' => ['Venue rental', 'Catering', 'Live entertainment']],
-        ],
-        'debut' => [
-          ['name' => 'Simple Debut', 'price' => '₱30,000', 'features' => ['Venue setup', '18 roses/candles', 'Basic program']],
-          ['name' => 'Glam Debut', 'price' => '₱60,000', 'features' => ['Photo & video', 'Full program', 'Host & DJ']],
-          ['name' => 'Grand Debut', 'price' => '₱120,000', 'features' => ['Luxury venue', 'Live band', 'Full event styling']],
-        ],
-        'baptism' => [
-          ['name' => 'Basic Baptism', 'price' => '₱10,000', 'features' => ['Church coordination', 'Reception decor', 'Souvenirs']],
-          ['name' => 'Family Baptism', 'price' => '₱18,000', 'features' => ['Catering', 'Photo coverage', 'Host']],
-          ['name' => 'Premium Baptism', 'price' => '₱30,000', 'features' => ['Premium venue', 'Full styling', 'Live music']],
-        ],
-      ];
     @endphp
 
-    @if($type && isset($packages[$type]))
+    @if($type && isset($packagesData[$type]))
       <div class="mb-12 text-center">
         <h2 class="text-3xl font-bold mb-2 capitalize">{{ $type }} Packages</h2>
         <p class="text-gray-600">Choose from our curated packages for your {{ $type }} celebration.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        @foreach($packages[$type] as $package)
+        @foreach($packagesData[$type] as $index => $package)
           <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
             <h3 class="text-xl font-bold text-gray-800 mb-2">{{ $package['name'] }}</h3>
             <div class="text-2xl font-bold text-[#EF7C79] mb-4">{{ $package['price'] }}</div>
             <ul class="mb-6 text-gray-600 space-y-2">
-              @foreach($package['features'] as $feature)
+              @foreach(array_slice($package['features'], 0, 3) as $feature)
                 <li>• {{ $feature }}</li>
               @endforeach
+              @if(count($package['features']) > 3)
+                <li class="text-gray-500 italic">+{{ count($package['features']) - 3 }} more features</li>
+              @endif
             </ul>
-            <a href="{{ route('book-now') }}" class="bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-2 rounded-lg font-semibold transition duration-300">Book This Package</a>
+            <div class="flex space-x-3 w-full">
+              <button onclick="openPackageModal('{{ $package['name'] }}', '{{ $package['price'] }}', {{ json_encode($package['features']) }}, '{{ $type }}')" 
+                      class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-semibold transition duration-300">
+                View Package
+              </button>
+              <a href="{{ route('book-now') }}" class="flex-1 bg-[#EF7C79] hover:bg-[#D76C69] text-white px-4 py-2 rounded-lg font-semibold transition duration-300 text-center">
+                Book Now
+              </a>
+            </div>
           </div>
         @endforeach
       </div>
@@ -116,6 +105,54 @@
   </div>
 </section>
 
+<!-- Package Details Modal -->
+<div id="packageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center p-6 border-b border-gray-200">
+        <h2 id="modalTitle" class="text-2xl font-bold text-gray-900"></h2>
+        <button onclick="closePackageModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Modal Content -->
+      <div class="p-6">
+        <!-- Package Price -->
+        <div class="text-center mb-6">
+          <div id="modalPrice" class="text-3xl font-bold text-[#EF7C79]"></div>
+        </div>
+        
+        <!-- Package Type Badge -->
+        <div class="text-center mb-6">
+          <span id="modalType" class="inline-block bg-[#EF7C79] text-white px-4 py-2 rounded-full text-sm font-semibold capitalize"></span>
+        </div>
+        
+        <!-- Detailed Inclusions -->
+        <div class="mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 mb-4">Package Inclusions</h3>
+          <div id="modalFeatures" class="space-y-3">
+            <!-- Features will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="flex justify-end space-x-3 p-6 border-t border-gray-200">
+        <button onclick="closePackageModal()" class="px-6 py-2 text-gray-600 hover:text-gray-800 font-semibold">
+          Close
+        </button>
+        <a id="modalBookButton" href="{{ route('book-now') }}" class="bg-[#EF7C79] hover:bg-[#D76C69] text-white px-6 py-2 rounded-lg font-semibold transition duration-300">
+          Book This Package
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Footer -->
 <footer class="bg-white text-center py-6 border-t">
   <p class="text-sm text-gray-600">&copy; 2025 CrwdCtrl. All rights reserved.</p>
@@ -124,6 +161,56 @@
 <script>
   document.getElementById('menu-btn').addEventListener('click', function() {
     document.getElementById('menu').classList.toggle('hidden');
+  });
+
+  // Package Modal Functions
+  function openPackageModal(packageName, packagePrice, packageFeatures, packageType) {
+    // Set modal content
+    document.getElementById('modalTitle').textContent = packageName;
+    document.getElementById('modalPrice').textContent = packagePrice;
+    document.getElementById('modalType').textContent = packageType + ' Package';
+    
+    // Populate features
+    const featuresContainer = document.getElementById('modalFeatures');
+    featuresContainer.innerHTML = '';
+    packageFeatures.forEach(feature => {
+      const featureDiv = document.createElement('div');
+      featureDiv.className = 'flex items-start space-x-3';
+      featureDiv.innerHTML = `
+        <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span class="text-gray-700">${feature}</span>
+      `;
+      featuresContainer.appendChild(featureDiv);
+    });
+    
+    // Update book button with package info
+    const bookButton = document.getElementById('modalBookButton');
+    bookButton.href = `{{ route('book-now') }}?type=${packageType}&package=${encodeURIComponent(packageName)}`;
+    
+    // Show modal
+    document.getElementById('packageModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  }
+
+  function closePackageModal() {
+    document.getElementById('packageModal').classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('packageModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closePackageModal();
+    }
+  });
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !document.getElementById('packageModal').classList.contains('hidden')) {
+      closePackageModal();
+    }
   });
 </script>
 

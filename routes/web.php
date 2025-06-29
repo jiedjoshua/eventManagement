@@ -23,9 +23,7 @@ Route::get('/services', function () {
     return view('services');
 })->name('services');
 
-Route::get('/packages', function () {
-    return view('packages');
-})->name('packages');
+Route::get('/packages', [HomePageController::class, 'packages'])->name('packages');
 
 Route::get('/gallery', function () {
     return view('gallery');
@@ -79,6 +77,11 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::post('/admin/cms/services-page/coming-soon/update', [HomePageController::class, 'updateServicesComingSoon'])->name('admin.cms.services-page.coming-soon.update');
     Route::post('/admin/cms/services-page/why-choose/update', [HomePageController::class, 'updateServicesWhyChooseUs'])->name('admin.cms.services-page.why-choose.update');
     Route::post('/admin/cms/services-page/cta/update', [HomePageController::class, 'updateServicesCTA'])->name('admin.cms.services-page.cta.update');
+
+    // Packages Page CMS Routes
+    Route::get('/admin/cms/packages-page', [HomePageController::class, 'managePackagesPage'])->name('admin.cms.packages-page');
+    Route::post('/admin/cms/packages-page/hero/update', [HomePageController::class, 'updatePackagesHero'])->name('admin.cms.packages-page.hero.update');
+    Route::post('/admin/cms/packages-page/{type}/update', [HomePageController::class, 'updatePackagesType'])->name('admin.cms.packages-page.type.update');
 
     // Package Management Routes
     Route::resource('admin/packages', PackageController::class)->names([

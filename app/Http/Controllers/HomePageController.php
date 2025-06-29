@@ -539,4 +539,148 @@ class HomePageController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Manage packages page CMS
+     */
+    public function managePackagesPage()
+    {
+        $content = [
+            'packages_hero' => HomePageContent::where('section', 'packages_hero')->first(),
+            'packages_wedding' => HomePageContent::where('section', 'packages_wedding')->first(),
+            'packages_birthday' => HomePageContent::where('section', 'packages_birthday')->first(),
+            'packages_debut' => HomePageContent::where('section', 'packages_debut')->first(),
+            'packages_baptism' => HomePageContent::where('section', 'packages_baptism')->first(),
+        ];
+
+        return view('admin.cms.packages-page', compact('content'));
+    }
+
+    /**
+     * Update packages page hero section
+     */
+    public function updatePackagesHero(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'hero_title' => 'required|string|max:255',
+            'hero_subtitle' => 'required|string|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $hero = HomePageContent::firstOrCreate(['section' => 'packages_hero']);
+            
+            $hero->title = $request->hero_title;
+            $hero->subtitle = $request->hero_subtitle;
+            $hero->is_active = true;
+            $hero->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Packages page hero section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update packages page hero section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update packages for a specific type
+     */
+    public function updatePackagesType(Request $request, $type)
+    {
+        $validator = Validator::make($request->all(), [
+            'packages' => 'required|array|min:1',
+            'packages.*.name' => 'required|string|max:255',
+            'packages.*.price' => 'required|string|max:50',
+            'packages.*.features' => 'required|array|min:1',
+            'packages.*.features.*' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $packages = HomePageContent::firstOrCreate(['section' => 'packages_' . $type]);
+            
+            $packages->service_cards = $request->packages;
+            $packages->is_active = true;
+            $packages->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => ucfirst($type) . ' packages updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update ' . $type . ' packages: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display packages page
+     */
+    public function packages(Request $request)
+    {
+        $type = $request->get('type', 'wedding');
+        
+        // Get CMS data for packages
+        $packagesData = [];
+        
+        $weddingPackages = HomePageContent::where('section', 'packages_wedding')->first();
+        $birthdayPackages = HomePageContent::where('section', 'packages_birthday')->first();
+        $debutPackages = HomePageContent::where('section', 'packages_debut')->first();
+        $baptismPackages = HomePageContent::where('section', 'packages_baptism')->first();
+        
+        // Default packages if CMS data doesn't exist
+        $defaultWeddingPackages = [
+            ['name' => 'Classic Wedding', 'price' => '₱50,000', 'features' => ['Venue coordination', 'Basic decor', 'On-the-day coordination']],
+            ['name' => 'Elegant Wedding', 'price' => '₱100,000', 'features' => ['Premium venue', 'Full floral design', 'Photo & video coverage']],
+            ['name' => 'Luxury Wedding', 'price' => '₱200,000', 'features' => ['5-star venue', 'Luxury styling', 'Live band & emcee']],
+        ];
+        
+        $defaultBirthdayPackages = [
+            ['name' => 'Kids Party', 'price' => '₱15,000', 'features' => ['Theme decor', 'Party host', 'Games & prizes']],
+            ['name' => 'Teen Bash', 'price' => '₱25,000', 'features' => ['DJ & lights', 'Photo booth', 'Custom cake']],
+            ['name' => 'Milestone Birthday', 'price' => '₱40,000', 'features' => ['Venue rental', 'Catering', 'Live entertainment']],
+        ];
+        
+        $defaultDebutPackages = [
+            ['name' => 'Classic Debut', 'price' => '₱35,000', 'features' => ['Venue coordination', 'Basic decor', 'On-the-day coordination']],
+            ['name' => 'Elegant Debut', 'price' => '₱70,000', 'features' => ['Premium venue', 'Full floral design', 'Photo & video coverage']],
+            ['name' => 'Luxury Debut', 'price' => '₱150,000', 'features' => ['5-star venue', 'Luxury styling', 'Live band & emcee']],
+        ];
+        
+        $defaultBaptismPackages = [
+            ['name' => 'Simple Baptism', 'price' => '₱20,000', 'features' => ['Venue coordination', 'Basic decor', 'On-the-day coordination']],
+            ['name' => 'Elegant Baptism', 'price' => '₱45,000', 'features' => ['Premium venue', 'Full floral design', 'Photo & video coverage']],
+            ['name' => 'Luxury Baptism', 'price' => '₱100,000', 'features' => ['5-star venue', 'Luxury styling', 'Live band & emcee']],
+        ];
+        
+        $packagesData = [
+            'wedding' => $weddingPackages && $weddingPackages->is_active ? $weddingPackages->service_cards : $defaultWeddingPackages,
+            'birthday' => $birthdayPackages && $birthdayPackages->is_active ? $birthdayPackages->service_cards : $defaultBirthdayPackages,
+            'debut' => $debutPackages && $debutPackages->is_active ? $debutPackages->service_cards : $defaultDebutPackages,
+            'baptism' => $baptismPackages && $baptismPackages->is_active ? $baptismPackages->service_cards : $defaultBaptismPackages,
+        ];
+        
+        return view('packages', compact('packagesData', 'type'));
+    }
 } 
