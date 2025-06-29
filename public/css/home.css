@@ -3,27 +3,10 @@
   transition: color 0.3s;
 }
 
-.nav-link::after {
-  content: '';
-  position: absolute;
-  width: 0%;
-  height: 2px;
-  bottom: 0;
-  left: 0;
-  background-color: #EF7C79; /* Bootstrap primary color */
-  transition: width 0.3s;
-}
-
-.nav-link:hover::after {
-  width: 100%;
-}
-
 nav.navbar {
   padding-top: 1.5rem !important;
   padding-bottom: 1.5rem !important;
 }
-
-
 
 .btn.btn-custom-quote {
   background-color: #EF7C79 !important;
