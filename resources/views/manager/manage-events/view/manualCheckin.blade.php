@@ -75,10 +75,14 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="Search by name or email...">
                     </div>
-                    <div class="flex items-end">
+                    <div class="flex items-end gap-2">
                         <button type="submit"
                             class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                             Search
+                        </button>
+                        <button type="button" id="showAllBtn"
+                            class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            Show All
                         </button>
                     </div>
                 </div>
@@ -102,18 +106,192 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination Section -->
+            <div id="paginationSection" class="px-6 py-4 border-t border-gray-200 hidden">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalGuests">0</span> guests
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="prevPageBtn" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Previous
+                        </button>
+                        <span id="pageInfo" class="px-3 py-1 text-sm text-gray-700"></span>
+                        <button id="nextPageBtn" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
 
  <script>
     const eventId = {{ $event->id }};
+    let currentPage = 1;
+    let currentSearchTerm = '';
+    let isSearchMode = false;
 
+    // Load all guests by default when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAllGuests();
+    });
+
+    // Show All button functionality
+    document.getElementById('showAllBtn').addEventListener('click', function() {
+        currentSearchTerm = '';
+        isSearchMode = false;
+        currentPage = 1;
+        loadAllGuests();
+        document.getElementById('search').value = '';
+    });
+
+    // Search form functionality
     document.getElementById('searchForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const searchTerm = document.getElementById('search').value;
+        currentSearchTerm = searchTerm;
+        isSearchMode = true;
+        currentPage = 1;
         
-        // Show loading state
+        if (searchTerm.trim() === '') {
+            loadAllGuests();
+            return;
+        }
+        
+        performSearch(searchTerm);
+    });
+
+    // Pagination button handlers
+    document.getElementById('prevPageBtn').addEventListener('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            if (isSearchMode) {
+                performSearch(currentSearchTerm);
+            } else {
+                loadAllGuests();
+            }
+        }
+    });
+
+    document.getElementById('nextPageBtn').addEventListener('click', function() {
+        currentPage++;
+        if (isSearchMode) {
+            performSearch(currentSearchTerm);
+        } else {
+            loadAllGuests();
+        }
+    });
+
+    function loadAllGuests() {
+        showLoadingState();
+        
+        fetch('/events/' + eventId + '/all-guests?page=' + currentPage + '&per_page=20', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayGuests(data.guests);
+            updatePagination(data.pagination);
+            showPaginationSection();
+        })
+        .catch(error => {
+            showErrorState('An error occurred while loading guests. Please try again.');
+        });
+    }
+
+    function performSearch(searchTerm) {
+        showLoadingState();
+        
+        fetch('/events/' + eventId + '/search-guests?search=' + encodeURIComponent(searchTerm), {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayGuests(data.guests);
+            hidePaginationSection(); // Hide pagination for search results
+        })
+        .catch(error => {
+            showErrorState('An error occurred while searching. Please try again.');
+        });
+    }
+
+    function displayGuests(guests) {
+        let resultsHtml = '';
+        
+        if (guests && guests.length > 0) {
+            guests.forEach(function(guest) {
+                const initials = guest.first_name.charAt(0) + guest.last_name.charAt(0);
+                const statusClass = guest.checked_in_at ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                const statusText = guest.checked_in_at ? 'Checked In' : 'Not Checked In';
+                
+                resultsHtml += 
+                    '<tr class="hover:bg-gray-50 transition-colors">' +
+                        '<td class="px-6 py-4 whitespace-nowrap">' +
+                            '<div class="flex items-center">' +
+                                '<div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">' +
+                                    '<span class="text-indigo-600 font-medium">' + initials + '</span>' +
+                                '</div>' +
+                                '<div class="ml-4">' +
+                                    '<div class="text-sm font-medium text-gray-900">' + 
+                                        guest.first_name + ' ' + guest.last_name +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</td>' +
+                        '<td class="px-6 py-4 whitespace-nowrap">' +
+                            '<div class="text-sm text-gray-900">' + guest.email + '</div>' +
+                        '</td>' +
+                        '<td class="px-6 py-4 whitespace-nowrap">' +
+                            '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + statusClass + '">' +
+                                statusText +
+                            '</span>' +
+                        '</td>' +
+                        '<td class="px-6 py-4 whitespace-nowrap text-sm">';
+                
+                if (!guest.checked_in_at) {
+                    resultsHtml += 
+                        '<button onclick="checkInGuest(' + guest.id + ')" ' +
+                            'class="text-indigo-600 hover:text-indigo-900 font-medium">' +
+                            'Check In' +
+                        '</button>';
+                } else {
+                    resultsHtml += '<span class="text-gray-500">Already checked in</span>';
+                }
+                
+                resultsHtml += '</td></tr>';
+            });
+        } else {
+            resultsHtml = 
+                '<tr>' +
+                    '<td colspan="4" class="px-6 py-4 text-center text-gray-500">' +
+                        'No guests found matching your search.' +
+                    '</td>' +
+                '</tr>';
+        }
+
+        document.getElementById('searchResults').innerHTML = resultsHtml;
+    }
+
+    function updatePagination(pagination) {
+        document.getElementById('showingFrom').textContent = ((pagination.current_page - 1) * pagination.per_page) + 1;
+        document.getElementById('showingTo').textContent = Math.min(pagination.current_page * pagination.per_page, pagination.total);
+        document.getElementById('totalGuests').textContent = pagination.total;
+        document.getElementById('pageInfo').textContent = `Page ${pagination.current_page} of ${pagination.last_page}`;
+        
+        document.getElementById('prevPageBtn').disabled = pagination.current_page <= 1;
+        document.getElementById('nextPageBtn').disabled = pagination.current_page >= pagination.last_page;
+    }
+
+    function showLoadingState() {
         document.getElementById('searchResults').innerHTML = 
             '<tr>' +
                 '<td colspan="4" class="px-6 py-4 text-center">' +
@@ -125,80 +303,24 @@
                     '</div>' +
                 '</td>' +
             '</tr>';
+    }
 
-        // Update the fetch URL to use the web route
-        fetch('/events/' + eventId + '/search-guests?search=' + encodeURIComponent(searchTerm), {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            let resultsHtml = '';
-            
-            if (data.guests && data.guests.length > 0) {
-                data.guests.forEach(function(guest) {
-                    const initials = guest.first_name.charAt(0) + guest.last_name.charAt(0);
-                    const statusClass = guest.checked_in_at ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
-                    const statusText = guest.checked_in_at ? 'Checked In' : 'Not Checked In';
-                    
-                    resultsHtml += 
-                        '<tr class="hover:bg-gray-50 transition-colors">' +
-                            '<td class="px-6 py-4 whitespace-nowrap">' +
-                                '<div class="flex items-center">' +
-                                    '<div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">' +
-                                        '<span class="text-indigo-600 font-medium">' + initials + '</span>' +
-                                    '</div>' +
-                                    '<div class="ml-4">' +
-                                        '<div class="text-sm font-medium text-gray-900">' + 
-                                            guest.first_name + ' ' + guest.last_name +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</td>' +
-                            '<td class="px-6 py-4 whitespace-nowrap">' +
-                                '<div class="text-sm text-gray-900">' + guest.email + '</div>' +
-                            '</td>' +
-                            '<td class="px-6 py-4 whitespace-nowrap">' +
-                                '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + statusClass + '">' +
-                                    statusText +
-                                '</span>' +
-                            '</td>' +
-                            '<td class="px-6 py-4 whitespace-nowrap text-sm">';
-                    
-                    if (!guest.checked_in_at) {
-                        resultsHtml += 
-                            '<button onclick="checkInGuest(' + guest.id + ')" ' +
-                                'class="text-indigo-600 hover:text-indigo-900 font-medium">' +
-                                'Check In' +
-                            '</button>';
-                    } else {
-                        resultsHtml += '<span class="text-gray-500">Already checked in</span>';
-                    }
-                    
-                    resultsHtml += '</td></tr>';
-                });
-            } else {
-                resultsHtml = 
-                    '<tr>' +
-                        '<td colspan="4" class="px-6 py-4 text-center text-gray-500">' +
-                            'No guests found matching your search.' +
-                        '</td>' +
-                    '</tr>';
-            }
+    function showErrorState(message) {
+        document.getElementById('searchResults').innerHTML = 
+            '<tr>' +
+                '<td colspan="4" class="px-6 py-4 text-center text-red-500">' +
+                    message +
+                '</td>' +
+            '</tr>';
+    }
 
-            document.getElementById('searchResults').innerHTML = resultsHtml;
-        })
-        .catch(error => {
-            document.getElementById('searchResults').innerHTML = 
-                '<tr>' +
-                    '<td colspan="4" class="px-6 py-4 text-center text-red-500">' +
-                        'An error occurred while searching. Please try again.' +
-                    '</td>' +
-                '</tr>';
-        });
-    });
+    function showPaginationSection() {
+        document.getElementById('paginationSection').classList.remove('hidden');
+    }
+
+    function hidePaginationSection() {
+        document.getElementById('paginationSection').classList.add('hidden');
+    }
 
     function checkInGuest(guestId) {
         fetch('/events/' + eventId + '/check-in/' + guestId, {
@@ -213,8 +335,12 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Refresh the search results
-                document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+                // Refresh the current view
+                if (isSearchMode) {
+                    performSearch(currentSearchTerm);
+                } else {
+                    loadAllGuests();
+                }
             } else {
                 alert(data.message || 'Failed to check in guest');
             }

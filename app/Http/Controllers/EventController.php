@@ -344,7 +344,9 @@ class EventController extends Controller
             ->where(function ($query) use ($search) {
                 $query->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
+                    ->orWhereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$search}%"]);
             })
             ->withPivot('checked_in_at')  // Make sure this is included
             ->get()
@@ -360,6 +362,40 @@ class EventController extends Controller
 
         return response()->json(['guests' => $guests]);
     }
+
+    public function getAllGuests(Request $request, Event $event)
+    {
+        $page = $request->query('page', 1);
+        $perPage = $request->query('per_page', 20); // Default 20 guests per page
+
+        $guests = $event->guests()
+            ->withPivot('checked_in_at')
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->paginate($perPage)
+            ->through(function ($guest) {
+                return [
+                    'id' => $guest->id,
+                    'first_name' => $guest->first_name,
+                    'last_name' => $guest->last_name,
+                    'email' => $guest->email,
+                    'checked_in_at' => $guest->pivot->checked_in_at
+                ];
+            });
+
+        return response()->json([
+            'guests' => $guests->items(),
+            'pagination' => [
+                'current_page' => $guests->currentPage(),
+                'last_page' => $guests->lastPage(),
+                'per_page' => $guests->perPage(),
+                'total' => $guests->total(),
+                'next_page_url' => $guests->nextPageUrl(),
+                'prev_page_url' => $guests->previousPageUrl(),
+            ]
+        ]);
+    }
+
     public function manualCheckIn(Request $request, Event $event, $guestId)
     {
         $guest = $event->guests()->where('user_id', $guestId)->first();
