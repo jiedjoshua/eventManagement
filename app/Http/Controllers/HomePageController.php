@@ -281,4 +281,272 @@ class HomePageController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Manage services page content
+     */
+    public function manageServicesPage()
+    {
+        $content = HomePageContent::getAllActive();
+        
+        return view('admin.cms.services-page', compact('content'));
+    }
+
+    /**
+     * Update services page hero section
+     */
+    public function updateServicesHero(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'hero_title' => 'required|string|max:255',
+            'hero_subtitle' => 'required|string|max:500',
+            'hero_button_text' => 'required|string|max:100',
+            'hero_button_link' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $hero = HomePageContent::firstOrCreate(['section' => 'services_hero']);
+            
+            $hero->title = $request->hero_title;
+            $hero->subtitle = $request->hero_subtitle;
+            $hero->button_text = $request->hero_button_text;
+            $hero->button_link = $request->hero_button_link;
+            $hero->is_active = true;
+            $hero->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Services page hero section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update services page hero section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update services page main services section
+     */
+    public function updateServicesPageServices(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'services' => 'required|array|min:1',
+            'services.*.title' => 'required|string|max:255',
+            'services.*.description' => 'required|string|max:1000',
+            'services.*.image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'services.*.type' => 'required|string|max:100',
+            'services.*.features' => 'required|array|min:1',
+            'services.*.features.*' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $services = HomePageContent::firstOrCreate(['section' => 'services_page_services']);
+            $services->is_active = true;
+
+            $serviceCards = [];
+            
+            foreach ($request->services as $index => $serviceData) {
+                $serviceCard = [
+                    'title' => $serviceData['title'],
+                    'description' => $serviceData['description'],
+                    'type' => $serviceData['type'],
+                    'features' => $serviceData['features'],
+                    'link' => route('packages') . '?type=' . strtolower($serviceData['type'])
+                ];
+
+                // Handle image upload for each service to public/img directory
+                if (isset($serviceData['image']) && $serviceData['image']) {
+                    // Delete old image if exists
+                    if (isset($services->service_cards[$index]['image_path']) && file_exists(public_path(str_replace('/public', '', $services->service_cards[$index]['image_path'])))) {
+                        unlink(public_path(str_replace('/public', '', $services->service_cards[$index]['image_path'])));
+                    }
+
+                    $image = $serviceData['image'];
+                    $imageName = 'services_page_' . strtolower($serviceData['type']) . '_' . time() . '.' . $image->getClientOriginalExtension();
+                    $imagePath = '/public/img/' . $imageName;
+                    
+                    // Move image to public/img directory
+                    $image->move(public_path('img'), $imageName);
+                    $serviceCard['image_path'] = $imagePath;
+                } else {
+                    // Keep existing image if no new image uploaded
+                    if (isset($services->service_cards[$index]['image_path'])) {
+                        $existingPath = $services->service_cards[$index]['image_path'];
+                        // Ensure the path is in the correct format
+                        if (strpos($existingPath, '/public/img/') === 0) {
+                            $serviceCard['image_path'] = $existingPath;
+                        } else {
+                            // Convert old format to new format
+                            $serviceCard['image_path'] = '/public/img/' . basename($existingPath);
+                        }
+                    }
+                }
+
+                $serviceCards[] = $serviceCard;
+            }
+
+            $services->service_cards = $serviceCards;
+            $services->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Services page services section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update services page services section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update services page coming soon section
+     */
+    public function updateServicesComingSoon(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'coming_soon_title' => 'required|string|max:255',
+            'coming_soon_subtitle' => 'required|string|max:500',
+            'coming_soon_services' => 'required|array|min:1',
+            'coming_soon_services.*.title' => 'required|string|max:255',
+            'coming_soon_services.*.description' => 'required|string|max:500',
+            'coming_soon_services.*.icon' => 'required|string|max:100'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $comingSoon = HomePageContent::firstOrCreate(['section' => 'services_coming_soon']);
+            
+            $comingSoon->title = $request->coming_soon_title;
+            $comingSoon->subtitle = $request->coming_soon_subtitle;
+            $comingSoon->service_cards = $request->coming_soon_services;
+            $comingSoon->is_active = true;
+            $comingSoon->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Services page coming soon section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update services page coming soon section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update services page why choose us section
+     */
+    public function updateServicesWhyChooseUs(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'why_choose_title' => 'required|string|max:255',
+            'why_choose_features' => 'required|array|min:1',
+            'why_choose_features.*.title' => 'required|string|max:255',
+            'why_choose_features.*.description' => 'required|string|max:500',
+            'why_choose_features.*.icon' => 'required|string|max:100'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $whyChoose = HomePageContent::firstOrCreate(['section' => 'services_why_choose']);
+            
+            $whyChoose->title = $request->why_choose_title;
+            $whyChoose->service_cards = $request->why_choose_features;
+            $whyChoose->is_active = true;
+            $whyChoose->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Services page why choose us section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update services page why choose us section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update services page CTA section
+     */
+    public function updateServicesCTA(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'cta_title' => 'required|string|max:255',
+            'cta_subtitle' => 'required|string|max:500',
+            'cta_primary_button_text' => 'required|string|max:100',
+            'cta_primary_button_link' => 'required|string|max:255',
+            'cta_secondary_button_text' => 'required|string|max:100',
+            'cta_secondary_button_link' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $cta = HomePageContent::firstOrCreate(['section' => 'services_cta']);
+            
+            $cta->title = $request->cta_title;
+            $cta->subtitle = $request->cta_subtitle;
+            $cta->button_text = $request->cta_primary_button_text;
+            $cta->button_link = $request->cta_primary_button_link;
+            $cta->service_cards = [
+                'secondary_button_text' => $request->cta_secondary_button_text,
+                'secondary_button_link' => $request->cta_secondary_button_link
+            ];
+            $cta->is_active = true;
+            $cta->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Services page CTA section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update services page CTA section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 
