@@ -114,7 +114,7 @@
       @foreach($galleryData['images'] as $image)
         <div class="gallery-item {{ $image['category'] }}" data-category="{{ $image['category'] }}">
           <div class="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
-            <img src="{{ asset($image['image_path'] ?? '/img/placeholder.jpg') }}" alt="{{ $image['alt_text'] ?? 'Gallery Image' }}" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
+            <img src="{{ asset(str_replace('/public', '', $image['image_path'] ?? '/img/placeholder.jpg')) }}" alt="{{ $image['alt_text'] ?? 'Gallery Image' }}" class="w-full h-48 md:h-64 object-cover transition duration-300 group-hover:scale-110">
             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition duration-300 flex items-center justify-center">
               <div class="text-white text-center opacity-0 group-hover:opacity-100 transition duration-300">
                 <h3 class="text-base md:text-lg font-bold mb-1 md:mb-2">{{ $image['title'] ?? 'Gallery Image' }}</h3>

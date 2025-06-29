@@ -176,7 +176,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
                                 <div class="flex items-center space-x-4">
                                     @if(isset($image['image_path']))
-                                        <img src="{{ asset($image['image_path']) }}" 
+                                        <img src="{{ asset(str_replace('/public', '', $image['image_path'])) }}" 
                                              alt="{{ $image['alt_text'] }}" 
                                              class="w-20 h-20 object-cover rounded-lg border">
                                     @endif

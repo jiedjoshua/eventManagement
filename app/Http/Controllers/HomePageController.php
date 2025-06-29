@@ -780,7 +780,7 @@ class HomePageController extends Controller
 
                     $image = $imageData['image'];
                     $imageName = 'gallery_' . $imageData['category'] . '_' . time() . '_' . $index . '.' . $image->getClientOriginalExtension();
-                    $imagePath = '/img/' . $imageName;
+                    $imagePath = '/public/img/' . $imageName;
                     
                     // Move image to public/img directory
                     $image->move(public_path('img'), $imageName);
@@ -789,10 +789,10 @@ class HomePageController extends Controller
                     // Keep existing image if no new image uploaded
                     if (isset($galleryImages->service_cards[$index]['image_path'])) {
                         $existingPath = $galleryImages->service_cards[$index]['image_path'];
-                        if (strpos($existingPath, '/img/') === 0) {
+                        if (strpos($existingPath, '/public/img/') === 0) {
                             $imageItem['image_path'] = $existingPath;
                         } else {
-                            $imageItem['image_path'] = '/img/' . basename($existingPath);
+                            $imageItem['image_path'] = '/public/img/' . basename($existingPath);
                         }
                     }
                 }
@@ -881,42 +881,42 @@ class HomePageController extends Controller
                 'description' => 'Beautiful outdoor ceremony',
                 'category' => 'wedding',
                 'alt_text' => 'Wedding Celebration',
-                'image_path' => '/img/wedding.webp'
+                'image_path' => '/public/img/wedding.webp'
             ],
             [
                 'title' => 'Wedding Reception',
                 'description' => 'Magical evening celebration',
                 'category' => 'wedding',
                 'alt_text' => 'Wedding Reception',
-                'image_path' => '/img/wedding.png'
+                'image_path' => '/public/img/wedding.png'
             ],
             [
                 'title' => 'Birthday Celebration',
                 'description' => 'Fun and colorful party',
                 'category' => 'birthday',
                 'alt_text' => 'Birthday Party',
-                'image_path' => '/img/birthday.jpg'
+                'image_path' => '/public/img/birthday.jpg'
             ],
             [
                 'title' => '18th Debut',
                 'description' => 'Elegant coming-of-age celebration',
                 'category' => 'debut',
                 'alt_text' => 'Debut Celebration',
-                'image_path' => '/img/debut.webp'
+                'image_path' => '/public/img/debut.webp'
             ],
             [
                 'title' => 'Baptism Ceremony',
                 'description' => 'Sacred family celebration',
                 'category' => 'baptism',
                 'alt_text' => 'Baptism Ceremony',
-                'image_path' => '/img/baptism.jpg'
+                'image_path' => '/public/img/baptism.jpg'
             ],
             [
                 'title' => 'Wedding Transportation',
                 'description' => 'Luxury wedding car service',
                 'category' => 'wedding',
                 'alt_text' => 'Wedding Transportation',
-                'image_path' => '/img/car1.jpg'
+                'image_path' => '/public/img/car1.jpg'
             ]
         ];
         
