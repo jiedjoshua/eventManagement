@@ -48,7 +48,7 @@
               <span class="ml-2 text-sm text-gray-600">Remember me</span>
             </label>
 
-            <a href="/password/reset" class="text-sm text-blue-600 hover:underline hover:text-blue-800 transition">Forgot your password?</a>
+            <a href="{{ route('password.request') }}" class="text-sm text-blue-600 hover:underline hover:text-blue-800 transition">Forgot your password?</a>
           </div>
 
           <button type="submit"

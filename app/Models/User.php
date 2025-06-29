@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Event;
+use App\Notifications\CustomPasswordResetNotification;
 use Laravel\Cashier\Billable;
 
 class User extends Authenticatable
@@ -68,6 +69,16 @@ class User extends Authenticatable
         return $this->attributes['role'] ?? 'regular_user';
     }
 
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomPasswordResetNotification($token));
+    }
 
     /**
      * Boot function from Laravel.
