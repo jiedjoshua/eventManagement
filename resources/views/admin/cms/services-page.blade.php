@@ -11,9 +11,23 @@
         </div>
 
         <!-- Success/Error Messages -->
-        <div id="message-container" class="hidden">
-            <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded"></div>
-            <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"></div>
+        <div id="message-container" class="fixed top-4 right-4 z-50 hidden">
+            <div id="success-message" class="hidden bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="font-medium"></span>
+                </div>
+            </div>
+            <div id="error-message" class="hidden bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span class="font-medium"></span>
+                </div>
+            </div>
         </div>
 
         <!-- Hero Section -->
@@ -351,21 +365,35 @@
             const successMsg = document.getElementById('success-message');
             const errorMsg = document.getElementById('error-message');
             
-            container.classList.remove('hidden');
+            // Hide any existing messages first
             successMsg.classList.add('hidden');
             errorMsg.classList.add('hidden');
             
+            // Show container and add slide-in animation
+            container.classList.remove('hidden');
+            container.style.transform = 'translateX(100%)';
+            
+            // Force reflow
+            container.offsetHeight;
+            
+            // Slide in
+            container.style.transform = 'translateX(0)';
+            
             if (type === 'success') {
-                successMsg.textContent = message;
+                successMsg.querySelector('span').textContent = message;
                 successMsg.classList.remove('hidden');
             } else {
-                errorMsg.textContent = message;
+                errorMsg.querySelector('span').textContent = message;
                 errorMsg.classList.remove('hidden');
             }
             
+            // Auto hide after 4 seconds
             setTimeout(() => {
-                container.classList.add('hidden');
-            }, 5000);
+                container.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    container.classList.add('hidden');
+                }, 300);
+            }, 4000);
         }
 
         // Toggle section visibility
