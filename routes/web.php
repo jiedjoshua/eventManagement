@@ -31,9 +31,7 @@ Route::get('/about', function () {
     return view('about');
 })->name('about');
 
-Route::get('/contact', function () {
-    return view('contact');
-})->name('contact');
+Route::get('/contact', [HomePageController::class, 'contact'])->name('contact');
 
 Route::get('/terms', function () {
     return view('terms');
@@ -86,6 +84,22 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::post('/admin/cms/gallery-page/hero/update', [HomePageController::class, 'updateGalleryHero'])->name('admin.cms.gallery-page.hero.update');
     Route::post('/admin/cms/gallery-page/images/update', [HomePageController::class, 'updateGalleryImages'])->name('admin.cms.gallery-page.images.update');
     Route::post('/admin/cms/gallery-page/cta/update', [HomePageController::class, 'updateGalleryCTA'])->name('admin.cms.gallery-page.cta.update');
+
+    // About Page CMS Routes
+    Route::get('/admin/cms/about-page', [HomePageController::class, 'manageAboutPage'])->name('admin.cms.about-page');
+    Route::post('/admin/cms/about-page/hero/update', [HomePageController::class, 'updateAboutHero'])->name('admin.cms.about-page.hero.update');
+    Route::post('/admin/cms/about-page/story/update', [HomePageController::class, 'updateAboutStory'])->name('admin.cms.about-page.story.update');
+    Route::post('/admin/cms/about-page/mission-vision/update', [HomePageController::class, 'updateAboutMissionVision'])->name('admin.cms.about-page.mission-vision.update');
+    Route::post('/admin/cms/about-page/values/update', [HomePageController::class, 'updateAboutValues'])->name('admin.cms.about-page.values.update');
+    Route::post('/admin/cms/about-page/stats/update', [HomePageController::class, 'updateAboutStats'])->name('admin.cms.about-page.stats.update');
+    Route::post('/admin/cms/about-page/cta/update', [HomePageController::class, 'updateAboutCTA'])->name('admin.cms.about-page.cta.update');
+
+    // Contact Page CMS Routes
+    Route::get('/admin/cms/contact-page', [HomePageController::class, 'manageContactPage'])->name('admin.cms.contact-page');
+    Route::post('/admin/cms/contact-page/hero/update', [HomePageController::class, 'updateContactHero'])->name('admin.cms.contact-page.hero.update');
+    Route::post('/admin/cms/contact-page/info/update', [HomePageController::class, 'updateContactInfo'])->name('admin.cms.contact-page.info.update');
+    Route::post('/admin/cms/contact-page/faq/update', [HomePageController::class, 'updateContactFAQ'])->name('admin.cms.contact-page.faq.update');
+    Route::post('/admin/cms/contact-page/cta/update', [HomePageController::class, 'updateContactCTA'])->name('admin.cms.contact-page.cta.update');
 
     // Package Management Routes
     Route::resource('admin/packages', PackageController::class)->names([

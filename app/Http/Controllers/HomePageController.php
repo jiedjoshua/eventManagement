@@ -946,4 +946,574 @@ class HomePageController extends Controller
         
         return view('gallery', compact('galleryData'));
     }
+
+    /**
+     * Manage about page content
+     */
+    public function manageAboutPage()
+    {
+        $content = HomePageContent::getAllActive();
+        
+        return view('admin.cms.about-page', compact('content'))->with('activePage', 'about-cms');
+    }
+
+    /**
+     * Update about page hero section
+     */
+    public function updateAboutHero(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'hero_title' => 'required|string|max:255',
+            'hero_subtitle' => 'required|string|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $hero = HomePageContent::firstOrCreate(['section' => 'about_hero']);
+            
+            $hero->title = $request->hero_title;
+            $hero->subtitle = $request->hero_subtitle;
+            $hero->is_active = true;
+            $hero->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'About page hero section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update about page hero section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update about page story section
+     */
+    public function updateAboutStory(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'story_title' => 'required|string|max:255',
+            'story_content' => 'required|string|max:2000',
+            'story_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $story = HomePageContent::firstOrCreate(['section' => 'about_story']);
+            
+            $story->title = $request->story_title;
+            $story->description = $request->story_content;
+            $story->is_active = true;
+
+            // Handle image upload
+            if ($request->hasFile('story_image')) {
+                // Delete old image if exists
+                if ($story->image_path && file_exists(public_path($story->image_path))) {
+                    unlink(public_path($story->image_path));
+                }
+
+                $image = $request->file('story_image');
+                $imageName = 'about_story_' . time() . '.' . $image->getClientOriginalExtension();
+                $imagePath = '/public/img/' . $imageName;
+                
+                // Move image to public/img directory
+                $image->move(public_path('img'), $imageName);
+                $story->image_path = $imagePath;
+            }
+
+            $story->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'About page story section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update about page story section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update about page mission and vision section
+     */
+    public function updateAboutMissionVision(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'mission_title' => 'required|string|max:255',
+            'mission_content' => 'required|string|max:1000',
+            'vision_title' => 'required|string|max:255',
+            'vision_content' => 'required|string|max:1000'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $missionVision = HomePageContent::firstOrCreate(['section' => 'about_mission_vision']);
+            
+            $missionVision->service_cards = [
+                'mission_title' => $request->mission_title,
+                'mission_content' => $request->mission_content,
+                'vision_title' => $request->vision_title,
+                'vision_content' => $request->vision_content
+            ];
+            $missionVision->is_active = true;
+            $missionVision->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'About page mission and vision updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update about page mission and vision: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update about page values section
+     */
+    public function updateAboutValues(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'values_title' => 'required|string|max:255',
+            'values' => 'required|array|min:1',
+            'values.*.title' => 'required|string|max:255',
+            'values.*.description' => 'required|string|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $values = HomePageContent::firstOrCreate(['section' => 'about_values']);
+            
+            $values->title = $request->values_title;
+            $values->service_cards = $request->values;
+            $values->is_active = true;
+            $values->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'About page values updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update about page values: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update about page stats section
+     */
+    public function updateAboutStats(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'stats' => 'required|array|min:1',
+            'stats.*.number' => 'required|string|max:50',
+            'stats.*.label' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $stats = HomePageContent::firstOrCreate(['section' => 'about_stats']);
+            
+            $stats->service_cards = $request->stats;
+            $stats->is_active = true;
+            $stats->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'About page statistics updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update about page statistics: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update about page CTA section
+     */
+    public function updateAboutCTA(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'cta_title' => 'required|string|max:255',
+            'cta_subtitle' => 'required|string|max:500',
+            'cta_primary_button_text' => 'required|string|max:100',
+            'cta_primary_button_link' => 'required|string|max:255',
+            'cta_secondary_button_text' => 'required|string|max:100',
+            'cta_secondary_button_link' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $cta = HomePageContent::firstOrCreate(['section' => 'about_cta']);
+            
+            $cta->title = $request->cta_title;
+            $cta->subtitle = $request->cta_subtitle;
+            $cta->button_text = $request->cta_primary_button_text;
+            $cta->button_link = $request->cta_primary_button_link;
+            $cta->service_cards = [
+                'secondary_button_text' => $request->cta_secondary_button_text,
+                'secondary_button_link' => $request->cta_secondary_button_link
+            ];
+            $cta->is_active = true;
+            $cta->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'About page CTA section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update about page CTA section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Manage contact page content
+     */
+    public function manageContactPage()
+    {
+        $content = [
+            'contact_hero' => HomePageContent::where('section', 'contact_hero')->first(),
+            'contact_info' => HomePageContent::where('section', 'contact_info')->first(),
+            'contact_faq' => HomePageContent::where('section', 'contact_faq')->first(),
+            'contact_cta' => HomePageContent::where('section', 'contact_cta')->first(),
+        ];
+        
+        return view('admin.cms.contact-page', compact('content'));
+    }
+
+    /**
+     * Update contact page hero section
+     */
+    public function updateContactHero(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'hero_title' => 'required|string|max:255',
+            'hero_subtitle' => 'required|string|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $hero = HomePageContent::firstOrCreate(['section' => 'contact_hero']);
+            
+            $hero->title = $request->hero_title;
+            $hero->subtitle = $request->hero_subtitle;
+            $hero->is_active = true;
+            $hero->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contact page hero section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update contact page hero section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update contact information section
+     */
+    public function updateContactInfo(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'info_title' => 'required|string|max:255',
+            'info_description' => 'required|string|max:1000',
+            'contact_phone' => 'required|string|max:50',
+            'contact_email' => 'required|email|max:255',
+            'contact_address' => 'required|string|max:255',
+            'business_hours' => 'required|string|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $info = HomePageContent::firstOrCreate(['section' => 'contact_info']);
+            
+            $info->title = $request->info_title;
+            $info->description = $request->info_description;
+            $info->contact_phone = $request->contact_phone;
+            $info->contact_email = $request->contact_email;
+            $info->contact_address = $request->contact_address;
+            $info->service_cards = [
+                'business_hours' => $request->business_hours
+            ];
+            $info->is_active = true;
+            $info->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contact information updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update contact information: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update contact FAQ section
+     */
+    public function updateContactFAQ(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'faq_title' => 'required|string|max:255',
+            'faqs' => 'required|array|min:1',
+            'faqs.*.question' => 'required|string|max:255',
+            'faqs.*.answer' => 'required|string|max:1000'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $faq = HomePageContent::firstOrCreate(['section' => 'contact_faq']);
+            
+            $faq->title = $request->faq_title;
+            $faq->service_cards = $request->faqs;
+            $faq->is_active = true;
+            $faq->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'FAQ section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update FAQ section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update contact page CTA section
+     */
+    public function updateContactCTA(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'cta_title' => 'required|string|max:255',
+            'cta_subtitle' => 'required|string|max:500',
+            'cta_button_text' => 'required|string|max:100',
+            'cta_button_link' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $cta = HomePageContent::firstOrCreate(['section' => 'contact_cta']);
+            
+            $cta->title = $request->cta_title;
+            $cta->subtitle = $request->cta_subtitle;
+            $cta->button_text = $request->cta_button_text;
+            $cta->button_link = $request->cta_button_link;
+            $cta->is_active = true;
+            $cta->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contact page CTA section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update contact page CTA section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display about page with dynamic content
+     */
+    public function about()
+    {
+        // Get CMS data for about page
+        $aboutHero = HomePageContent::where('section', 'about_hero')->first();
+        $aboutStory = HomePageContent::where('section', 'about_story')->first();
+        $aboutMissionVision = HomePageContent::where('section', 'about_mission_vision')->first();
+        $aboutValues = HomePageContent::where('section', 'about_values')->first();
+        $aboutStats = HomePageContent::where('section', 'about_stats')->first();
+        $aboutCTA = HomePageContent::where('section', 'about_cta')->first();
+        
+        // Default content if CMS data doesn't exist
+        $aboutData = [
+            'hero' => [
+                'title' => $aboutHero && $aboutHero->is_active ? $aboutHero->title : 'About CrwdCtrl',
+                'subtitle' => $aboutHero && $aboutHero->is_active ? $aboutHero->subtitle : 'Creating unforgettable moments, one event at a time'
+            ],
+            'story' => [
+                'title' => $aboutStory && $aboutStory->is_active ? $aboutStory->title : 'Our Story',
+                'content' => $aboutStory && $aboutStory->is_active ? $aboutStory->description : 'Founded with a passion for creating extraordinary experiences, CrwdCtrl began as a small team of event enthusiasts who believed that every celebration deserves to be perfect. What started as a dream to make events more memorable has grown into a trusted name in event management across Bataan and beyond.',
+                'image_path' => $aboutStory && $aboutStory->is_active && $aboutStory->image_path ? $aboutStory->image_path : '/public/img/about-story.jpg'
+            ],
+            'mission_vision' => [
+                'mission_title' => $aboutMissionVision && $aboutMissionVision->is_active && $aboutMissionVision->service_cards && isset($aboutMissionVision->service_cards['mission_title']) ? $aboutMissionVision->service_cards['mission_title'] : 'Our Mission',
+                'mission_content' => $aboutMissionVision && $aboutMissionVision->is_active && $aboutMissionVision->service_cards && isset($aboutMissionVision->service_cards['mission_content']) ? $aboutMissionVision->service_cards['mission_content'] : 'To transform ordinary moments into extraordinary memories by providing innovative, personalized, and seamless event planning services that exceed expectations and create lasting impressions for our clients and their guests.',
+                'vision_title' => $aboutMissionVision && $aboutMissionVision->is_active && $aboutMissionVision->service_cards && isset($aboutMissionVision->service_cards['vision_title']) ? $aboutMissionVision->service_cards['vision_title'] : 'Our Vision',
+                'vision_content' => $aboutMissionVision && $aboutMissionVision->is_active && $aboutMissionVision->service_cards && isset($aboutMissionVision->service_cards['vision_content']) ? $aboutMissionVision->service_cards['vision_content'] : 'To be the leading event management company in the region, known for our creativity, reliability, and commitment to excellence. We aspire to set new standards in the industry while building lasting relationships with our clients and partners.'
+            ],
+            'values' => [
+                'title' => $aboutValues && $aboutValues->is_active ? $aboutValues->title : 'Our Core Values',
+                'values' => $aboutValues && $aboutValues->is_active && $aboutValues->service_cards ? $aboutValues->service_cards : [
+                    ['title' => 'Passion', 'description' => 'We pour our hearts into every event, treating each celebration as if it were our own.'],
+                    ['title' => 'Excellence', 'description' => 'We strive for perfection in every detail, ensuring flawless execution of your vision.'],
+                    ['title' => 'Trust', 'description' => 'We build lasting relationships based on transparency, honesty, and mutual respect.'],
+                    ['title' => 'Innovation', 'description' => 'We embrace new ideas and technologies to create unique and memorable experiences.']
+                ]
+            ],
+            'stats' => [
+                'stats' => $aboutStats && $aboutStats->is_active && $aboutStats->service_cards ? $aboutStats->service_cards : [
+                    ['number' => '500+', 'label' => 'Events Successfully Planned'],
+                    ['number' => '5+', 'label' => 'Years of Experience'],
+                    ['number' => '98%', 'label' => 'Client Satisfaction Rate'],
+                    ['number' => '50+', 'label' => 'Venue Partnerships']
+                ]
+            ],
+            'cta' => [
+                'title' => $aboutCTA && $aboutCTA->is_active ? $aboutCTA->title : 'Ready to Create Something Amazing?',
+                'subtitle' => $aboutCTA && $aboutCTA->is_active ? $aboutCTA->subtitle : 'Let\'s work together to make your next event unforgettable',
+                'primary_button_text' => $aboutCTA && $aboutCTA->is_active ? $aboutCTA->button_text : 'Start Planning',
+                'primary_button_link' => $aboutCTA && $aboutCTA->is_active ? $aboutCTA->button_link : route('book-now'),
+                'secondary_button_text' => $aboutCTA && $aboutCTA->is_active && $aboutCTA->service_cards && isset($aboutCTA->service_cards['secondary_button_text']) ? $aboutCTA->service_cards['secondary_button_text'] : 'Get in Touch',
+                'secondary_button_link' => $aboutCTA && $aboutCTA->is_active && $aboutCTA->service_cards && isset($aboutCTA->service_cards['secondary_button_link']) ? $aboutCTA->service_cards['secondary_button_link'] : route('home') . '#contact'
+            ]
+        ];
+        
+        return view('about', compact('aboutData'));
+    }
+
+    /**
+     * Display contact page with dynamic content
+     */
+    public function contact()
+    {
+        // Get CMS data for contact page
+        $contactHero = HomePageContent::where('section', 'contact_hero')->first();
+        $contactInfo = HomePageContent::where('section', 'contact_info')->first();
+        $contactFAQ = HomePageContent::where('section', 'contact_faq')->first();
+        $contactCTA = HomePageContent::where('section', 'contact_cta')->first();
+        
+        // Default content if CMS data doesn't exist
+        $contactData = [
+            'hero' => [
+                'title' => $contactHero && $contactHero->is_active ? $contactHero->title : 'Get in Touch',
+                'subtitle' => $contactHero && $contactHero->is_active ? $contactHero->subtitle : 'Ready to start planning your perfect event? We\'d love to hear from you!'
+            ],
+            'info' => [
+                'title' => $contactInfo && $contactInfo->is_active ? $contactInfo->title : 'Let\'s Start Planning Together',
+                'description' => $contactInfo && $contactInfo->is_active ? $contactInfo->description : 'Whether you\'re planning a wedding, birthday celebration, or any special event, our team is here to help bring your vision to life. Reach out to us and let\'s create something extraordinary together.',
+                'phone' => $contactInfo && $contactInfo->is_active ? $contactInfo->contact_phone : '+63 912 345 6789',
+                'email' => $contactInfo && $contactInfo->is_active ? $contactInfo->contact_email : 'hello@crwdctrl.ph',
+                'address' => $contactInfo && $contactInfo->is_active ? $contactInfo->contact_address : 'Bataan, Philippines',
+                'business_hours' => $contactInfo && $contactInfo->is_active && $contactInfo->service_cards && isset($contactInfo->service_cards['business_hours']) ? $contactInfo->service_cards['business_hours'] : 'Monday - Friday: 9:00 AM - 6:00 PM\nSaturday: 9:00 AM - 4:00 PM'
+            ],
+            'faq' => [
+                'title' => $contactFAQ && $contactFAQ->is_active ? $contactFAQ->title : 'Frequently Asked Questions',
+                'faqs' => $contactFAQ && $contactFAQ->is_active && $contactFAQ->service_cards ? $contactFAQ->service_cards : [
+                    [
+                        'question' => 'How far in advance should I book my event?',
+                        'answer' => 'We recommend booking at least 3-6 months in advance for weddings and large events, and 1-2 months for smaller celebrations. However, we can accommodate last-minute requests depending on availability.'
+                    ],
+                    [
+                        'question' => 'What\'s included in your event planning packages?',
+                        'answer' => 'Our packages include venue coordination, vendor management, timeline planning, day-of coordination, and ongoing support throughout the planning process. Specific inclusions vary by package - contact us for details!'
+                    ],
+                    [
+                        'question' => 'Can I customize a package to fit my specific needs?',
+                        'answer' => 'Absolutely! We believe every event is unique. We offer customizable packages and can work with you to create a plan that perfectly fits your vision and budget.'
+                    ]
+                ]
+            ],
+            'cta' => [
+                'title' => $contactCTA && $contactCTA->is_active ? $contactCTA->title : 'Ready to Start Planning?',
+                'subtitle' => $contactCTA && $contactCTA->is_active ? $contactCTA->subtitle : 'Let\'s turn your dream event into reality',
+                'button_text' => $contactCTA && $contactCTA->is_active ? $contactCTA->button_text : 'Book Your Event Now',
+                'button_link' => $contactCTA && $contactCTA->is_active ? $contactCTA->button_link : route('book-now')
+            ]
+        ];
+        
+        return view('contact', compact('contactData'));
+    }
 } 

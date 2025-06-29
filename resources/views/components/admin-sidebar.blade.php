@@ -104,6 +104,14 @@
                class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'gallery-cms' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
                 Gallery Page CMS
             </a>
+            <a href="{{ route('admin.cms.about-page') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'about-cms' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                About Page CMS
+            </a>
+            <a href="{{ route('admin.cms.contact-page') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'contact-cms' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                Contact Page CMS
+            </a>
         </div>
 
         <!-- Settings Section -->

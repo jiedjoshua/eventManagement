@@ -78,8 +78,8 @@
 <!-- Hero Section -->
 <section class="pt-32 pb-10 md:pb-16 bg-gradient-to-r from-[#EF7C79] to-[#D76C69] text-white min-h-[40vh] flex items-center">
   <div class="container mx-auto px-4 text-center w-full">
-    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">Get in Touch</h1>
-    <p class="text-base md:text-xl mb-6 md:mb-8">Ready to start planning your perfect event? We'd love to hear from you!</p>
+    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">{{ $contactData['hero']['title'] }}</h1>
+    <p class="text-base md:text-xl mb-6 md:mb-8">{{ $contactData['hero']['subtitle'] }}</p>
   </div>
 </section>
 
@@ -89,9 +89,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
       <!-- Contact Info -->
       <div>
-        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8">Let's Start Planning Together</h2>
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8">{{ $contactData['info']['title'] }}</h2>
         <p class="text-base md:text-lg text-gray-600 mb-6 md:mb-8">
-          Whether you're planning a wedding, birthday celebration, or any special event, our team is here to help bring your vision to life. Reach out to us and let's create something extraordinary together.
+          {{ $contactData['info']['description'] }}
         </p>
         <div class="space-y-4 md:space-y-6">
           <!-- Phone -->
@@ -103,7 +103,7 @@
             </div>
             <div>
               <h3 class="font-semibold text-gray-800 text-sm md:text-base">Phone</h3>
-              <p class="text-gray-600 text-sm md:text-base">+63 912 345 6789</p>
+              <p class="text-gray-600 text-sm md:text-base">{{ $contactData['info']['phone'] }}</p>
             </div>
           </div>
           <!-- Email -->
@@ -115,7 +115,7 @@
             </div>
             <div>
               <h3 class="font-semibold text-gray-800 text-sm md:text-base">Email</h3>
-              <p class="text-gray-600 text-sm md:text-base">hello@crwdctrl.ph</p>
+              <p class="text-gray-600 text-sm md:text-base">{{ $contactData['info']['email'] }}</p>
             </div>
           </div>
           <!-- Address -->
@@ -128,7 +128,7 @@
             </div>
             <div>
               <h3 class="font-semibold text-gray-800 text-sm md:text-base">Address</h3>
-              <p class="text-gray-600 text-sm md:text-base">Bataan, Philippines</p>
+              <p class="text-gray-600 text-sm md:text-base">{{ $contactData['info']['address'] }}</p>
             </div>
           </div>
           <!-- Business Hours -->
@@ -140,8 +140,12 @@
             </div>
             <div>
               <h3 class="font-semibold text-gray-800 text-sm md:text-base">Business Hours</h3>
-              <p class="text-gray-600 text-sm md:text-base">Monday - Friday: 9:00 AM - 6:00 PM</p>
-              <p class="text-gray-600 text-sm md:text-base">Saturday: 9:00 AM - 4:00 PM</p>
+              @php
+                $hours = explode("\n", $contactData['info']['business_hours']);
+              @endphp
+              @foreach($hours as $hour)
+                <p class="text-gray-600 text-sm md:text-base">{{ $hour }}</p>
+              @endforeach
             </div>
           </div>
         </div>
@@ -258,26 +262,16 @@
 <!-- FAQ Section -->
 <section class="py-10 md:py-20 bg-gray-50">
   <div class="container mx-auto px-4">
-    <h2 class="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">Frequently Asked Questions</h2>
+    <h2 class="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">{{ $contactData['faq']['title'] }}</h2>
     <div class="max-w-3xl mx-auto space-y-4 md:space-y-6">
-      <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
-        <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-2 md:mb-3">How far in advance should I book my event?</h3>
-        <p class="text-gray-600 text-sm md:text-base">
-          We recommend booking at least 3-6 months in advance for weddings and large events, and 1-2 months for smaller celebrations. However, we can accommodate last-minute requests depending on availability.
-        </p>
-      </div>
-      <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
-        <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-2 md:mb-3">What's included in your event planning packages?</h3>
-        <p class="text-gray-600 text-sm md:text-base">
-          Our packages include venue coordination, vendor management, timeline planning, day-of coordination, and ongoing support throughout the planning process. Specific inclusions vary by package - contact us for details!
-        </p>
-      </div>
-      <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
-        <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-2 md:mb-3">Can I customize a package to fit my specific needs?</h3>
-        <p class="text-gray-600 text-sm md:text-base">
-          Absolutely! We believe every event is unique. We offer customizable packages and can work with you to create a plan that perfectly fits your vision and budget.
-        </p>
-      </div>
+      @foreach($contactData['faq']['faqs'] as $faq)
+        <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-2 md:mb-3">{{ $faq['question'] }}</h3>
+          <p class="text-gray-600 text-sm md:text-base">
+            {{ $faq['answer'] }}
+          </p>
+        </div>
+      @endforeach
     </div>
   </div>
 </section>
@@ -285,9 +279,9 @@
 <!-- Call to Action Section -->
 <section class="py-10 md:py-20 bg-[#EF7C79] text-white">
   <div class="container mx-auto px-4 text-center">
-    <h2 class="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Ready to Start Planning?</h2>
-    <p class="text-base md:text-xl mb-6 md:mb-8">Let's turn your dream event into reality</p>
-    <a href="{{ route('book-now') }}" class="bg-white text-[#EF7C79] hover:bg-gray-100 rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">Book Your Event Now</a>
+    <h2 class="text-2xl md:text-3xl font-bold mb-3 md:mb-4">{{ $contactData['cta']['title'] }}</h2>
+    <p class="text-base md:text-xl mb-6 md:mb-8">{{ $contactData['cta']['subtitle'] }}</p>
+    <a href="{{ $contactData['cta']['button_link'] }}" class="bg-white text-[#EF7C79] hover:bg-gray-100 rounded-full px-6 md:px-8 py-2 md:py-3 font-semibold transition duration-300">{{ $contactData['cta']['button_text'] }}</a>
   </div>
 </section>
 
