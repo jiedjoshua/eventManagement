@@ -24,7 +24,27 @@ class PackageController extends Controller
         $packages = $query->orderBy('type')->orderBy('name')->get();
         $addons = Addon::all(); // Fetch all add-ons
 
-        return view('admin.packages.index', compact('packages', 'addons'));
+        // Set active page based on type parameter
+        $activePage = 'packages'; // default
+        if ($request->has('type') && $request->type != '') {
+            $type = strtolower($request->type);
+            switch ($type) {
+                case 'wedding':
+                    $activePage = 'wedding-packages';
+                    break;
+                case 'birthday':
+                    $activePage = 'birthday-packages';
+                    break;
+                case 'baptism':
+                    $activePage = 'baptism-packages';
+                    break;
+                default:
+                    $activePage = 'packages';
+                    break;
+            }
+        }
+
+        return view('admin.packages.index', compact('packages', 'addons', 'activePage'));
     }
 
     public function create()

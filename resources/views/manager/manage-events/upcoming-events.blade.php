@@ -1,7 +1,7 @@
 <x-manager-layout title="Upcoming Events" :active-page="'upcoming-events'">
     <!-- Header Section -->
     <div class="mb-8">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">Upcoming Events</h1>
                 <p class="text-gray-600 mt-1">Manage and view all upcoming events</p>
@@ -9,26 +9,40 @@
 
             <!-- Stats Cards -->
             <div class="flex gap-4">
-                <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                    <div class="text-2xl font-bold text-indigo-600">{{ $events->total() }}</div>
-                    <div class="text-sm text-gray-600">Total Events</div>
-                </div>
-                <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                    <div class="text-2xl font-bold text-green-600">
-                        {{ $events->where('booking.payment_status', 'paid')->count() }}
+                <div class="flex items-center bg-gradient-to-r from-indigo-100 to-indigo-50 px-6 py-4 rounded-xl shadow border border-indigo-200 min-w-[140px]">
+                    <div class="bg-indigo-500 text-white rounded-full p-2 mr-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                     </div>
-                    <div class="text-sm text-gray-600">Fully Paid</div>
+                    <div>
+                        <div class="text-2xl font-bold text-indigo-700">{{ $events->total() }}</div>
+                        <div class="text-sm text-gray-600">Total Events</div>
+                    </div>
+                </div>
+                <div class="flex items-center bg-gradient-to-r from-green-100 to-green-50 px-6 py-4 rounded-xl shadow border border-green-200 min-w-[140px]">
+                    <div class="bg-green-500 text-white rounded-full p-2 mr-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-green-700">
+                            {{ $events->where('booking.payment_status', 'paid')->count() }}
+                        </div>
+                        <div class="text-sm text-gray-600">Fully Paid</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Enhanced Filter Section -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div class="flex flex-wrap gap-4 items-center">
+        <div class="bg-gradient-to-r from-white via-indigo-50 to-white p-8 rounded-2xl shadow border border-gray-100 mt-4">
+            <div class="flex flex-wrap gap-6 items-end">
                 <div class="flex-1 min-w-48">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Event Type</label>
                     <select name="event_type" id="eventTypeFilter" onchange="applyFilters()"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        class="w-full rounded-xl border-gray-300 shadow focus:border-indigo-500 focus:ring-indigo-500 text-base py-2 px-3">
                         <option value="">All Event Types</option>
                         <option value="wedding" {{ request('event_type') == 'wedding' ? 'selected' : '' }}>Wedding</option>
                         <option value="birthday" {{ request('event_type') == 'birthday' ? 'selected' : '' }}>Birthday</option>
@@ -38,9 +52,9 @@
                 </div>
 
                 <div class="flex-1 min-w-48">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Status</label>
                     <select name="payment_status" id="paymentStatusFilter" onchange="applyFilters()"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        class="w-full rounded-xl border-gray-300 shadow focus:border-indigo-500 focus:ring-indigo-500 text-base py-2 px-3">
                         <option value="">All Payments</option>
                         <option value="paid" {{ request('payment_status') == 'paid' ? 'selected' : '' }}>Fully Paid</option>
                         <option value="partial" {{ request('payment_status') == 'partial' ? 'selected' : '' }}>Partial Payment</option>
@@ -49,9 +63,9 @@
                 </div>
 
                 <div class="flex-1 min-w-48">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
                     <select name="sort" id="sortFilter" onchange="applyFilters()"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        class="w-full rounded-xl border-gray-300 shadow focus:border-indigo-500 focus:ring-indigo-500 text-base py-2 px-3">
                         <option value="">Default</option>
                         <option value="date-asc" {{ request('sort') == 'date-asc' ? 'selected' : '' }}>Date (Earliest)</option>
                         <option value="date-desc" {{ request('sort') == 'date-desc' ? 'selected' : '' }}>Date (Latest)</option>
@@ -62,7 +76,7 @@
 
                 <div class="flex items-end">
                     <button onclick="clearFilters()"
-                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        class="px-5 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors shadow">
                         Clear Filters
                     </button>
                 </div>
@@ -71,15 +85,32 @@
     </div>
 
     <!-- Events Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         @forelse($events as $event)
         @php
         $isPast = \Carbon\Carbon::parse($event->event_date)->endOfDay()->lt(now());
+        $paymentStatus = $event->booking->payment_status ?? 'unknown';
+        $borderColor = match($paymentStatus) {
+            'paid' => 'border-green-400',
+            'partial' => 'border-blue-400',
+            'pending' => 'border-red-400',
+            default => 'border-gray-300',
+        };
+        $eventTypeColor = match($event->event_type) {
+            'wedding' => 'bg-pink-100 text-pink-700',
+            'birthday' => 'bg-yellow-100 text-yellow-700',
+            'corporate' => 'bg-blue-100 text-blue-700',
+            'debut' => 'bg-purple-100 text-purple-700',
+            default => 'bg-gray-100 text-gray-700',
+        };
         @endphp
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+        <div class="relative bg-white rounded-2xl shadow-lg border-l-8 {{ $borderColor }} overflow-hidden hover:scale-[1.025] hover:shadow-2xl transition-transform duration-200">
+            <!-- Event Type Badge -->
+            <span class="absolute top-16 right-4 px-3 py-1 rounded-full text-xs font-semibold {{ $eventTypeColor }} shadow">{{ ucfirst($event->event_type) }}</span>
             <!-- Payment Status Header -->
-            <div class="px-6 py-4 border-b border-gray-100">
+            <div class="px-6 pt-6 pb-2 border-b border-gray-100">
                 <div class="flex justify-between items-start">
+                    <span class="text-xs text-gray-400 font-mono tracking-wider">{{ strtoupper($event->booking->reference ?? 'N/A') }}</span>
                     @if($event->booking && $event->booking->payment_status === 'paid')
                     <span class="inline-flex items-center px-3 py-1 text-sm font-semibold text-green-800 bg-green-100 rounded-full">
                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -110,28 +141,24 @@
                         Unknown
                     </span>
                     @endif
-                    <span class="text-xs text-gray-500 font-mono">
-                        {{ strtoupper($event->booking->reference ?? 'N/A') }}
-                    </span>
                 </div>
             </div>
 
             <!-- Event Content -->
-            <div class="p-6">
+            <div class="p-6 space-y-4">
                 <!-- Event Title -->
-                <h3 class="text-xl font-bold text-gray-900 mb-4 line-clamp-2">{{ ucwords($event->event_name) }}</h3>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2 line-clamp-2">{{ ucwords($event->event_name) }}</h3>
 
                 <!-- Event Details -->
-                <div class="space-y-3 text-gray-600">
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="space-y-2 text-gray-600">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span class="font-medium">{{ \Carbon\Carbon::parse($event->event_date)->format('F d, Y') }}</span>
                     </div>
-
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span class="font-medium">
@@ -139,24 +166,21 @@
                             {{ \Carbon\Carbon::parse($event->end_time)->format('g:i A') }}
                         </span>
                     </div>
-
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <span class="font-medium">{{ ucwords($event->venue_name) }}</span>
                     </div>
-
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                         <span class="font-medium">{{ $event->guest_count }} Guests</span>
                     </div>
-
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                         </svg>
                         <span class="font-medium">{{ ucwords($event->package_type) }}</span>
@@ -169,11 +193,11 @@
                     <!-- Primary Actions Row -->
                     <div class="flex gap-2">
                         <button onclick="showEventDetails('{{ $event->id }}')"
-                            class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                            class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow">
                             View Details
                         </button>
                         <button onclick="showReschedModal('{{ $event->id }}')"
-                            class="flex-1 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-medium">
+                            class="flex-1 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-medium shadow">
                             Reschedule
                         </button>
                     </div>
@@ -181,11 +205,11 @@
                     <!-- Secondary Actions Row -->
                     <div class="flex gap-2">
                         <a href="{{ route('events.dashboard', $event->id) }}"
-                            class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-center">
+                            class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-center shadow">
                             Event Mode
                         </a>
                         <button onclick="showCancelModal('{{ $event->id }}', '{{ addslashes($event->event_name) }}')"
-                            class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                            class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium shadow">
                             Cancel Event
                         </button>
                     </div>
@@ -209,8 +233,21 @@
     <!-- Enhanced Pagination -->
     @if($events->hasPages())
     <div class="mt-8 flex justify-center">
-        <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-            {{ $events->appends(request()->query())->links() }}
+        <div class="bg-white px-6 py-4 rounded-2xl shadow-lg border border-gray-200 flex items-center">
+            <style>
+                .custom-pagination .page-link {
+                    @apply mx-1 px-4 py-2 rounded-lg text-base font-semibold text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 transition-colors duration-150 shadow-sm;
+                }
+                .custom-pagination .active .page-link {
+                    @apply bg-indigo-600 text-white shadow;
+                }
+                .custom-pagination .disabled .page-link {
+                    @apply opacity-50 cursor-not-allowed;
+                }
+            </style>
+            <div class="custom-pagination">
+                {!! $events->appends(request()->query())->links() !!}
+            </div>
         </div>
     </div>
     @endif
@@ -276,55 +313,55 @@
     </div>
 
     <!-- Cancel Event Modal -->
-<div id="cancelModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-900">Cancel Event</h3>
-            <button onclick="closeCancelModal()" class="text-gray-500 hover:text-gray-700">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        </div>
-
-        <div class="mb-6">
-            <p class="text-gray-700 mb-4">Are you sure you want to cancel this event?</p>
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div class="flex">
-                    <svg class="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+    <div id="cancelModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Cancel Event</h3>
+                <button onclick="closeCancelModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
-                    <div>
-                        <h4 class="text-sm font-medium text-red-800">Event to Cancel:</h4>
-                        <p class="text-sm text-red-700 mt-1" id="cancelEventName"></p>
+                </button>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-gray-700 mb-4">Are you sure you want to cancel this event?</p>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-sm font-medium text-red-800">Event to Cancel:</h4>
+                            <p class="text-sm text-red-700 mt-1" id="cancelEventName"></p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <form id="cancelEventForm" method="POST" class="space-y-4">
+                @csrf
+                @method('PATCH')
+                <div>
+                    <label for="cancel_reason" class="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason</label>
+                    <textarea id="cancel_reason" name="cancel_reason" rows="3"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        placeholder="Please provide a reason for cancellation..." required></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeCancelModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                        Keep Event
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                        Confirm Cancellation
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <form id="cancelEventForm" method="POST" class="space-y-4">
-            @csrf
-            @method('PATCH')
-            <div>
-                <label for="cancel_reason" class="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason</label>
-                <textarea id="cancel_reason" name="cancel_reason" rows="3"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    placeholder="Please provide a reason for cancellation..." required></textarea>
-            </div>
-
-            <div class="flex gap-3 pt-4">
-                <button type="button" onclick="closeCancelModal()"
-                    class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
-                    Keep Event
-                </button>
-                <button type="submit"
-                    class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium">
-                    Confirm Cancellation
-                </button>
-            </div>
-        </form>
     </div>
-</div>
     @endpush
 
     @push('notifications')

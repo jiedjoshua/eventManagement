@@ -1,65 +1,65 @@
 <x-admin-layout title="Venue Management" active-page="venues">
-    <!-- Header Section -->
+    <!-- Enhanced Header Section -->
     <div class="mb-8">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">Venue Management</h1>
-                <p class="text-gray-600 mt-1">Manage all venues in the system</p>
+                <p class="text-gray-600 mt-2">Manage all venues in the system</p>
             </div>
 
-            <!-- Stats Cards -->
+            <!-- Enhanced Stats Cards -->
             <div class="flex gap-4">
-                <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                    <div class="text-2xl font-bold text-indigo-600">{{ $venues->total() }}</div>
-                    <div class="text-sm text-gray-600">Total Venues</div>
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 rounded-2xl shadow-lg border border-blue-100">
+                    <div class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{{ $venues->total() }}</div>
+                    <div class="text-sm font-medium text-gray-700">Total Venues</div>
                 </div>
-                <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                    <div class="text-2xl font-bold text-green-600">{{ $venues->where('is_active', 1)->count() }}</div>
-                    <div class="text-sm text-gray-600">Active Venues</div>
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 rounded-2xl shadow-lg border border-green-100">
+                    <div class="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{{ $venues->where('is_active', 1)->count() }}</div>
+                    <div class="text-sm font-medium text-gray-700">Active Venues</div>
                 </div>
-                <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                    <div class="text-2xl font-bold text-blue-600">{{ $venues->where('type', 'indoor')->count() }}</div>
-                    <div class="text-sm text-gray-600">Indoor Venues</div>
+                <div class="bg-gradient-to-r from-purple-50 to-violet-50 px-6 py-4 rounded-2xl shadow-lg border border-purple-100">
+                    <div class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">{{ $venues->where('type', 'indoor')->count() }}</div>
+                    <div class="text-sm font-medium text-gray-700">Indoor Venues</div>
                 </div>
-                <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                    <div class="text-2xl font-bold text-purple-600">{{ $venues->where('type', 'outdoor')->count() }}</div>
-                    <div class="text-sm text-gray-600">Outdoor Venues</div>
+                <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 rounded-2xl shadow-lg border border-orange-100">
+                    <div class="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">{{ $venues->where('type', 'outdoor')->count() }}</div>
+                    <div class="text-sm font-medium text-gray-700">Outdoor Venues</div>
                 </div>
-                <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                    <div class="text-2xl font-bold text-orange-600">{{ $venues->where('type', 'both')->count() }}</div>
-                    <div class="text-sm text-gray-600">Both Types</div>
+                <div class="bg-gradient-to-r from-pink-50 to-rose-50 px-6 py-4 rounded-2xl shadow-lg border border-pink-100">
+                    <div class="text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">{{ $venues->where('type', 'both')->count() }}</div>
+                    <div class="text-sm font-medium text-gray-700">Both Types</div>
                 </div>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-between items-center mb-6">
+        <!-- Enhanced Action Buttons and Search -->
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div class="flex gap-3">
                 <button onclick="createVenue()"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-6 py-3 rounded-2xl transition-all duration-300 font-semibold shadow-lg transform hover:scale-105 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                    Add New Venue
+                    <span>Add New Venue</span>
                 </button>
             </div>
 
-            <!-- Search and Filter -->
-            <div class="flex gap-4">
+            <!-- Enhanced Search and Filter -->
+            <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
                 <div class="relative">
                     <input type="text" id="searchInput" placeholder="Search venues..."
-                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-gray-50 text-gray-800 w-full sm:w-64">
+                    <svg class="w-5 h-5 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
-                <select id="typeFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <select id="typeFilter" class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-gray-50 text-gray-800">
                     <option value="">All Types</option>
                     <option value="indoor">Indoor</option>
                     <option value="outdoor">Outdoor</option>
                     <option value="both">Both</option>
                 </select>
-                <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <select id="statusFilter" class="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-gray-50 text-gray-800">
                     <option value="">All Status</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -68,12 +68,12 @@
         </div>
     </div>
 
-    <!-- Venues Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <!-- Enhanced Venues Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         @forelse($venues as $venue)
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-            <!-- Venue Image -->
-            <div class="relative h-48 bg-gray-200">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <!-- Enhanced Venue Image -->
+            <div class="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
                 @if($venue->main_image)
                 @php
                     $imagePath = $venue->main_image;
@@ -86,88 +86,90 @@
                     class="w-full h-full object-cover">
                 @else
                 <div class="w-full h-full flex items-center justify-center text-gray-400">
-                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z"></path>
                     </svg>
                 </div>
                 @endif
 
-                <!-- Status Badge -->
-                <div class="absolute top-2 right-2">
+                <!-- Enhanced Status Badge -->
+                <div class="absolute top-3 right-3">
                     @if($venue->is_active)
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                         Active
                     </span>
                     @else
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200 shadow-sm">
+                        <div class="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
                         Inactive
                     </span>
                     @endif
                 </div>
 
-                <!-- Type Badge -->
-                <div class="absolute top-2 left-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                <!-- Enhanced Type Badge -->
+                <div class="absolute top-3 left-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-violet-100 to-purple-100 text-violet-800 border border-violet-200 shadow-sm">
                         {{ ucfirst($venue->type) }}
                     </span>
                 </div>
             </div>
 
-            <!-- Venue Info -->
-            <div class="p-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $venue->name }}</h3>
-                <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $venue->description }}</p>
+            <!-- Enhanced Venue Info -->
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $venue->name }}</h3>
+                <p class="text-sm text-gray-600 mb-4 line-clamp-2 font-medium">{{ $venue->description }}</p>
 
-                <div class="space-y-2 mb-4">
-                    <div class="flex items-center text-sm text-gray-600">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="space-y-3 mb-6">
+                    <div class="flex items-center text-sm text-gray-700 font-medium">
+                        <svg class="w-4 h-4 mr-3 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         {{ $venue->address }}
                     </div>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center text-sm text-gray-700 font-medium">
+                        <svg class="w-4 h-4 mr-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         </svg>
                         Capacity: {{ number_format($venue->capacity) }}
                     </div>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center text-sm text-gray-700 font-medium">
+                        <svg class="w-4 h-4 mr-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                         </svg>
                         {{ $venue->price_range }}
                     </div>
                 </div>
 
-                <!-- Actions -->
+                <!-- Enhanced Actions -->
                 <div class="flex gap-2">
                     <button onclick="viewVenue('{{ $venue->id }}')"
-                        class="flex-1 bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors">
+                        class="flex-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 px-3 py-2.5 rounded-xl text-sm font-semibold hover:from-blue-200 hover:to-indigo-200 transition-all duration-300 shadow-sm border border-blue-200">
                         View
                     </button>
                     <button onclick="editVenue('{{ $venue->id }}')"
-                        class="flex-1 bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-yellow-200 transition-colors">
+                        class="flex-1 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 px-3 py-2.5 rounded-xl text-sm font-semibold hover:from-amber-200 hover:to-orange-200 transition-all duration-300 shadow-sm border border-amber-200">
                         Edit
                     </button>
                     <button onclick="deleteVenue('{{ $venue->id }}', '{{ $venue->name }}')"
-                        class="flex-1 bg-red-100 text-red-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
+                        class="flex-1 bg-gradient-to-r from-red-100 to-rose-100 text-red-700 px-3 py-2.5 rounded-xl text-sm font-semibold hover:from-red-200 hover:to-rose-200 transition-all duration-300 shadow-sm border border-red-200">
                         Delete
                     </button>
                 </div>
             </div>
         </div>
         @empty
-        <div class="col-span-full text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="col-span-full text-center py-16">
+            <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No venues</h3>
-            <p class="mt-1 text-sm text-gray-500">Get started by creating a new venue.</p>
-            <div class="mt-6">
+            <h3 class="mt-4 text-lg font-semibold text-gray-800">No venues</h3>
+            <p class="mt-2 text-base text-gray-500">Get started by creating a new venue.</p>
+            <div class="mt-8">
                 <button onclick="createVenue()"
-                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="inline-flex items-center px-6 py-3 border border-transparent shadow-lg text-base font-bold rounded-2xl text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     Add Venue
@@ -177,22 +179,22 @@
         @endforelse
     </div>
 
-    <!-- Pagination -->
+    <!-- Enhanced Pagination -->
     @if($venues->hasPages())
-    <div class="mt-8 flex justify-center">
-        <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+    <div class="mt-10 flex justify-center">
+        <div class="bg-white px-6 py-4 rounded-2xl shadow-lg border border-gray-100">
             {{ $venues->appends(request()->query())->links() }}
         </div>
     </div>
     @endif
 
     @push('modals')
-    <!-- Create Venue Modal -->
+    <!-- Enhanced Create Venue Modal -->
     <div id="createVenueModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900">Create New Venue</h3>
-                <button onclick="closeCreateModal()" class="text-gray-500 hover:text-gray-700">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-2xl bg-white max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Create New Venue</h3>
+                <button onclick="closeCreateModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -202,106 +204,120 @@
             <form id="createVenueForm" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
 
-                <!-- Basic Information -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="venueName" class="block text-sm font-medium text-gray-700">Venue Name *</label>
-                        <input type="text" id="venueName" name="name" required
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
+                <!-- Enhanced Basic Information -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="venueName" class="block text-sm font-semibold text-gray-800 mb-2">Venue Name *</label>
+                            <input type="text" id="venueName" name="name" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                        </div>
 
-                    <div>
-                        <label for="venueType" class="block text-sm font-medium text-gray-700">Venue Type *</label>
-                        <select id="venueType" name="type" required
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Select Type</option>
-                            <option value="indoor">Indoor</option>
-                            <option value="outdoor">Outdoor</option>
-                            <option value="both">Both (Indoor & Outdoor)</option>
-                        </select>
-                    </div>
+                        <div>
+                            <label for="venueType" class="block text-sm font-semibold text-gray-800 mb-2">Venue Type *</label>
+                            <select id="venueType" name="type" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                                <option value="">Select Type</option>
+                                <option value="indoor">Indoor</option>
+                                <option value="outdoor">Outdoor</option>
+                                <option value="both">Both (Indoor & Outdoor)</option>
+                            </select>
+                        </div>
 
-                    <div>
-                        <label for="venueCapacity" class="block text-sm font-medium text-gray-700">Capacity *</label>
-                        <input type="number" id="venueCapacity" name="capacity" required min="1"
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
+                        <div>
+                            <label for="venueCapacity" class="block text-sm font-semibold text-gray-800 mb-2">Capacity *</label>
+                            <input type="number" id="venueCapacity" name="capacity" required min="1"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                        </div>
 
-                    <div>
-                        <label for="venuePriceRange" class="block text-sm font-medium text-gray-700">Price Range *</label>
-                        <input type="text" id="venuePriceRange" name="price_range" required placeholder="e.g., ₱1,000 - ₱5,000"
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p class="mt-1 text-sm text-gray-500">Enter price range in Philippine Pesos (₱)</p>
+                        <div>
+                            <label for="venuePriceRange" class="block text-sm font-semibold text-gray-800 mb-2">Price Range *</label>
+                            <input type="text" id="venuePriceRange" name="price_range" required placeholder="e.g., ₱1,000 - ₱5,000"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                            <p class="mt-1 text-sm text-gray-600">Enter price range in Philippine Pesos (₱)</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Description -->
-                <div>
-                    <label for="venueDescription" class="block text-sm font-medium text-gray-700">Description *</label>
+                <!-- Enhanced Description -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
+                    <label for="venueDescription" class="block text-sm font-semibold text-gray-800 mb-2">Description *</label>
                     <textarea id="venueDescription" name="description" rows="4" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800"></textarea>
                 </div>
 
-                <!-- Address and Location Search -->
-                <div>
-                    <label for="venueLocationSearch" class="block text-sm font-medium text-gray-700">Search Location *</label>
-                    <div class="relative">
-                        <input type="text" id="venueLocationSearch" placeholder="Search for a location..."
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <div id="locationSearchResults" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
-                            <!-- Search results will appear here -->
-                </div>
+                <!-- Enhanced Address and Location Search -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Location Information</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="venueLocationSearch" class="block text-sm font-semibold text-gray-800 mb-2">Search Location *</label>
+                            <div class="relative">
+                                <input type="text" id="venueLocationSearch" placeholder="Search for a location..."
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                                <div id="locationSearchResults" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg hidden max-h-60 overflow-y-auto">
+                                    <!-- Search results will appear here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address (auto-filled) -->
+                        <div>
+                            <label for="venueAddress" class="block text-sm font-semibold text-gray-800 mb-2">Address *</label>
+                            <input type="text" id="venueAddress" name="address" required readonly
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                        </div>
+
+                        <!-- Hidden coordinates for form submission -->
+                        <input type="hidden" id="venueLatitude" name="latitude">
+                        <input type="hidden" id="venueLongitude" name="longitude">
                     </div>
+                </div>
+
+                <!-- Enhanced Images Section -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Images</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="venueMainImage" class="block text-sm font-semibold text-gray-800 mb-2">Main Image *</label>
+                            <input type="file" id="venueMainImage" name="main_image" required accept="image/*"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                        </div>
+
+                        <div>
+                            <label for="venueGalleryImages" class="block text-sm font-semibold text-gray-800 mb-2">Gallery Images</label>
+                            <input type="file" id="venueGalleryImages" name="gallery_images[]" multiple accept="image/*"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                        </div>
                     </div>
-
-                <!-- Address (auto-filled) -->
-                    <div>
-                    <label for="venueAddress" class="block text-sm font-medium text-gray-700">Address *</label>
-                    <input type="text" id="venueAddress" name="address" required readonly
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
-                <!-- Hidden coordinates for form submission -->
-                <input type="hidden" id="venueLatitude" name="latitude">
-                <input type="hidden" id="venueLongitude" name="longitude">
-
-                <!-- Main Image -->
-                <div>
-                    <label for="venueMainImage" class="block text-sm font-medium text-gray-700">Main Image *</label>
-                    <input type="file" id="venueMainImage" name="main_image" required accept="image/*"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-
-                <!-- Gallery Images -->
-                <div>
-                    <label for="venueGalleryImages" class="block text-sm font-medium text-gray-700">Gallery Images</label>
-                    <input type="file" id="venueGalleryImages" name="gallery_images[]" multiple accept="image/*"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-
-                <!-- Venue Spaces -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Venue Spaces</label>
-                    <div id="venueSpaces" class="space-y-3">
+                <!-- Enhanced Venue Spaces -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-lg font-semibold text-gray-900">Venue Spaces</h4>
+                        <button type="button" onclick="addVenueSpace()"
+                            class="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 text-sm flex items-center space-x-2 shadow-lg">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            <span>Add Space</span>
+                        </button>
+                    </div>
+                    <div id="venueSpaces" class="space-y-4">
                         <!-- Dynamic spaces will be added here -->
                     </div>
-                    <button type="button" onclick="addVenueSpace()"
-                        class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <svg class="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        Add Space
-                    </button>
                 </div>
 
-                <!-- Form Actions -->
-                <div class="flex gap-3 pt-4">
+                <!-- Enhanced Form Actions -->
+                <div class="flex gap-4 pt-4 border-t border-gray-200">
                     <button type="button" onclick="closeCreateModal()"
-                        class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                        class="flex-1 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 px-6 py-3 rounded-xl hover:from-gray-200 hover:to-slate-200 transition-all duration-300 font-semibold">
                         Cancel
                     </button>
                     <button type="submit"
-                        class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                        class="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg">
                         Create Venue
                     </button>
                 </div>
@@ -309,29 +325,29 @@
         </div>
     </div>
 
-    <!-- View Venue Modal -->
+    <!-- Enhanced View Venue Modal -->
     <div id="viewVenueModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900">Venue Details</h3>
-                <button onclick="closeViewModal()" class="text-gray-500 hover:text-gray-700">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-2xl bg-white max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Venue Details</h3>
+                <button onclick="closeViewModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <div id="venueDetails" class="space-y-4">
+            <div id="venueDetails" class="space-y-6">
                 <!-- Venue details will be loaded here -->
             </div>
         </div>
     </div>
 
-    <!-- Edit Venue Modal -->
+    <!-- Enhanced Edit Venue Modal -->
     <div id="editVenueModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900">Edit Venue</h3>
-                <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-2xl bg-white max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Edit Venue</h3>
+                <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -347,14 +363,14 @@
                     <!-- Dynamic fields will be added here -->
                 </div>
 
-                <!-- Form Actions -->
-                <div class="flex gap-3 pt-4">
+                <!-- Enhanced Form Actions -->
+                <div class="flex gap-4 pt-4 border-t border-gray-200">
                     <button type="button" onclick="closeEditModal()"
-                        class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                        class="flex-1 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 px-6 py-3 rounded-xl hover:from-gray-200 hover:to-slate-200 transition-all duration-300 font-semibold">
                         Cancel
                     </button>
                     <button type="submit"
-                        class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
+                        class="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg">
                         Update Venue
                     </button>
                 </div>
@@ -362,29 +378,29 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Enhanced Delete Confirmation Modal -->
     <div id="deleteVenueModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-2xl bg-white">
             <div class="mt-3 text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-r from-red-100 to-rose-100">
                     <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                     </svg>
                 </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Delete Venue</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mt-4">Delete Venue</h3>
                 <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">
-                        Are you sure you want to delete "<span id="deleteVenueName"></span>"? This action cannot be undone.
+                    <p class="text-sm text-gray-600">
+                        Are you sure you want to delete "<span id="deleteVenueName" class="font-semibold text-gray-800"></span>"? This action cannot be undone.
                     </p>
                 </div>
-                <div class="items-center px-4 py-3">
-                    <button id="confirmDeleteBtn"
-                        class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
-                        Delete
-                    </button>
+                <div class="flex gap-3 mt-4">
                     <button onclick="closeDeleteModal()"
-                        class="mt-3 px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        class="flex-1 px-4 py-2 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 rounded-xl hover:from-gray-200 hover:to-slate-200 transition-all duration-300 font-medium">
                         Cancel
+                    </button>
+                    <button id="confirmDeleteBtn"
+                        class="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl hover:from-red-600 hover:to-rose-700 transition-all duration-300 font-medium shadow-lg">
+                        Delete
                     </button>
                 </div>
             </div>
@@ -393,23 +409,23 @@
     @endpush
 
     @push('notifications')
-    <!-- Success Notification -->
-    <div id="successNotification" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-transform duration-300 ease-in-out z-50">
-        <div class="flex items-center space-x-2">
+    <!-- Enhanced Success Notification -->
+    <div id="successNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-50">
+        <div class="flex items-center space-x-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
-            <span id="notificationMessage"></span>
+            <span id="notificationMessage" class="font-medium"></span>
         </div>
     </div>
 
-    <!-- Error Notification -->
-    <div id="errorNotification" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-transform duration-300 ease-in-out z-50">
-        <div class="flex items-center space-x-2">
+    <!-- Enhanced Error Notification -->
+    <div id="errorNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-50">
+        <div class="flex items-center space-x-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
-            <span id="errorMessage"></span>
+            <span id="errorMessage" class="font-medium"></span>
         </div>
     </div>
     @endpush
