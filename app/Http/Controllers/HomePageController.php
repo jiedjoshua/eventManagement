@@ -26,7 +26,7 @@ class HomePageController extends Controller
     {
         $content = HomePageContent::all()->keyBy('section');
         
-        return view('admin.cms.home-page', compact('content'));
+        return view('admin.cms.home-page', compact('content'))->with('activePage', 'cms');
     }
 
     /**
@@ -289,7 +289,7 @@ class HomePageController extends Controller
     {
         $content = HomePageContent::getAllActive();
         
-        return view('admin.cms.services-page', compact('content'));
+        return view('admin.cms.services-page', compact('content'))->with('activePage', 'services-cms');
     }
 
     /**
@@ -553,7 +553,7 @@ class HomePageController extends Controller
             'packages_baptism' => HomePageContent::where('section', 'packages_baptism')->first(),
         ];
 
-        return view('admin.cms.packages-page', compact('content'));
+        return view('admin.cms.packages-page', compact('content'))->with('activePage', 'packages-cms');
     }
 
     /**
@@ -695,7 +695,7 @@ class HomePageController extends Controller
             'gallery_images' => HomePageContent::where('section', 'gallery_images')->first(),
         ];
 
-        return view('admin.cms.gallery-page', compact('content'));
+        return view('admin.cms.gallery-page', compact('content'))->with('activePage', 'gallery-cms');
     }
 
     /**
@@ -1233,7 +1233,7 @@ class HomePageController extends Controller
             'contact_cta' => HomePageContent::where('section', 'contact_cta')->first(),
         ];
         
-        return view('admin.cms.contact-page', compact('content'));
+        return view('admin.cms.contact-page', compact('content'))->with('activePage', 'contact-cms');
     }
 
     /**

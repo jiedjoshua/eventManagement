@@ -1,4 +1,4 @@
-<x-admin-layout>
+<x-admin-layout title="Contact Page CMS" active-page="contact-cms">
     <div class="p-6">
         <div class="mb-6 flex justify-between items-center">
             <div>
