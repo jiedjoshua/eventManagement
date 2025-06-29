@@ -85,6 +85,15 @@
             </a>
         </div>
 
+        <!-- Content Management Section -->
+        <div>
+            <p class="mt-6 font-semibold text-gray-900 mb-2">Content Management</p>
+            <a href="{{ route('admin.cms.home-page') }}" 
+               class="block pl-4 py-2 rounded transition-colors {{ $activePage === 'cms' ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'hover:bg-indigo-50' }}">
+                Home Page CMS
+            </a>
+        </div>
+
         <!-- Settings Section -->
         <div>
             <p class="mt-6 font-semibold text-gray-900 mb-2">Settings</p>

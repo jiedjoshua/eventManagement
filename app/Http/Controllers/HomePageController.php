@@ -1,0 +1,284 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\HomePageContent;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+
+class HomePageController extends Controller
+{
+    /**
+     * Display the home page with dynamic content
+     */
+    public function index()
+    {
+        $content = HomePageContent::getAllActive();
+        
+        return view('home', compact('content'));
+    }
+
+    /**
+     * Show the CMS interface for managing home page content
+     */
+    public function manage()
+    {
+        $content = HomePageContent::all()->keyBy('section');
+        
+        return view('admin.cms.home-page', compact('content'));
+    }
+
+    /**
+     * Update hero section content
+     */
+    public function updateHero(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'subtitle' => 'required|string|max:500',
+            'button_text' => 'required|string|max:100',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $hero = HomePageContent::firstOrCreate(['section' => 'hero']);
+            
+            $hero->title = $request->title;
+            $hero->subtitle = $request->subtitle;
+            $hero->button_text = $request->button_text;
+            $hero->button_link = route('book-now');
+            $hero->is_active = true;
+
+            // Handle image upload to public/img directory
+            if ($request->hasFile('hero_image')) {
+                // Delete old image if exists
+                if ($hero->image_path && file_exists(public_path(str_replace('/public', '', $hero->image_path)))) {
+                    unlink(public_path(str_replace('/public', '', $hero->image_path)));
+                }
+
+                $image = $request->file('hero_image');
+                $imageName = 'hero_' . time() . '.' . $image->getClientOriginalExtension();
+                $imagePath = '/public/img/' . $imageName;
+                
+                // Move image to public/img directory
+                $image->move(public_path('img'), $imageName);
+                $hero->image_path = $imagePath;
+            }
+
+            $hero->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Hero section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update hero section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update services section content
+     */
+    public function updateServices(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'section_title' => 'required|string|max:255',
+            'services' => 'required|array|min:1',
+            'services.*.title' => 'required|string|max:255',
+            'services.*.description' => 'required|string|max:500',
+            'services.*.image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'services.*.type' => 'required|string|max:100'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $services = HomePageContent::firstOrCreate(['section' => 'services']);
+            
+            $services->title = $request->section_title;
+            $services->is_active = true;
+
+            $serviceCards = [];
+            
+            foreach ($request->services as $index => $serviceData) {
+                $serviceCard = [
+                    'title' => $serviceData['title'],
+                    'description' => $serviceData['description'],
+                    'type' => $serviceData['type'],
+                    'link' => route('packages') . '?type=' . strtolower($serviceData['type'])
+                ];
+
+                // Handle image upload for each service to public/img directory
+                if (isset($serviceData['image']) && $serviceData['image']) {
+                    $image = $serviceData['image'];
+                    $imageName = 'service_' . strtolower($serviceData['type']) . '_' . time() . '.' . $image->getClientOriginalExtension();
+                    $imagePath = '/public/img/' . $imageName;
+                    
+                    // Move image to public/img directory
+                    $image->move(public_path('img'), $imageName);
+                    $serviceCard['image_path'] = $imagePath;
+                } else {
+                    // Keep existing image if no new image uploaded
+                    if (isset($services->service_cards[$index]['image_path'])) {
+                        $existingPath = $services->service_cards[$index]['image_path'];
+                        // Ensure the path is in the correct format
+                        if (strpos($existingPath, '/public/img/') === 0) {
+                            $serviceCard['image_path'] = $existingPath;
+                        } else {
+                            // Convert old format to new format
+                            $serviceCard['image_path'] = '/public/img/' . basename($existingPath);
+                        }
+                    }
+                }
+
+                $serviceCards[] = $serviceCard;
+            }
+
+            $services->service_cards = $serviceCards;
+            $services->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Services section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update services section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update contact section content
+     */
+    public function updateContact(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'section_title' => 'required|string|max:255',
+            'contact_phone' => 'required|string|max:50',
+            'contact_email' => 'required|email|max:255',
+            'contact_address' => 'required|string|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $contact = HomePageContent::firstOrCreate(['section' => 'contact']);
+            
+            $contact->title = $request->section_title;
+            $contact->contact_phone = $request->contact_phone;
+            $contact->contact_email = $request->contact_email;
+            $contact->contact_address = $request->contact_address;
+            $contact->is_active = true;
+            $contact->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contact section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update contact section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update about section content
+     */
+    public function updateAbout(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'section_title' => 'required|string|max:255',
+            'description' => 'required|string|max:1000'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $about = HomePageContent::firstOrCreate(['section' => 'about']);
+            
+            $about->title = $request->section_title;
+            $about->description = $request->description;
+            $about->is_active = true;
+            $about->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'About section updated successfully!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update about section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle section visibility
+     */
+    public function toggleSection(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'section' => 'required|string|exists:home_page_contents,section'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $content = HomePageContent::where('section', $request->section)->first();
+            $content->is_active = !$content->is_active;
+            $content->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => ucfirst($request->section) . ' section ' . ($content->is_active ? 'activated' : 'deactivated') . ' successfully!',
+                'is_active' => $content->is_active
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to toggle section: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+} 

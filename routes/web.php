@@ -14,11 +14,10 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ManagerFeedbackController;
 use App\Http\Controllers\AddonController;
 use App\Http\Controllers\EventAdminController;
+use App\Http\Controllers\HomePageController;
 
 
-Route::get('/', function () {
-    return view('home');
-})->name('home');
+Route::get('/', [HomePageController::class, 'index'])->name('home');
 
 Route::get('/services', function () {
     return view('services');
@@ -64,6 +63,14 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::delete('/admin/users/{user}', [SuperAdminController::class, 'destroy'])->name('admin.users.destroy');
     Route::get('/admin/users/{user}', [SuperAdminController::class, 'show'])->name('admin.users.show');
     Route::get('/admin/users/{user}/edit', [SuperAdminController::class, 'edit'])->name('admin.users.edit');
+
+    // CMS Routes
+    Route::get('/admin/cms/home-page', [HomePageController::class, 'manage'])->name('admin.cms.home-page');
+    Route::post('/admin/cms/hero/update', [HomePageController::class, 'updateHero'])->name('admin.cms.hero.update');
+    Route::post('/admin/cms/services/update', [HomePageController::class, 'updateServices'])->name('admin.cms.services.update');
+    Route::post('/admin/cms/about/update', [HomePageController::class, 'updateAbout'])->name('admin.cms.about.update');
+    Route::post('/admin/cms/contact/update', [HomePageController::class, 'updateContact'])->name('admin.cms.contact.update');
+    Route::post('/admin/cms/section/toggle', [HomePageController::class, 'toggleSection'])->name('admin.cms.section.toggle');
 
     // Package Management Routes
     Route::resource('admin/packages', PackageController::class)->names([
