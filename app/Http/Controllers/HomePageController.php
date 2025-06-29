@@ -425,11 +425,7 @@ class HomePageController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'coming_soon_title' => 'required|string|max:255',
-            'coming_soon_subtitle' => 'required|string|max:500',
-            'coming_soon_services' => 'required|array|min:1',
-            'coming_soon_services.*.title' => 'required|string|max:255',
-            'coming_soon_services.*.description' => 'required|string|max:500',
-            'coming_soon_services.*.icon' => 'required|string|max:100'
+            'coming_soon_subtitle' => 'required|string|max:500'
         ]);
 
         if ($validator->fails()) {
@@ -444,7 +440,6 @@ class HomePageController extends Controller
             
             $comingSoon->title = $request->coming_soon_title;
             $comingSoon->subtitle = $request->coming_soon_subtitle;
-            $comingSoon->service_cards = $request->coming_soon_services;
             $comingSoon->is_active = true;
             $comingSoon->save();
 
@@ -467,11 +462,7 @@ class HomePageController extends Controller
     public function updateServicesWhyChooseUs(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'why_choose_title' => 'required|string|max:255',
-            'why_choose_features' => 'required|array|min:1',
-            'why_choose_features.*.title' => 'required|string|max:255',
-            'why_choose_features.*.description' => 'required|string|max:500',
-            'why_choose_features.*.icon' => 'required|string|max:100'
+            'why_choose_title' => 'required|string|max:255'
         ]);
 
         if ($validator->fails()) {
@@ -485,7 +476,6 @@ class HomePageController extends Controller
             $whyChoose = HomePageContent::firstOrCreate(['section' => 'services_why_choose']);
             
             $whyChoose->title = $request->why_choose_title;
-            $whyChoose->service_cards = $request->why_choose_features;
             $whyChoose->is_active = true;
             $whyChoose->save();
 
