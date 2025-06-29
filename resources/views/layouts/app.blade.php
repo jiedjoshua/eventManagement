@@ -6,8 +6,12 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
-        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="/public/favicon.svg">
+        <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
+        <link rel="shortcut icon" href="/public/favicon.svg">
+        <link rel="apple-touch-icon" href="/public/favicon.svg">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

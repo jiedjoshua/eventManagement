@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Event Packages - CrwdCtrl</title>
-  <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-  <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" type="image/svg+xml" href="/public/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
+  <link rel="shortcut icon" href="/public/favicon.svg">
+  <link rel="apple-touch-icon" href="/public/favicon.svg">
   <link href="/css/home.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
