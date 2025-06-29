@@ -28,7 +28,7 @@
                 <td class="px-3 md:px-6 py-4 border-b text-sm md:text-base">₱{{ number_format($booking->amount_paid, 2) }}</td>
                 <td class="px-3 md:px-6 py-4 border-b text-sm md:text-base capitalize">{{ $booking->payment_status }}</td>
                 <td class="px-3 md:px-6 py-4 border-b">
-                  <a href="{{ route('booking.pay', $booking->id) }}" class="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded hover:bg-indigo-700 transition text-sm md:text-base">
+                  <a href="{{ route('booking.pay', $booking->id) }}" class="inline-block bg-indigo-600 text-white px-2 md:px-4 py-1.5 md:py-2 rounded text-xs md:text-sm font-medium hover:bg-indigo-700 transition-colors duration-200 whitespace-nowrap">
                     Pay Now
                   </a>
                 </td>
