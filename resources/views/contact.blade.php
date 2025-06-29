@@ -76,8 +76,8 @@
 </nav>
 
 <!-- Hero Section -->
-<section class="pt-32 pb-10 md:pb-16 bg-gradient-to-r from-[#EF7C79] to-[#D76C69] text-white">
-  <div class="container mx-auto px-4 text-center">
+<section class="pt-32 pb-10 md:pb-16 bg-gradient-to-r from-[#EF7C79] to-[#D76C69] text-white min-h-[40vh] flex items-center">
+  <div class="container mx-auto px-4 text-center w-full">
     <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">Get in Touch</h1>
     <p class="text-base md:text-xl mb-6 md:mb-8">Ready to start planning your perfect event? We'd love to hear from you!</p>
   </div>
@@ -150,7 +150,10 @@
       <!-- Contact Form -->
       <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
         <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">Send us a Message</h3>
-        <form class="space-y-4 md:space-y-6">
+        
+        <form class="space-y-4 md:space-y-6" id="contactForm">
+          @csrf
+          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div>
               <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
@@ -169,7 +172,8 @@
 
           <div>
             <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-            <input type="tel" id="phone" name="phone" class="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF7C79] focus:border-transparent text-sm md:text-base" required>
+            <input type="tel" id="phone" name="phone" placeholder="09123456789" pattern="[0-9]{11}" maxlength="11" class="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF7C79] focus:border-transparent text-sm md:text-base" required>
+            <p class="text-xs text-gray-500 mt-1">Enter exactly 11 digits (e.g., 09123456789)</p>
           </div>
 
           <div>
@@ -180,7 +184,6 @@
               <option value="birthday">Birthday</option>
               <option value="debut">Debut</option>
               <option value="baptism">Baptism</option>
-              <option value="corporate">Corporate Event</option>
               <option value="other">Other</option>
             </select>
           </div>
@@ -204,6 +207,53 @@
     </div>
   </div>
 </section>
+
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 scale-95 opacity-0" id="successModalContent">
+    <div class="p-6 text-center">
+      <!-- Success Icon -->
+      <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+        <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Message Sent Successfully!</h3>
+      <p class="text-gray-600 mb-6">Thank you for your message! We'll get back to you soon.</p>
+      
+      <button onclick="closeSuccessModal()" class="w-full bg-[#EF7C79] hover:bg-[#D76C69] text-white font-semibold py-3 px-6 rounded-lg transition duration-300">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 scale-95 opacity-0" id="errorModalContent">
+    <div class="p-6 text-center">
+      <!-- Error Icon -->
+      <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+        <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </div>
+      
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Oops! Something went wrong</h3>
+      <p class="text-gray-600 mb-6">Sorry, there was an error sending your message. Please try again or contact us directly.</p>
+      
+      <div class="space-y-3">
+        <button onclick="closeErrorModal()" class="w-full bg-[#EF7C79] hover:bg-[#D76C69] text-white font-semibold py-3 px-6 rounded-lg transition duration-300">
+          Try Again
+        </button>
+        <button onclick="closeErrorModal()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-300">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- FAQ Section -->
 <section class="py-10 md:py-20 bg-gray-50">
@@ -259,6 +309,147 @@
     if (!mobileMenu.contains(event.target) && !menuBtn.contains(event.target)) {
       mobileMenu.classList.add('hidden');
     }
+  });
+
+  // Modal functions
+  function showSuccessModal() {
+    const modal = document.getElementById('successModal');
+    const content = document.getElementById('successModalContent');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    // Trigger animation
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function showErrorModal() {
+    const modal = document.getElementById('errorModal');
+    const content = document.getElementById('errorModalContent');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    // Trigger animation
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closeSuccessModal() {
+    const modal = document.getElementById('successModal');
+    const content = document.getElementById('successModalContent');
+    
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }, 300);
+  }
+
+  function closeErrorModal() {
+    const modal = document.getElementById('errorModal');
+    const content = document.getElementById('errorModalContent');
+    
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }, 300);
+  }
+
+  // Close modals when clicking outside
+  document.getElementById('successModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeSuccessModal();
+    }
+  });
+
+  document.getElementById('errorModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeErrorModal();
+    }
+  });
+
+  // Contact form enhancement
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.textContent;
+
+    // Set minimum date for event date field
+    const eventDateInput = document.getElementById('event_date');
+    if (eventDateInput) {
+      const today = new Date().toISOString().split('T')[0];
+      eventDateInput.setAttribute('min', today);
+    }
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Basic client-side validation
+      const requiredFields = form.querySelectorAll('[required]');
+      let isValid = true;
+
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          isValid = false;
+          field.classList.add('border-red-500');
+        } else {
+          field.classList.remove('border-red-500');
+        }
+      });
+
+      // Email validation
+      const emailField = form.querySelector('input[type="email"]');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailField && !emailRegex.test(emailField.value)) {
+        isValid = false;
+        emailField.classList.add('border-red-500');
+      }
+
+      // Phone validation
+      const phoneField = form.querySelector('input[name="phone"]');
+      const phoneRegex = /^[0-9]{11}$/;
+      if (phoneField && !phoneRegex.test(phoneField.value)) {
+        isValid = false;
+        phoneField.classList.add('border-red-500');
+      }
+
+      if (!isValid) {
+        showErrorModal();
+        return;
+      }
+
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Sending...
+      `;
+
+      // Simulate form submission delay
+      setTimeout(() => {
+        // Always show success for simulation
+        showSuccessModal();
+        form.reset();
+        
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }, 2000); // 2 second delay to simulate processing
+    });
   });
 </script>
 

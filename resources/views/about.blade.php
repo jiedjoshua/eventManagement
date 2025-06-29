@@ -76,8 +76,8 @@
 </nav>
 
 <!-- Hero Section -->
-<section class="pt-32 pb-10 md:pb-16 bg-gradient-to-r from-[#EF7C79] to-[#D76C69] text-white">
-  <div class="container mx-auto px-4 text-center">
+<section class="pt-32 pb-10 md:pb-16 bg-gradient-to-r from-[#EF7C79] to-[#D76C69] text-white min-h-[40vh] flex items-center">
+  <div class="container mx-auto px-4 text-center w-full">
     <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">About CrwdCtrl</h1>
     <p class="text-base md:text-xl mb-6 md:mb-8">Creating unforgettable moments, one event at a time</p>
   </div>
