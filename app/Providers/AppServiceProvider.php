@@ -19,6 +19,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Add fallback for mb_strcut if mbstring extension is not available
+        if (!function_exists('mb_strcut')) {
+            function mb_strcut($str, $start, $length = null, $encoding = null) {
+                // Simple fallback implementation
+                if ($length === null) {
+                    return substr($str, $start);
+                }
+                return substr($str, $start, $length);
+            }
+        }
     }
 }

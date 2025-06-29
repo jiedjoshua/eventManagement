@@ -149,7 +149,7 @@
   <div class="max-w-4xl mx-auto px-4 text-center">
     <h2 class="text-2xl md:text-3xl font-bold mb-6">Get in Touch</h2>
     <p class="text-base md:text-lg mb-4">📞 +63 912 345 6789</p>
-    <p class="text-base md:text-lg mb-4">✉️ hello@crwdctrl.ph</p>
+    <p class="text-base md:text-lg mb-4">✉️ hello@crwdctrl.space</p>
     <p class="text-base md:text-lg">📍 Bataan, Philippines</p>
   </div>
 </section>
