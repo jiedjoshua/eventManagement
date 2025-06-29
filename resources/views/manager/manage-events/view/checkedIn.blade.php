@@ -31,7 +31,7 @@
             <div>
                 <p class="mt-4 font-semibold text-gray-900">Check-in Controls</p>
                 <a href="{{ route('events.qrScanner', ['event' => $event->id]) }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">QR Scanner</a>
-                <a href="{{ route('events.checkedIn', ['event' => $event->id]) }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Manual Check-in</a>
+                <a href="{{ route('events.manualCheckin', ['event' => $event->id]) }}" class="block pl-4 py-2 hover:bg-indigo-100 rounded">Manual Check-in</a>
                 <a href="{{ route('events.checkedIn', ['event' => $event->id]) }}" class="block pl-4 py-2 rounded bg-indigo-200 font-semibold text-indigo-800">Checked in Guests</a>
             </div>
 
