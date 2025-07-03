@@ -159,6 +159,36 @@ class VenueController extends Controller
         ]);
     }
 
+    public function getVenueBookings(Request $request)
+    {
+        $request->validate([
+            'venue_id' => 'required|exists:venues,id',
+            'year' => 'required|integer',
+            'month' => 'required|integer|between:1,12',
+        ]);
+
+        $bookings = \App\Models\Booking::where('venue_id', $request->venue_id)
+            ->whereYear('event_date', $request->year)
+            ->whereMonth('event_date', $request->month)
+            ->whereIn('status', ['approved', 'pending']) // Only consider active bookings
+            ->get()
+            ->map(function ($booking) {
+                return [
+                    'id' => $booking->id,
+                    'date' => $booking->event_date->format('Y-m-d'),
+                    'start_time' => $booking->start_time,
+                    'end_time' => $booking->end_time,
+                    'event_name' => $booking->event_name,
+                    'status' => $booking->status,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookings
+        ]);
+    }
+
     // ADMIN SIDE
      public function adminIndex(Request $request)
     {

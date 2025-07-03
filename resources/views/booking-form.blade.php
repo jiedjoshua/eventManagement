@@ -119,6 +119,9 @@
                                         </div>
                                         <div class="availability-status" style="display: none;">
                                             <span class="availability-text"></span>
+                                            <button type="button" class="check-availability-btn" style="display: none; margin-top: 8px; padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                                📅 Check Availability
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -367,6 +370,103 @@
             <p><strong>Booking Reference:</strong><span id="bookingRef"></span></p>
         </div>
     </div>
+
+    <!-- Venue Availability Calendar Modal -->
+    <div id="availabilityCalendarModal" class="calendar-modal-overlay" style="display:none;">
+      <div class="calendar-modal-content">
+        <div class="calendar-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 8px 20px;border-bottom:1px solid #eee;">
+          <span id="calendarVenueName" style="font-weight:600;font-size:1.1rem;"></span>
+          <button type="button" class="calendar-modal-close" style="background:none;border:none;font-size:2rem;line-height:1;color:#888;cursor:pointer;">&times;</button>
+        </div>
+        <div class="calendar-modal-body" style="padding:20px;">
+          <div class="calendar-controls" style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;">
+            <button id="calendarPrev" style="background:#f3f3f3;border:none;border-radius:6px;padding:6px 12px;font-size:1.2rem;cursor:pointer;">&#8592;</button>
+            <span id="calendarMonth" style="font-weight:500;font-size:1rem;"></span>
+            <button id="calendarNext" style="background:#f3f3f3;border:none;border-radius:6px;padding:6px 12px;font-size:1.2rem;cursor:pointer;">&#8594;</button>
+          </div>
+          <div id="calendarGrid" class="calendar-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;"></div>
+          <div class="calendar-selected-info" id="calendarSelectedDate" style="margin-top:10px;text-align:center;font-size:1rem;font-weight:500;"></div>
+          
+          <!-- Time Selection for Partial Day Availability -->
+          <div id="timeSelection" style="display:none;margin-top:16px;padding:16px;background:#f8f9fa;border-radius:8px;">
+            <h4 style="margin:0 0 12px 0;font-weight:600;color:#333;">Select Available Time Slot</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;margin-bottom:4px;font-size:0.9rem;color:#666;">Start Time</label>
+                <input type="time" id="calendarStartTime" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:4px;font-size:0.9rem;color:#666;">End Time</label>
+                <input type="time" id="calendarEndTime" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+              </div>
+            </div>
+            <div id="timeConflictWarning" style="display:none;margin-top:8px;padding:8px;background:#fff3cd;border:1px solid #ffeaa7;border-radius:4px;color:#856404;font-size:0.9rem;">
+              ⚠️ This time conflicts with existing bookings
+            </div>
+          </div>
+          
+          <!-- Calendar Legend -->
+          <div style="margin-top:12px;font-size:0.8rem;color:#666;text-align:center;">
+            <span style="display:inline-block;margin-right:12px;">
+              <span style="display:inline-block;width:12px;height:12px;background:#f3e6e6;border-radius:2px;margin-right:4px;"></span>
+              Unavailable
+            </span>
+            <span style="display:inline-block;margin-right:12px;">
+              <span style="display:inline-block;width:12px;height:12px;background:#1976d2;border-radius:2px;margin-right:4px;"></span>
+              Selected
+            </span>
+            <span style="display:inline-block;">
+              <span style="display:inline-block;width:12px;height:12px;border:1.5px solid #1976d2;border-radius:2px;margin-right:4px;"></span>
+              Today
+            </span>
+          </div>
+          
+          <button id="calendarConfirmBtn" class="btn btn-primary" style="margin-top:16px; width:100%;" disabled>Use This Date</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+    .calendar-modal-overlay {
+      position: fixed; z-index: 1000; left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center;
+    }
+    .calendar-modal-content {
+      background: #fff; border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      max-width: 400px; width: 95vw; overflow: hidden; animation: fadeIn 0.2s;
+    }
+    .calendar-grid {
+      min-height: 220px;
+    }
+    .calendar-day {
+      background: #f9f9f9; border-radius: 6px; padding: 10px 0; text-align: center; font-size: 1rem; cursor: pointer; transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    }
+    .calendar-day.unavailable {
+      background: #f3e6e6; color: #b71c1c; cursor: not-allowed; text-decoration: line-through;
+    }
+    .calendar-day.selected {
+      background: #1976d2; color: #fff; box-shadow: 0 2px 8px #1976d233;
+    }
+    .calendar-day.today {
+      border: 1.5px solid #1976d2;
+    }
+    .calendar-controls button:disabled {
+      opacity: 0.5; cursor: not-allowed;
+    }
+    .calendar-modal-header {
+      border-bottom: 1px solid #eee;
+    }
+    .calendar-modal-close:hover {
+      color: #1976d2;
+    }
+    @media (max-width: 600px) {
+      .calendar-modal-content { max-width: 98vw; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    </style>
 
     <script src="{{ asset('js/booking-form.js') }}"></script>
     <!-- 

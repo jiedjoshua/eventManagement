@@ -23,38 +23,287 @@ const churchStep = document.getElementById('churchStep');
 const nextChurchStep = document.getElementById('nextChurchStep');
 const churchGrid = document.querySelector('.church-grid');
 
+// --- Venue Availability Calendar Modal Logic ---
+let calendarVenueId = null;
+let calendarVenueName = '';
+let calendarYear = null;
+let calendarMonth = null; // 0-based
+let calendarUnavailableDates = [];
+let calendarBookedDates = [];
+let calendarSelected = null;
+let calendarSelectedTime = null;
+let calendarDataCache = {}; // Cache for calendar data
+let calendarMinDate = null; // Minimum selectable date
+
+window.openAvailabilityCalendar = function(venueId, venueName) {
+    calendarVenueId = venueId;
+    calendarVenueName = venueName;
+    const today = new Date();
+    // Determine minimum date based on event type
+    const eventType = document.getElementById('eventType')?.value;
+    let min;
+    if (eventType === 'wedding') {
+        min = new Date(today);
+        min.setMonth(min.getMonth() + 3);
+    } else if (eventType === 'birthday') {
+        // 2 full weeks from today, rounded up to the next Monday
+        min = new Date(today);
+        min.setDate(min.getDate() + 14); // 2 weeks ahead
+        // Find next Monday
+        const dayOfWeek = min.getDay();
+        const daysUntilMonday = (8 - dayOfWeek) % 7;
+        if (daysUntilMonday !== 0) {
+            min.setDate(min.getDate() + daysUntilMonday);
+        }
+    } else if (eventType === 'debut' || eventType === 'baptism') {
+        min = new Date(today);
+        min.setMonth(min.getMonth() + 1);
+    } else {
+        min = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    }
+    calendarMinDate = new Date(min.getFullYear(), min.getMonth(), min.getDate());
+    console.log('Event type:', eventType, 'Minimum allowed date:', calendarMinDate.toISOString().slice(0,10));
+    // Set calendar to minimum allowed month/year
+    calendarYear = calendarMinDate.getFullYear();
+    calendarMonth = calendarMinDate.getMonth();
+    calendarSelected = null;
+    calendarSelectedTime = null;
+    document.getElementById('calendarVenueName').textContent = venueName;
+    document.getElementById('calendarSelectedDate').textContent = '';
+    document.getElementById('calendarConfirmBtn').disabled = true;
+    document.getElementById('timeSelection').style.display = 'none';
+    document.getElementById('timeConflictWarning').style.display = 'none';
+    document.getElementById('availabilityCalendarModal').style.display = 'flex';
+    fetchAndRenderCalendar();
+}
+
+function closeAvailabilityCalendar() {
+    document.getElementById('availabilityCalendarModal').style.display = 'none';
+}
+
+document.querySelector('.calendar-modal-close').onclick = closeAvailabilityCalendar;
+document.getElementById('calendarPrev').onclick = function() {
+    // Only allow going back if not at minimum month/year
+    if (calendarYear > calendarMinDate.getFullYear() || (calendarYear === calendarMinDate.getFullYear() && calendarMonth > calendarMinDate.getMonth())) {
+        calendarMonth--;
+        if (calendarMonth < 0) {
+            calendarMonth = 11;
+            calendarYear--;
+        }
+        fetchAndRenderCalendar();
+    }
+};
+document.getElementById('calendarNext').onclick = function() {
+    calendarMonth++;
+    if (calendarMonth > 11) {
+        calendarMonth = 0;
+        calendarYear++;
+    }
+    fetchAndRenderCalendar();
+};
+
+document.getElementById('calendarConfirmBtn').onclick = function() {
+    if (calendarSelected) {
+        document.getElementById('eventDate').value = calendarSelected;
+        if (calendarSelectedTime) {
+            document.getElementById('startTime').value = calendarSelectedTime.start;
+            document.getElementById('endTime').value = calendarSelectedTime.end;
+        }
+        closeAvailabilityCalendar();
+        document.getElementById('eventDate').dispatchEvent(new Event('change'));
+    }
+};
+
+document.getElementById('calendarStartTime').onchange = validateTimeSelection;
+document.getElementById('calendarEndTime').onchange = validateTimeSelection;
+
+function validateTimeSelection() {
+    const startTime = document.getElementById('calendarStartTime').value;
+    const endTime = document.getElementById('calendarEndTime').value;
+    const warning = document.getElementById('timeConflictWarning');
+    const confirmBtn = document.getElementById('calendarConfirmBtn');
+    if (!startTime || !endTime) {
+        warning.style.display = 'none';
+        confirmBtn.disabled = true;
+        return;
+    }
+    if (startTime >= endTime) {
+        warning.textContent = '⚠️ End time must be after start time';
+        warning.style.display = 'block';
+        confirmBtn.disabled = true;
+        return;
+    }
+    const selectedDateBookings = calendarBookedDates.filter(b => b.date === calendarSelected);
+    const hasConflict = selectedDateBookings.some(booking => {
+        return (startTime < booking.end_time && endTime > booking.start_time);
+    });
+    if (hasConflict) {
+        warning.textContent = '⚠️ This time conflicts with existing bookings';
+        warning.style.display = 'block';
+        confirmBtn.disabled = true;
+    } else {
+        warning.style.display = 'none';
+        confirmBtn.disabled = false;
+        calendarSelectedTime = { start: startTime, end: endTime };
+    }
+}
+
+async function fetchAndRenderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '<div style="grid-column: span 7; text-align:center; padding: 32px 0; color: #888; font-size: 1.2rem;">Loading...</div>';
+    const cacheKey = `${calendarVenueId}-${calendarYear}-${calendarMonth+1}`;
+    if (calendarDataCache[cacheKey]) {
+        const { unavailable, bookings } = calendarDataCache[cacheKey];
+        calendarUnavailableDates = unavailable;
+        calendarBookedDates = bookings;
+        renderCalendarGrid();
+        return;
+    }
+    const unavailableUrl = `/api/venues/unavailabilities?venue_id=${calendarVenueId}&year=${calendarYear}&month=${calendarMonth+1}`;
+    const bookingsUrl = `/api/venues/bookings?venue_id=${calendarVenueId}&year=${calendarYear}&month=${calendarMonth+1}`;
+    let unavailable = [];
+    let bookings = [];
+    try {
+        const unavailableRes = await fetch(unavailableUrl);
+        const unavailableData = await unavailableRes.json();
+        if (unavailableData.success && Array.isArray(unavailableData.data)) {
+            unavailable = unavailableData.data.map(u => u.date);
+        }
+        const bookingsRes = await fetch(bookingsUrl);
+        const bookingsData = await bookingsRes.json();
+        if (bookingsData.success && Array.isArray(bookingsData.data)) {
+            bookings = bookingsData.data;
+        }
+    } catch (e) {
+        console.error('Error fetching calendar data:', e);
+        unavailable = [];
+        bookings = [];
+    }
+    calendarDataCache[cacheKey] = { unavailable, bookings };
+    calendarUnavailableDates = unavailable;
+    calendarBookedDates = bookings;
+    renderCalendarGrid();
+}
+
+function renderCalendarGrid() {
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('calendarMonth').textContent = `${monthNames[calendarMonth]} ${calendarYear}`;
+    // Disable prev button if at min month/year
+    const prevBtn = document.getElementById('calendarPrev');
+    if (calendarYear < calendarMinDate.getFullYear() || (calendarYear === calendarMinDate.getFullYear() && calendarMonth === calendarMinDate.getMonth())) {
+        prevBtn.disabled = true;
+    } else {
+        prevBtn.disabled = false;
+    }
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    for (let d of days) {
+        const el = document.createElement('div');
+        el.textContent = d;
+        el.style.fontWeight = 'bold';
+        el.style.background = '#f3f3f3';
+        el.style.borderRadius = '6px';
+        el.style.padding = '6px 0';
+        grid.appendChild(el);
+    }
+    const first = new Date(calendarYear, calendarMonth, 1);
+    const startDay = first.getDay();
+    const daysInMonth = new Date(calendarYear, calendarMonth+1, 0).getDate();
+    for (let i=0; i<startDay; i++) {
+        const blank = document.createElement('div');
+        grid.appendChild(blank);
+    }
+    const today = new Date();
+    for (let d=1; d<=daysInMonth; d++) {
+        const date = new Date(calendarYear, calendarMonth, d);
+        const ymd = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = d;
+        // Disable if before min date
+        if (calendarMinDate && date < calendarMinDate) {
+            dayEl.classList.add('unavailable');
+        } else {
+            // Check if date is unavailable (either marked unavailable or fully booked)
+            const isUnavailable = calendarUnavailableDates.includes(ymd);
+            const dateBookings = calendarBookedDates.filter(b => b.date === ymd);
+            const isFullyBooked = dateBookings.length > 0 && dateBookings.every(b => 
+                b.start_time === '00:00' && b.end_time === '23:59'
+            );
+            if (isUnavailable || isFullyBooked) {
+                dayEl.classList.add('unavailable');
+            } else {
+                dayEl.onclick = function() {
+                    grid.querySelectorAll('.calendar-day.selected').forEach(el => el.classList.remove('selected'));
+                    dayEl.classList.add('selected');
+                    calendarSelected = ymd;
+                    const timeSelection = document.getElementById('timeSelection');
+                    if (dateBookings.length > 0) {
+                        timeSelection.style.display = 'block';
+                        document.getElementById('calendarStartTime').value = '';
+                        document.getElementById('calendarEndTime').value = '';
+                        document.getElementById('timeConflictWarning').style.display = 'none';
+                        document.getElementById('calendarConfirmBtn').disabled = true;
+                        calendarSelectedTime = null;
+                    } else {
+                        timeSelection.style.display = 'none';
+                        document.getElementById('calendarConfirmBtn').disabled = false;
+                        calendarSelectedTime = null;
+                    }
+                    document.getElementById('calendarSelectedDate').textContent = `Selected: ${ymd}`;
+                };
+            }
+        }
+        if (date.toDateString() === today.toDateString() && calendarMonth === today.getMonth() && calendarYear === today.getFullYear()) {
+            dayEl.classList.add('today');
+        }
+        if (calendarSelected === ymd) {
+            dayEl.classList.add('selected');
+        }
+        grid.appendChild(dayEl);
+    }
+}
+
 // Function to update church availability when event details change
 async function updateChurchAvailability() {
     if (!churchGrid || churchGrid.children.length === 0) return;
-
+    setChurchCardsLoadingState(true);
     const eventDate = document.getElementById('eventDate').value;
     const startTime = document.getElementById('startTime').value;
     const endTime = document.getElementById('endTime').value;
-
-    if (!eventDate || !startTime || !endTime) return;
-
+    if (!eventDate || !startTime || !endTime) { setChurchCardsLoadingState(false); return; }
     const churchCards = churchGrid.querySelectorAll('.venue-card');
-    
     for (const card of churchCards) {
         const venueId = card.dataset.venueId;
         const isAvailable = await checkVenueAvailability(venueId, eventDate, startTime, endTime);
-        
-        // Update styling
         card.classList.toggle('unavailable', !isAvailable);
-        
         const availabilityStatus = card.querySelector('.availability-status');
         const availabilityText = card.querySelector('.availability-text');
-        
+        const checkAvailabilityBtn = availabilityStatus?.querySelector('.check-availability-btn');
         if (availabilityStatus && availabilityText) {
             availabilityStatus.style.display = 'block';
             if (!isAvailable) {
                 availabilityText.textContent = 'Unavailable for selected date/time';
                 availabilityText.style.color = '#dc3545';
+                if (checkAvailabilityBtn) {
+                    checkAvailabilityBtn.style.display = 'inline-block';
+                    checkAvailabilityBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        openAvailabilityCalendar(venueId, card.querySelector('.venue-title')?.textContent || 'Venue');
+                    };
+                }
             } else {
                 availabilityText.textContent = 'Available';
                 availabilityText.style.color = '#28a745';
+                if (checkAvailabilityBtn) {
+                    checkAvailabilityBtn.style.display = 'none';
+                }
             }
         }
+        card.classList.remove('loading');
+        const overlay = card.querySelector('.venue-loading-overlay');
+        if (overlay) overlay.style.display = 'none';
     }
 }
 
@@ -527,7 +776,7 @@ function validateCurrentStep() {
             minDate = minWedding.toISOString().split('T')[0];
         } else if (eventType === 'birthday') {
             const dayOfWeek = today.getDay();
-            const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+            const daysUntilNextMonday = (8 - dayOfWeek) % 7;
             const nextMonday = new Date(today);
             nextMonday.setDate(today.getDate() + daysUntilNextMonday);
             const minBirthday = new Date(nextMonday);
@@ -646,7 +895,7 @@ function populateBookingSummary() {
             : null;
         summaryVenueName += `<strong>Church:</strong> ${selectedChurchCard ? selectedChurchCard.querySelector('.venue-title').textContent : 'Not selected'}<br>`;
         summaryVenueName += `<strong>Reception:</strong> ${selectedReceptionCard ? selectedReceptionCard.querySelector('.venue-title').textContent : 'Not selected'}`;
-    } else if (eventTypeSummary === 'birthday' || eventTypeSummary === 'debut') {
+    } else if (eventTypeSummary === 'birthday' || eventType === 'debut') {
         summaryVenueName += `<strong>Church:</strong> N/A<br>`;
         summaryVenueName += `<strong>Reception:</strong> ${selectedVenueCard ? selectedVenueCard.querySelector('.venue-title').textContent : 'Not selected'}`;
     } else {
@@ -667,7 +916,7 @@ function populateBookingSummary() {
         }
     }
     let packageTitle = '';
-    if (selectedPackageCard) {
+if (selectedPackageCard) {
         // Try to find .package-title anywhere inside
         const titleEl = selectedPackageCard.querySelector('.package-title');
         if (titleEl) {
@@ -922,35 +1171,46 @@ async function populateVenues(type) {
                 const card = createVenueCard(venue);
                 venueGrid.appendChild(card);
                 
+                // Show loading overlay
+                card.classList.add('loading');
+                const overlay = card.querySelector('.venue-loading-overlay');
+                if (overlay) overlay.style.display = 'flex';
                 // Check availability
                 const isAvailable = await checkVenueAvailability(venue.id, eventDate, startTime, endTime);
+                card.classList.toggle('unavailable', !isAvailable);
+                const availabilityStatus = card.querySelector('.availability-status');
+                const availabilityText = card.querySelector('.availability-text');
+                const checkAvailabilityBtn = availabilityStatus?.querySelector('.check-availability-btn');
                 
-                // Apply styling based on availability
-                if (!isAvailable) {
-                    card.classList.add('unavailable');
-                    const availabilityStatus = card.querySelector('.availability-status');
-                    const availabilityText = card.querySelector('.availability-text');
-                    if (availabilityStatus && availabilityText) {
-                        availabilityStatus.style.display = 'block';
+                if (availabilityStatus && availabilityText) {
+                    availabilityStatus.style.display = 'block';
+                    if (!isAvailable) {
                         availabilityText.textContent = 'Unavailable for selected date/time';
                         availabilityText.style.color = '#dc3545';
-                    }
-                } else {
-                    const availabilityStatus = card.querySelector('.availability-status');
-                    const availabilityText = card.querySelector('.availability-text');
-                    if (availabilityStatus && availabilityText) {
-                        availabilityStatus.style.display = 'block';
+                        if (checkAvailabilityBtn) {
+                            checkAvailabilityBtn.style.display = 'inline-block';
+                            checkAvailabilityBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                openAvailabilityCalendar(venue.id, venue.name);
+                            };
+                        }
+                    } else {
                         availabilityText.textContent = 'Available';
                         availabilityText.style.color = '#28a745';
+                        if (checkAvailabilityBtn) {
+                            checkAvailabilityBtn.style.display = 'none';
+                        }
                     }
                 }
+                card.classList.remove('loading');
+                if (overlay) overlay.style.display = 'none';
             }
         } else {
             // If event details are not complete, just show venues without availability
-            venues.forEach(venue => {
-                const card = createVenueCard(venue);
-                venueGrid.appendChild(card);
-            });
+        venues.forEach(venue => {
+            const card = createVenueCard(venue);
+            venueGrid.appendChild(card);
+        });
         }
     } catch (error) {
         console.error('Error in populateVenues:', error);
@@ -988,9 +1248,10 @@ async function checkVenueAvailability(venueId, date, startTime, endTime) {
 // 3. Create venue card function
 function createVenueCard(venue, type = null) {
     const card = document.createElement('div');
-    card.className = 'venue-card'; // Always use the same class for both
+    card.className = 'venue-card loading'; // Add loading class initially
     card.dataset.venueId = venue.id;
     card.dataset.venuePrice = venue.price_range;
+    card.style.position = 'relative';
 
     const venueTypeDisplay = {
         'indoor': 'Indoor Venue',
@@ -1021,22 +1282,29 @@ function createVenueCard(venue, type = null) {
             </div>
             <div class="availability-status" style="display: none;">
                 <span class="availability-text"></span>
+                <button type="button" class="check-availability-btn" style="display: none; margin-top: 8px; padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                    📅 Check Availability
+                </button>
             </div>
         </div>
     `;
+    // Add loading overlay as a direct child of the card
+    const overlay = document.createElement('div');
+    overlay.className = 'venue-loading-overlay';
+    overlay.style = 'display: none; position: absolute; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.7); z-index:2; align-items:center; justify-content:center;';
+    overlay.innerHTML = '<div class="spinner" style="border: 3px solid #eee; border-top: 3px solid #1976d2; border-radius: 50%; width: 28px; height: 28px; animation: spin 1s linear infinite;"></div>';
+    card.appendChild(overlay);
 
     // Add click handlers
     card.addEventListener('click', function (e) {
+        if (card.classList.contains('loading')) return; // Prevent selection while loading
         if (e.target.classList.contains('view-more-btn')) {
             openVenueModal(venue.id);
         } else {
-            // Check if venue is unavailable
             if (this.classList.contains('unavailable')) {
                 showFormError('This venue is not available for the selected date and time. Please choose a different date/time or venue.');
                 return;
             }
-            
-            // If in church step, select as church; else as venue
             if (churchStep && churchStep.style.display !== 'none' && churchGrid && churchGrid.contains(this)) {
                 document.querySelectorAll('.venue-card', churchGrid).forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
@@ -1046,13 +1314,35 @@ function createVenueCard(venue, type = null) {
                 document.querySelectorAll('.venue-card', document.querySelector('.venue-grid')).forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedVenue = venue.id;
-                // Update pricing when venue is selected
                 calculateAndDisplayPricing();
             }
         }
     });
 
     return card;
+}
+
+// Patch for static church cards (Blade): add loading overlay as direct child of card
+function setChurchCardsLoadingState(loading) {
+    document.querySelectorAll('.church-grid .venue-card').forEach(card => {
+        if (loading) {
+            card.classList.add('loading');
+            let overlay = card.querySelector('.venue-loading-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'venue-loading-overlay';
+                overlay.style = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.7);z-index:2;display:flex;align-items:center;justify-content:center;';
+                overlay.innerHTML = '<div class="spinner" style="border: 3px solid #eee; border-top: 3px solid #1976d2; border-radius: 50%; width: 28px; height: 28px; animation: spin 1s linear infinite;"></div>';
+                card.appendChild(overlay);
+            } else {
+                overlay.style.display = 'flex';
+            }
+        } else {
+            card.classList.remove('loading');
+            const overlay = card.querySelector('.venue-loading-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+    });
 }
 
 // Function to update venue availability when event details change
@@ -1080,12 +1370,24 @@ async function updateVenueAvailability() {
         
         if (availabilityStatus && availabilityText) {
             availabilityStatus.style.display = 'block';
+            const checkAvailabilityBtn = availabilityStatus.querySelector('.check-availability-btn');
+            
             if (!isAvailable) {
                 availabilityText.textContent = 'Unavailable for selected date/time';
                 availabilityText.style.color = '#dc3545';
+                if (checkAvailabilityBtn) {
+                    checkAvailabilityBtn.style.display = 'inline-block';
+                    checkAvailabilityBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        openAvailabilityCalendar(venueId, card.querySelector('.venue-title')?.textContent || 'Venue');
+                    };
+                }
             } else {
                 availabilityText.textContent = 'Available';
                 availabilityText.style.color = '#28a745';
+                if (checkAvailabilityBtn) {
+                    checkAvailabilityBtn.style.display = 'none';
+                }
             }
         }
     }
@@ -1308,7 +1610,7 @@ document.getElementById('eventType').addEventListener('change', function () {
     } else if (eventType === 'birthday') {
         // 2 full weeks from next Monday
         const dayOfWeek = today.getDay();
-        const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+        const daysUntilNextMonday = (8 - dayOfWeek) % 7;
         const nextMonday = new Date(today);
         nextMonday.setDate(today.getDate() + daysUntilNextMonday);
         const minBirthday = new Date(nextMonday);
@@ -1545,3 +1847,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
+
+// Add spinner keyframes
+const style = document.createElement('style');
+style.innerHTML = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+document.head.appendChild(style);
