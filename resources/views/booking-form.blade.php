@@ -117,6 +117,9 @@
                                             </div>
                                             <button type="button" class="view-more-btn">View Details</button>
                                         </div>
+                                        <div class="availability-status" style="display: none;">
+                                            <span class="availability-text"></span>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach

@@ -40,9 +40,15 @@ class Venue extends Model
         return $this->hasMany(Booking::class);
     }
 
+    public function unavailabilities(): HasMany
+    {
+        return $this->hasMany(VenueUnavailability::class);
+    }
+
     public function isAvailable($date, $startTime, $endTime): bool
     {
-        return !$this->bookings()
+        // Check for existing bookings
+        $hasBookingConflict = $this->bookings()
             ->where('event_date', $date)
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where(function ($q) use ($startTime, $endTime) {
@@ -57,5 +63,19 @@ class Venue extends Model
             })
             ->whereIn('status', ['pending', 'approved'])
             ->exists();
+
+        if ($hasBookingConflict) {
+            return false;
+        }
+
+        // Check for venue unavailabilities
+        $hasUnavailability = $this->unavailabilities()
+            ->where('unavailable_date', $date)
+            ->get()
+            ->some(function ($unavailability) use ($startTime, $endTime) {
+                return $unavailability->isTimeConflict($startTime, $endTime);
+            });
+
+        return !$hasUnavailability;
     }
 }

@@ -23,6 +23,41 @@ const churchStep = document.getElementById('churchStep');
 const nextChurchStep = document.getElementById('nextChurchStep');
 const churchGrid = document.querySelector('.church-grid');
 
+// Function to update church availability when event details change
+async function updateChurchAvailability() {
+    if (!churchGrid || churchGrid.children.length === 0) return;
+
+    const eventDate = document.getElementById('eventDate').value;
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+
+    if (!eventDate || !startTime || !endTime) return;
+
+    const churchCards = churchGrid.querySelectorAll('.venue-card');
+    
+    for (const card of churchCards) {
+        const venueId = card.dataset.venueId;
+        const isAvailable = await checkVenueAvailability(venueId, eventDate, startTime, endTime);
+        
+        // Update styling
+        card.classList.toggle('unavailable', !isAvailable);
+        
+        const availabilityStatus = card.querySelector('.availability-status');
+        const availabilityText = card.querySelector('.availability-text');
+        
+        if (availabilityStatus && availabilityText) {
+            availabilityStatus.style.display = 'block';
+            if (!isAvailable) {
+                availabilityText.textContent = 'Unavailable for selected date/time';
+                availabilityText.style.color = '#dc3545';
+            } else {
+                availabilityText.textContent = 'Available';
+                availabilityText.style.color = '#28a745';
+            }
+        }
+    }
+}
+
 // Add back button for church step
 const backToEventType = document.getElementById('backToEventType');
 if (backToEventType) {
@@ -874,13 +909,79 @@ async function populateVenues(type) {
         }
 
         venueGrid.innerHTML = '';
-        venues.forEach(venue => {
-            const card = createVenueCard(venue);
-            venueGrid.appendChild(card);
-        });
+        
+        // Get current event details for availability checking
+        const eventDate = document.getElementById('eventDate').value;
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+
+        // Check if we have all the required event details
+        if (eventDate && startTime && endTime) {
+            // Check availability for each venue
+            for (const venue of venues) {
+                const card = createVenueCard(venue);
+                venueGrid.appendChild(card);
+                
+                // Check availability
+                const isAvailable = await checkVenueAvailability(venue.id, eventDate, startTime, endTime);
+                
+                // Apply styling based on availability
+                if (!isAvailable) {
+                    card.classList.add('unavailable');
+                    const availabilityStatus = card.querySelector('.availability-status');
+                    const availabilityText = card.querySelector('.availability-text');
+                    if (availabilityStatus && availabilityText) {
+                        availabilityStatus.style.display = 'block';
+                        availabilityText.textContent = 'Unavailable for selected date/time';
+                        availabilityText.style.color = '#dc3545';
+                    }
+                } else {
+                    const availabilityStatus = card.querySelector('.availability-status');
+                    const availabilityText = card.querySelector('.availability-text');
+                    if (availabilityStatus && availabilityText) {
+                        availabilityStatus.style.display = 'block';
+                        availabilityText.textContent = 'Available';
+                        availabilityText.style.color = '#28a745';
+                    }
+                }
+            }
+        } else {
+            // If event details are not complete, just show venues without availability
+            venues.forEach(venue => {
+                const card = createVenueCard(venue);
+                venueGrid.appendChild(card);
+            });
+        }
     } catch (error) {
         console.error('Error in populateVenues:', error);
         venueGrid.innerHTML = '<div class="error">Failed to load venues. Please try again.</div>';
+    }
+}
+
+// Function to check venue availability
+async function checkVenueAvailability(venueId, date, startTime, endTime) {
+    try {
+        const response = await fetch('/api/venues/check-availability', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                venue_id: venueId,
+                date: date,
+                start_time: startTime,
+                end_time: endTime
+            })
+        });
+
+        const data = await response.json();
+        return data.success ? data.data.is_available : false;
+    } catch (error) {
+        console.error('Error checking venue availability:', error);
+        return false;
     }
 }
 
@@ -918,6 +1019,9 @@ function createVenueCard(venue, type = null) {
                 </div>
                 <button type="button" class="view-more-btn">View Details</button>
             </div>
+            <div class="availability-status" style="display: none;">
+                <span class="availability-text"></span>
+            </div>
         </div>
     `;
 
@@ -926,6 +1030,12 @@ function createVenueCard(venue, type = null) {
         if (e.target.classList.contains('view-more-btn')) {
             openVenueModal(venue.id);
         } else {
+            // Check if venue is unavailable
+            if (this.classList.contains('unavailable')) {
+                showFormError('This venue is not available for the selected date and time. Please choose a different date/time or venue.');
+                return;
+            }
+            
             // If in church step, select as church; else as venue
             if (churchStep && churchStep.style.display !== 'none' && churchGrid && churchGrid.contains(this)) {
                 document.querySelectorAll('.venue-card', churchGrid).forEach(c => c.classList.remove('selected'));
@@ -943,6 +1053,42 @@ function createVenueCard(venue, type = null) {
     });
 
     return card;
+}
+
+// Function to update venue availability when event details change
+async function updateVenueAvailability() {
+    const venueGrid = document.querySelector('.venue-grid');
+    if (!venueGrid || venueGrid.children.length === 0) return;
+
+    const eventDate = document.getElementById('eventDate').value;
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+
+    if (!eventDate || !startTime || !endTime) return;
+
+    const venueCards = venueGrid.querySelectorAll('.venue-card');
+    
+    for (const card of venueCards) {
+        const venueId = card.dataset.venueId;
+        const isAvailable = await checkVenueAvailability(venueId, eventDate, startTime, endTime);
+        
+        // Update styling
+        card.classList.toggle('unavailable', !isAvailable);
+        
+        const availabilityStatus = card.querySelector('.availability-status');
+        const availabilityText = card.querySelector('.availability-text');
+        
+        if (availabilityStatus && availabilityText) {
+            availabilityStatus.style.display = 'block';
+            if (!isAvailable) {
+                availabilityText.textContent = 'Unavailable for selected date/time';
+                availabilityText.style.color = '#dc3545';
+            } else {
+                availabilityText.textContent = 'Available';
+                availabilityText.style.color = '#28a745';
+            }
+        }
+    }
 }
 
 // Then add the event listeners
@@ -1362,3 +1508,40 @@ if (backToChurchFromVenueType) {
         churchStep.style.display = 'block';
     });
 }
+
+// Add event listeners for date and time changes to update venue availability
+document.addEventListener('DOMContentLoaded', function() {
+    const eventDateInput = document.getElementById('eventDate');
+    const startTimeInput = document.getElementById('startTime');
+    const endTimeInput = document.getElementById('endTime');
+
+    if (eventDateInput) {
+        eventDateInput.addEventListener('change', function() {
+            updateVenueAvailability();
+            updateChurchAvailability();
+        });
+    }
+    if (startTimeInput) {
+        startTimeInput.addEventListener('change', function() {
+            updateVenueAvailability();
+            updateChurchAvailability();
+        });
+    }
+    if (endTimeInput) {
+        endTimeInput.addEventListener('change', function() {
+            updateVenueAvailability();
+            updateChurchAvailability();
+        });
+    }
+
+    // Initialize availability checking for churches if event details are already filled
+    setTimeout(() => {
+        const eventDate = eventDateInput?.value;
+        const startTime = startTimeInput?.value;
+        const endTime = endTimeInput?.value;
+        
+        if (eventDate && startTime && endTime) {
+            updateChurchAvailability();
+        }
+    }, 1000);
+});

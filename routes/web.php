@@ -135,6 +135,12 @@ Route::middleware(['auth', 'role:super_admin'])->group(function () {
     // Public venue routes (for API)
     Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
     Route::get('/venues/{venue}', [VenueController::class, 'show'])->name('venues.show');
+    Route::post('/api/venues/check-availability', [VenueController::class, 'checkAvailability'])->name('api.venues.check-availability');
+    
+    // Venue unavailability management routes
+    Route::post('/api/venues/mark-unavailable', [VenueController::class, 'markUnavailable'])->name('api.venues.mark-unavailable');
+    Route::delete('/api/venues/remove-unavailability', [VenueController::class, 'removeUnavailability'])->name('api.venues.remove-unavailability');
+    Route::get('/api/venues/unavailabilities', [VenueController::class, 'getUnavailabilities'])->name('api.venues.unavailabilities');
 
     Route::get('/admin/account-settings', [SuperAdminController::class, 'accountSettings'])->name('admin.account-settings');
 

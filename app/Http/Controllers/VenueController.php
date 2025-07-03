@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Venue;
+use App\Models\VenueUnavailability;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; 
 use App\Models\VenueGallery;
@@ -43,6 +44,118 @@ class VenueController extends Controller
         return response()->json([
             'success' => true,
             'data' => $venue
+        ]);
+    }
+
+    public function checkAvailability(Request $request)
+    {
+        $request->validate([
+            'venue_id' => 'required|exists:venues,id',
+            'date' => 'required|date|after_or_equal:today',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+        ]);
+
+        $venue = Venue::findOrFail($request->venue_id);
+        $isAvailable = $venue->isAvailable($request->date, $request->start_time, $request->end_time);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'venue_id' => $venue->id,
+                'venue_name' => $venue->name,
+                'date' => $request->date,
+                'start_time' => $request->start_time,
+                'end_time' => $request->end_time,
+                'is_available' => $isAvailable
+            ]
+        ]);
+    }
+
+    public function markUnavailable(Request $request)
+    {
+        $request->validate([
+            'venue_id' => 'required|exists:venues,id',
+            'date' => 'required|date|after_or_equal:today',
+            'type' => 'required|in:full_day,partial_day',
+            'start_time' => 'nullable|required_if:type,partial_day|date_format:H:i',
+            'end_time' => 'nullable|required_if:type,partial_day|date_format:H:i|after:start_time',
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $unavailability = VenueUnavailability::create([
+                'venue_id' => $request->venue_id,
+                'unavailable_date' => $request->date,
+                'type' => $request->type,
+                'start_time' => $request->type === 'partial_day' ? $request->start_time : null,
+                'end_time' => $request->type === 'partial_day' ? $request->end_time : null,
+                'reason' => $request->reason,
+                'created_by' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Venue marked as unavailable successfully',
+                'data' => $unavailability
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark venue as unavailable: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function removeUnavailability(Request $request)
+    {
+        $request->validate([
+            'unavailability_id' => 'required|exists:venue_unavailabilities,id',
+        ]);
+
+        try {
+            $unavailability = VenueUnavailability::findOrFail($request->unavailability_id);
+            $unavailability->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Unavailability removed successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove unavailability: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUnavailabilities(Request $request)
+    {
+        $request->validate([
+            'venue_id' => 'required|exists:venues,id',
+            'year' => 'required|integer',
+            'month' => 'required|integer|between:1,12',
+        ]);
+
+        $unavailabilities = VenueUnavailability::where('venue_id', $request->venue_id)
+            ->whereYear('unavailable_date', $request->year)
+            ->whereMonth('unavailable_date', $request->month)
+            ->get()
+            ->map(function ($unavailability) {
+                return [
+                    'id' => $unavailability->id,
+                    'date' => $unavailability->unavailable_date->format('Y-m-d'),
+                    'type' => $unavailability->type,
+                    'start_time' => $unavailability->start_time?->format('H:i'),
+                    'end_time' => $unavailability->end_time?->format('H:i'),
+                    'reason' => $unavailability->reason,
+                    'created_by' => $unavailability->createdBy?->name ?? 'Unknown',
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $unavailabilities
         ]);
     }
 
