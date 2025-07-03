@@ -24,8 +24,9 @@ class EventController extends Controller
     {
         $packages = Package::with('features')->where('is_active', true)->get();
         $addons = Addon::where('is_active', true)->orderBy('sort_order')->get();
+        $churches = \App\Models\Venue::where('type', 'church')->where('is_active', true)->get();
 
-        return view('booking-form', compact('packages', 'addons'));
+        return view('booking-form', compact('packages', 'addons', 'churches'));
     }
 
     public function store(Request $request)

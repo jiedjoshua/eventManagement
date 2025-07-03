@@ -222,6 +222,7 @@
                                 <option value="indoor">Indoor</option>
                                 <option value="outdoor">Outdoor</option>
                                 <option value="both">Both (Indoor & Outdoor)</option>
+                                <option value="church">Church</option>
                             </select>
                         </div>
 
@@ -720,11 +721,19 @@
             console.log('API URL:', retrieveUrl);
 
             fetch(retrieveUrl)
-                .then(response => {
+                .then(async response => {
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        // Try to get error details from the response
+                        const text = await response.text();
+                        throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
                     }
-                    return response.json();
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`Expected JSON, got: ${text}`);
+                    }
                 })
                 .then(data => {
                     console.log('Mapbox retrieve response:', data);
@@ -983,9 +992,10 @@
                         <select id="editVenueType" name="type" required
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Select Type</option>
-                            <option value="indoor" ${venue.type === 'indoor' ? 'selected' : ''}>Indoor</option>
-                            <option value="outdoor" ${venue.type === 'outdoor' ? 'selected' : ''}>Outdoor</option>
-                            <option value="both" ${venue.type === 'both' ? 'selected' : ''}>Both (Indoor & Outdoor)</option>
+                            <option value="indoor" {{ $venue->type === 'indoor' ? 'selected' : '' }}>Indoor</option>
+                            <option value="outdoor" {{ $venue->type === 'outdoor' ? 'selected' : '' }}>Outdoor</option>
+                            <option value="both" {{ $venue->type === 'both' ? 'selected' : '' }}>Both (Indoor & Outdoor)</option>
+                            <option value="church" {{ $venue->type === 'church' ? 'selected' : '' }}>Church</option>
                         </select>
                     </div>
 
@@ -1249,7 +1259,8 @@
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(response => response.json())
@@ -1280,7 +1291,8 @@
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(response => response.json())

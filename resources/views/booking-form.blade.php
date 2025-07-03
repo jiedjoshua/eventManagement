@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Booking Form</title>
-    <link rel="stylesheet" href="{{ asset('public/css/booking-form.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/booking-form.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
@@ -38,7 +38,7 @@
         </div>
 
         <form id="bookingForm">
-           
+            <div id="formError" class="form-error" style="display:none;color:#dc3545;background:#fff3f3;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-weight:600;text-align:center;max-width:400px;margin-left:auto;margin-right:auto;"></div>
             <div class="form-content">
                  <!-- Step 1: Event Details -->
                 <div class="step-content active" data-step="1">
@@ -51,7 +51,7 @@
                                 <option value="">Select event type</option>
                                 <option value="wedding">Wedding</option>
                                 <option value="birthday">Birthday Party</option>
-                                <option value="corporate">Debut</option>
+                                <option value="debut">Debut</option>
                                 <option value="baptism">Baptism</option>
                             </select>
                         </div>
@@ -94,8 +94,43 @@
 
                 <!-- Step 2: Venue Details -->
                 <div class="step-content" data-step="2">
+                    <!-- Church Selection Step (hidden by default, shown for wedding/baptism) -->
+                    <div class="venue-step" id="churchStep" style="display: none;">
+                        <div class="venue-step-header">
+                            <h2>⛪ Choose a Church</h2>
+                            <button type="button" class="btn btn-secondary" id="backToEventType">
+                                <span>←</span> Back to Event Details
+                            </button>
+                        </div>
+                        <div class="church-grid horizontal-grid">
+                            @foreach($churches as $church)
+                                <div class="venue-card" data-venue-id="{{ $church->id }}" data-venue-price="{{ $church->price_range }}">
+                                    <img src="{{ $church->main_image }}" alt="{{ $church->name }}" class="venue-image">
+                                    <span class="venue-tag">Church</span>
+                                    <div class="venue-content">
+                                        <h3 class="venue-title">{{ $church->name }}</h3>
+                                        <p class="venue-description">{{ $church->description }}</p>
+                                        <div class="venue-actions">
+                                            <div class="venue-info">
+                                                <span>Capacity: {{ $church->capacity }}</span>
+                                                <span class="venue-price">₱{{ number_format($church->price_range) }}</span>
+                                            </div>
+                                            <button type="button" class="view-more-btn">View Details</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="venue-navigation">
+                            <button type="button" class="btn btn-primary" id="nextChurchStep" disabled>Continue to Reception Selection</button>
+                        </div>
+                    </div>
+                    <!-- Existing Venue Type Selection Step -->
                     <div class="venue-step" id="venueStep1">
                         <h2>🏠 Choose Venue Type</h2>
+                        <button type="button" class="btn btn-secondary" id="backToChurchFromVenueType" style="display: none; margin-bottom: 12px;">
+                            <span>←</span> Back to Church Selection
+                        </button>
                         <div class="venue-type-selection">
                             <div class="venue-type-btn" data-venue-type="indoor">
                                 <span class="venue-type-icon">🏢</span>
@@ -108,12 +143,6 @@
                                 <span class="venue-type-label">Outdoor</span>
                                 <p class="venue-type-desc">Ideal for natural lighting and open-air celebrations</p>
                                 <input type="radio" name="venueType" value="outdoor" required style="display: none;">
-                            </div>
-                            <div class="venue-type-btn" data-venue-type="both">
-                                <span class="venue-type-icon">🏢🌳</span>
-                                <span class="venue-type-label">Indoor & Outdoor</span>
-                                <p class="venue-type-desc">Flexible venues with both indoor and outdoor spaces available</p>
-                                <input type="radio" name="venueType" value="both" required style="display: none;">
                             </div>
                         </div>
                         <div class="venue-navigation">
@@ -129,7 +158,7 @@
                             </button>
                         </div>
                         
-                        <div class="venue-grid">
+                        <div class="venue-grid horizontal-grid">
                             <!-- Venue cards will be dynamically populated based on selection -->
                         </div>
 
@@ -336,7 +365,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('public/js/booking-form.js') }}"></script>
+    <script src="{{ asset('js/booking-form.js') }}"></script>
     <!-- 
     VENUE MAPS:
     Venue locations are displayed using OpenStreetMap iframe.

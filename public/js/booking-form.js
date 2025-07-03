@@ -17,6 +17,24 @@ const venueStep2 = document.getElementById('venueStep2');
 const nextVenueStep = document.getElementById('nextVenueStep');
 const backToVenueType = document.getElementById('backToVenueType');
 
+// Add variables for church selection
+let selectedChurch = null;
+const churchStep = document.getElementById('churchStep');
+const nextChurchStep = document.getElementById('nextChurchStep');
+const churchGrid = document.querySelector('.church-grid');
+
+// Add back button for church step
+const backToEventType = document.getElementById('backToEventType');
+if (backToEventType) {
+    backToEventType.addEventListener('click', function() {
+        // Hide church step, show event details step
+        churchStep.style.display = 'none';
+        // Go back to step 1
+        currentStep = 1;
+        updateStep();
+    });
+}
+
 // Define the selectVenue function immediately and expose it globally
 function selectVenue() {
     console.log('selectVenue function called'); // Debug log
@@ -26,7 +44,7 @@ function selectVenue() {
         console.error('Modal not found or no venue ID stored');
         console.log('Modal:', modal); // Debug log
         console.log('Modal dataset:', modal ? modal.dataset : 'Modal not found'); // Debug log
-        alert('Unable to select venue. Please try again.');
+        showFormError('Unable to select venue. Please try again.');
         return;
     }
     
@@ -57,15 +75,15 @@ function selectVenue() {
             closeModal();
             
             // Show success message
-            alert('Venue selected successfully!');
+            showFormError('Venue selected successfully!');
         } else {
             console.error('Venue card not found for ID:', venueId);
             console.log('Available venue cards:', document.querySelectorAll('.venue-card')); // Debug log
-            alert('Venue not found. Please try again.');
+            showFormError('Venue not found. Please try again.');
         }
     } else {
         console.error('No venue ID found in modal');
-        alert('Unable to select venue. Please try again.');
+        showFormError('Unable to select venue. Please try again.');
     }
 }
 
@@ -76,14 +94,14 @@ window.selectVenue = selectVenue;
 if (typeof window.selectVenue === 'undefined') {
     window.selectVenue = function() {
         console.error('selectVenue function not properly loaded');
-        alert('Please refresh the page and try again.');
+        showFormError('Please refresh the page and try again.');
     };
 }
 
 // Define other functions that need to be global
 function getDirections() {
     if (!venueMapData) {
-        alert('Venue location not available');
+        showFormError('Venue location not available');
         return;
     }
     
@@ -164,7 +182,7 @@ function openPackageModal(packageId) {
             document.body.classList.add('modal-open');
         } catch (error) {
             console.error('Error loading package details:', error);
-            alert('Failed to load package details. Please try again.');
+            showFormError('Failed to load package details. Please try again.');
         }
     })();
 }
@@ -295,9 +313,26 @@ function updateStep() {
     nextBtn.textContent = currentStep === totalSteps ? 'Submit Booking' : 'Next Step';
 }
 
- 
- //Validation function commented out for testing
+function showFormError(message) {
+    const errorDiv = document.getElementById('formError');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = '';
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function hideFormError() {
+    const errorDiv = document.getElementById('formError');
+    if (errorDiv) {
+        errorDiv.textContent = '';
+        errorDiv.style.display = 'none';
+    }
+}
+
+//Validation function commented out for testing
 function validateCurrentStep() {
+    hideFormError();
     const currentStepContent = document.querySelector(`.step-content[data-step="${currentStep}"]`);
     const requiredFields = currentStepContent.querySelectorAll('input[required], select[required], textarea[required]');
     
@@ -323,13 +358,37 @@ function validateCurrentStep() {
 
     // Special validation for venue selection in step 2
     if (currentStep === 2) {
+        const eventType = document.getElementById('eventType').value;
+        if ((eventType === 'wedding' || eventType === 'baptism')) {
+            // Require church selection (by id, not by .selected class)
+            let hasChurch = false;
+            if (selectedChurch) {
+                // Check if a card with this id exists in churchGrid
+                const churchCard = churchGrid ? churchGrid.querySelector(`.venue-card[data-venue-id="${selectedChurch}"]`) : null;
+                if (churchCard) hasChurch = true;
+            }
+            if (!hasChurch) {
+                document.querySelectorAll('.venue-card', churchGrid).forEach(card => card.style.borderColor = '#dc3545');
+                showFormError('Please select a church before proceeding');
+                return false;
+            }
+            // Require reception selection
+            const selectedReceptionCard = document.querySelector('.venue-card.selected') && venueStep2 && venueStep2.contains(document.querySelector('.venue-card.selected'))
+                ? document.querySelector('.venue-card.selected')
+                : null;
+            if (!selectedReceptionCard) {
+                document.querySelectorAll('.venue-card', document.querySelector('.venue-grid')).forEach(card => card.style.borderColor = '#dc3545');
+                showFormError('Please select a reception venue before proceeding');
+                return false;
+            }
+        }
         const venueTypeChecked = document.querySelector('input[name="venueType"]:checked');
         if (!venueTypeChecked) {
             document.querySelectorAll('.venue-type-btn').forEach(btn => {
                 btn.style.borderColor = '#dc3545';
             });
             isValid = false;
-            alert('Please select a venue type');
+            showFormError('Please select a venue type');
         }
 
         if (!selectedVenue) {
@@ -340,7 +399,7 @@ function validateCurrentStep() {
 
             // Show error message if on venue selection page
             if (venueStep2.style.display !== 'none') {
-                alert('Please select a venue before proceeding');
+                showFormError('Please select a venue before proceeding');
             }
         }
 
@@ -359,7 +418,97 @@ function validateCurrentStep() {
                 card.style.borderColor = '#dc3545';
             });
             isValid = false;
-            alert('Please select a package before proceeding');
+            showFormError('Please select a package before proceeding');
+        }
+    }
+
+    // Additional validation for guest count in step 1
+    if (currentStep === 1) {
+        const guestCountInput = document.getElementById('guestCount');
+        const guestCount = parseInt(guestCountInput.value, 10);
+        if (isNaN(guestCount) || guestCount < 30) {
+            guestCountInput.style.borderColor = '#dc3545';
+            guestCountInput.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
+            showFormError('Expected number of guests must be at least 30.');
+            guestCountInput.focus();
+            return false;
+        }
+
+        // Get event type before time validation!
+        const eventType = document.getElementById('eventType').value;
+
+        // Time validation
+        const startTimeInput = document.getElementById('startTime');
+        const endTimeInput = document.getElementById('endTime');
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+        if (startTime && endTime) {
+            // Parse times as minutes since midnight
+            const [startHour, startMin] = startTime.split(':').map(Number);
+            const [endHour, endMin] = endTime.split(':').map(Number);
+            const startTotal = startHour * 60 + startMin;
+            const endTotal = endHour * 60 + endMin;
+            // No event can start or end between 12:00AM and 7:59AM
+            if (startTotal < 480 || endTotal < 480) { // 480 = 8*60
+                showFormError('No event can start or end before 8:00 AM.');
+                startTimeInput.focus();
+                return false;
+            }
+            // No event can end after 11:59PM
+            if (endTotal > 1439) { // 1439 = 23*60+59
+                showFormError('No event can end after 11:59 PM.');
+                endTimeInput.focus();
+                return false;
+            }
+            // End time must be after start time
+            if (endTotal <= startTotal) {
+                showFormError('End time must be after start time.');
+                endTimeInput.focus();
+                return false;
+            }
+            // Minimum duration by event type
+            let minDuration = 180; // default 3 hours
+            if (eventType === 'debut' || eventType === 'baptism') {
+                minDuration = 120;
+            } else if (eventType === 'birthday') {
+                minDuration = 60;
+            } else if (eventType === 'wedding') {
+                minDuration = 180;
+            }
+            if (endTotal - startTotal < minDuration) {
+                let minHourMsg = minDuration === 180 ? '3 hours' : minDuration === 120 ? '2 hours' : '1 hour';
+                showFormError(`The minimum event duration for this event type is ${minHourMsg}.`);
+                endTimeInput.focus();
+                return false;
+            }
+        }
+
+        // Date validation
+        const eventDate = document.getElementById('eventDate').value;
+        let minDate = '';
+        const today = new Date();
+        if (eventType === 'wedding') {
+            const minWedding = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
+            minDate = minWedding.toISOString().split('T')[0];
+        } else if (eventType === 'birthday') {
+            const dayOfWeek = today.getDay();
+            const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+            const nextMonday = new Date(today);
+            nextMonday.setDate(today.getDate() + daysUntilNextMonday);
+            const minBirthday = new Date(nextMonday);
+            minBirthday.setDate(nextMonday.getDate() + 14);
+            minDate = minBirthday.toISOString().split('T')[0];
+        } else if (eventType === 'baptism' || eventType === 'debut') {
+            const minOther = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+            minDate = minOther.toISOString().split('T')[0];
+        }
+        if (minDate && eventDate && eventDate < minDate) {
+            const eventDateInput = document.getElementById('eventDate');
+            eventDateInput.style.borderColor = '#dc3545';
+            eventDateInput.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
+            showFormError('Selected event date is too soon for this event type.');
+            eventDateInput.focus();
+            return false;
         }
     }
 
@@ -370,7 +519,7 @@ function validateCurrentStep() {
         
         // Show general validation message
         if (currentStep === 1) {
-            alert('Please fill in all required fields before proceeding');
+            showFormError('Please fill in all required fields before proceeding');
         }
     }
 
@@ -423,20 +572,20 @@ function submitForm() {
             window.location.href = '/';
         }, 5000);
         } else {
-            alert(data.message || 'An error occurred while submitting your booking.');
+            showFormError(data.message || 'An error occurred while submitting your booking.');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while submitting your booking. Please try again.');
+        showFormError('An error occurred while submitting your booking. Please try again.');
     });
 }
 
 
 function populateBookingSummary() {
     // Event Details
-    const eventType = document.getElementById('eventType');
-    document.getElementById('summaryEventType').textContent = eventType.options[eventType.selectedIndex]?.text || 'Not selected';
+    const eventTypeSummary = document.getElementById('eventType').value;
+    document.getElementById('summaryEventType').textContent = eventTypeSummary ? eventTypeSummary.charAt(0).toUpperCase() + eventTypeSummary.slice(1) : 'Not selected';
     document.getElementById('summaryEventName').textContent = document.getElementById('eventName').value || 'Not specified';
     document.getElementById('summaryEventDate').textContent = document.getElementById('eventDate').value || 'Not selected';
     
@@ -453,28 +602,59 @@ function populateBookingSummary() {
     
     // Update Venue Name - Fix
     const selectedVenueCard = document.querySelector('.venue-card.selected');
-    document.getElementById('summaryVenueName').textContent = selectedVenueCard ? 
-        selectedVenueCard.querySelector('.venue-title').textContent : 'Not selected';
+    let summaryVenueName = '';
+    if (eventTypeSummary === 'wedding' || eventTypeSummary === 'baptism') {
+        // Find selected church and reception cards
+        const selectedChurchCard = churchGrid && selectedChurch ? churchGrid.querySelector(`.venue-card[data-venue-id="${selectedChurch}"]`) : null;
+        const selectedReceptionCard = selectedVenueCard && venueStep2 && venueStep2.contains(selectedVenueCard)
+            ? selectedVenueCard
+            : null;
+        summaryVenueName += `<strong>Church:</strong> ${selectedChurchCard ? selectedChurchCard.querySelector('.venue-title').textContent : 'Not selected'}<br>`;
+        summaryVenueName += `<strong>Reception:</strong> ${selectedReceptionCard ? selectedReceptionCard.querySelector('.venue-title').textContent : 'Not selected'}`;
+    } else if (eventTypeSummary === 'birthday' || eventTypeSummary === 'debut') {
+        summaryVenueName += `<strong>Church:</strong> N/A<br>`;
+        summaryVenueName += `<strong>Reception:</strong> ${selectedVenueCard ? selectedVenueCard.querySelector('.venue-title').textContent : 'Not selected'}`;
+    } else {
+        summaryVenueName = selectedVenueCard ? selectedVenueCard.querySelector('.venue-title').textContent : 'Not selected';
+    }
+    document.getElementById('summaryVenueType').innerHTML = '';
+    document.getElementById('summaryVenueName').innerHTML = summaryVenueName || 'Not selected';
     
     const venueNotes = document.getElementById('venueNotes').value;
     document.getElementById('summaryVenueNotes').textContent = venueNotes || 'None';
 
     // Package & Services - Fix
-   const selectedPackageCard = document.querySelector('.package-card.selected');
-if (selectedPackageCard) {
-    const packageTitle = selectedPackageCard.querySelector('.package-title').textContent;
-    // Remove the price part, just use the title
-    document.getElementById('summaryPackage').textContent = packageTitle;
-} else {
-    document.getElementById('summaryPackage').textContent = 'Not selected';
-}
+    let selectedPackageCard = document.querySelector('.package-card.selected');
+    if (!selectedPackageCard) {
+        const checkedRadio = document.querySelector('input[name="package"]:checked');
+        if (checkedRadio) {
+            selectedPackageCard = checkedRadio.closest('.package-card');
+        }
+    }
+    let packageTitle = '';
+    if (selectedPackageCard) {
+        // Try to find .package-title anywhere inside
+        const titleEl = selectedPackageCard.querySelector('.package-title');
+        if (titleEl) {
+            packageTitle = titleEl.textContent;
+        }
+    }
+    document.getElementById('summaryPackage').textContent = packageTitle || 'Not selected';
 
     // Add-on Services
     const addonsList = document.getElementById('summaryAddons');
     addonsList.innerHTML = '';
     document.querySelectorAll('input[name="addons[]"]:checked').forEach(addon => {
         const li = document.createElement('li');
-        li.textContent = addon.nextElementSibling.textContent;
+        // Robust: find the span inside the .addon-item parent
+        const label = addon.closest('.addon-item');
+        if (label) {
+            const span = label.querySelector('span');
+            if (span) li.textContent = span.textContent;
+            else li.textContent = 'Add-on';
+        } else {
+            li.textContent = 'Add-on';
+        }
         addonsList.appendChild(li);
     });
     if (addonsList.children.length === 0) {
@@ -487,6 +667,25 @@ if (selectedPackageCard) {
 
     // Calculate and display pricing
     calculateAndDisplayPricing();
+
+    // Update summary to include church and reception as separate lines for wedding/baptism
+    if ((eventTypeSummary === 'wedding' || eventTypeSummary === 'baptism') && selectedChurch) {
+        let summaryVenueType = '';
+        let totalVenue = 0;
+        if (selectedChurchCard && churchPrice) {
+            venueBreakdown += `<strong>Church:</strong> ₱${churchPrice.toLocaleString()}`;
+            totalVenue += churchPrice;
+        }
+        if (selectedReceptionCard && receptionPrice) {
+            if (venueBreakdown) venueBreakdown += '<br>';
+            venueBreakdown += `<strong>Reception:</strong> ₱${receptionPrice.toLocaleString()}`;
+            totalVenue += receptionPrice;
+        }
+        if (venueBreakdown) {
+            venueBreakdown += `<br><strong>Total Venue Cost:</strong> ₱${totalVenue.toLocaleString()}`;
+        }
+        document.getElementById('summaryVenuePrice').innerHTML = venueBreakdown || '₱0';
+    }
 }
 
 // Calculate and display pricing information
@@ -494,6 +693,8 @@ function calculateAndDisplayPricing() {
     let packagePrice = 0;
     let addonsPrice = 0;
     let venuePrice = 0;
+    let churchPrice = 0;
+    let receptionPrice = 0;
 
     // Get package price
     const selectedPackageCard = document.querySelector('.package-card.selected');
@@ -521,19 +722,58 @@ function calculateAndDisplayPricing() {
         }
     });
 
-    // Get venue price from selected venue card
-    const selectedVenueCard = document.querySelector('.venue-card.selected');
-    if (selectedVenueCard && selectedVenueCard.dataset.venuePrice) {
-        venuePrice = parseFloat(selectedVenueCard.dataset.venuePrice);
+    // Get venue prices for wedding/baptism (church + reception)
+    const eventTypeSummary = document.getElementById('eventType').value;
+    let selectedChurchCard = null;
+    let selectedReceptionCard = null;
+    if ((eventTypeSummary === 'wedding' || eventTypeSummary === 'baptism')) {
+        // Find selected church card in churchGrid by selectedChurch variable
+        selectedChurchCard = churchGrid && selectedChurch ? churchGrid.querySelector(`.venue-card[data-venue-id="${selectedChurch}"]`) : null;
+        // Find selected reception card in venueStep2
+        selectedReceptionCard = document.querySelector('.venue-card.selected') && venueStep2 && venueStep2.contains(document.querySelector('.venue-card.selected'))
+            ? document.querySelector('.venue-card.selected')
+            : null;
+        if (selectedChurchCard && selectedChurchCard.dataset.venuePrice) {
+            churchPrice = parseFloat(selectedChurchCard.dataset.venuePrice);
+        }
+        if (selectedReceptionCard && selectedReceptionCard.dataset.venuePrice) {
+            receptionPrice = parseFloat(selectedReceptionCard.dataset.venuePrice);
+        }
+        venuePrice = churchPrice + receptionPrice;
+    } else {
+        // Get venue price from selected venue card (normal case)
+        const selectedVenueCard = document.querySelector('.venue-card.selected');
+        if (selectedVenueCard && selectedVenueCard.dataset.venuePrice) {
+            venuePrice = parseFloat(selectedVenueCard.dataset.venuePrice);
+        }
     }
 
     // Calculate total
-    const totalPrice = packagePrice + addonsPrice + venuePrice;
+    const totalPrice = packagePrice + addonsPrice + (eventTypeSummary === 'wedding' || eventTypeSummary === 'baptism' ? (churchPrice + receptionPrice) : venuePrice);
 
     // Display prices
     document.getElementById('summaryPackagePrice').textContent = `₱${packagePrice.toLocaleString()}`;
     document.getElementById('summaryAddonsPrice').textContent = `₱${addonsPrice.toLocaleString()}`;
-    document.getElementById('summaryVenuePrice').textContent = `₱${venuePrice.toLocaleString()}`;
+    // Venue price breakdown for wedding/baptism
+    if ((eventTypeSummary === 'wedding' || eventTypeSummary === 'baptism')) {
+        let venueBreakdown = '';
+        let totalVenue = 0;
+        if (selectedChurchCard && churchPrice) {
+            venueBreakdown += `<strong>Church:</strong> ₱${churchPrice.toLocaleString()}`;
+            totalVenue += churchPrice;
+        }
+        if (selectedReceptionCard && receptionPrice) {
+            if (venueBreakdown) venueBreakdown += '<br>';
+            venueBreakdown += `<strong>Reception:</strong> ₱${receptionPrice.toLocaleString()}`;
+            totalVenue += receptionPrice;
+        }
+        if (venueBreakdown) {
+            venueBreakdown += `<br><strong>Total Venue Cost:</strong> ₱${totalVenue.toLocaleString()}`;
+        }
+        document.getElementById('summaryVenuePrice').innerHTML = venueBreakdown || '₱0';
+    } else {
+        document.getElementById('summaryVenuePrice').textContent = `₱${venuePrice.toLocaleString()}`;
+    }
     document.getElementById('summaryTotalPrice').textContent = `₱${totalPrice.toLocaleString()}`;
 }
 
@@ -573,11 +813,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     selectVenue();
                 } else {
                     console.error('selectVenue function not available');
-                    alert('Please refresh the page and try again.');
+                    showFormError('Please refresh the page and try again.');
                 }
             }
         });
     }
+
+    // Attach click handlers to static church cards (Blade-rendered)
+    document.querySelectorAll('.church-grid .venue-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.classList.contains('view-more-btn')) {
+                // Open modal for this church
+                openVenueModal(card.dataset.venueId);
+            } else {
+                // Select this church
+                document.querySelectorAll('.church-grid .venue-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedChurch = card.dataset.venueId;
+                nextChurchStep.disabled = false;
+            }
+        });
+    });
 });
 
 // Define the functions first
@@ -629,16 +885,17 @@ async function populateVenues(type) {
 }
 
 // 3. Create venue card function
-function createVenueCard(venue) {
+function createVenueCard(venue, type = null) {
     const card = document.createElement('div');
-    card.className = 'venue-card';
+    card.className = 'venue-card'; // Always use the same class for both
     card.dataset.venueId = venue.id;
-    card.dataset.venuePrice = venue.price_range; // Store price for calculations
+    card.dataset.venuePrice = venue.price_range;
 
     const venueTypeDisplay = {
         'indoor': 'Indoor Venue',
         'outdoor': 'Outdoor Venue',
-        'both': 'Indoor & Outdoor Venue'
+        'both': 'Indoor & Outdoor Venue',
+        'church': 'Church'
     }[venue.type];
 
     // Format price for display
@@ -650,7 +907,7 @@ function createVenueCard(venue) {
 
     card.innerHTML = `
         <img src="${venue.main_image}" alt="${venue.name}" class="venue-image">
-        <span class="venue-tag">${venueTypeDisplay}</span>
+        <span class="venue-tag">${venueTypeDisplay || ''}</span>
         <div class="venue-content">
             <h3 class="venue-title">${venue.name}</h3>
             <p class="venue-description">${venue.description}</p>
@@ -669,11 +926,19 @@ function createVenueCard(venue) {
         if (e.target.classList.contains('view-more-btn')) {
             openVenueModal(venue.id);
         } else {
-            document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
-            selectedVenue = venue.id;
-            // Update pricing when venue is selected
-            calculateAndDisplayPricing();
+            // If in church step, select as church; else as venue
+            if (churchStep && churchStep.style.display !== 'none' && churchGrid && churchGrid.contains(this)) {
+                document.querySelectorAll('.venue-card', churchGrid).forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedChurch = venue.id;
+                nextChurchStep.disabled = false;
+            } else {
+                document.querySelectorAll('.venue-card', document.querySelector('.venue-grid')).forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedVenue = venue.id;
+                // Update pricing when venue is selected
+                calculateAndDisplayPricing();
+            }
         }
     });
 
@@ -715,7 +980,7 @@ async function openVenueModal(venueId) {
     // Check if modal is properly initialized
     if (!modal) {
         console.error('Modal not initialized');
-        alert('Unable to open venue details. Please refresh the page and try again.');
+        showFormError('Unable to open venue details. Please refresh the page and try again.');
         return;
     }
 
@@ -808,7 +1073,7 @@ async function openVenueModal(venueId) {
       
     } catch (error) {
         console.error('Error loading venue details:', error);
-        alert('Failed to load venue details. Please try again.');
+        showFormError('Failed to load venue details. Please try again.');
     }
 }
 
@@ -882,9 +1147,40 @@ function showFallbackLocation(latitude, longitude, venueName) {
 }
 
 // Update packages when event type changes
+const eventDateInput = document.getElementById('eventDate');
 document.getElementById('eventType').addEventListener('change', function () {
     const eventType = this.value;
     loadPackagesForEventType(eventType);
+
+    // Set minimum event date based on event type
+    let minDate = '';
+    const today = new Date();
+    if (eventType === 'wedding') {
+        // 3 months from today
+        const minWedding = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
+        minDate = minWedding.toISOString().split('T')[0];
+    } else if (eventType === 'birthday') {
+        // 2 full weeks from next Monday
+        const dayOfWeek = today.getDay();
+        const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+        const nextMonday = new Date(today);
+        nextMonday.setDate(today.getDate() + daysUntilNextMonday);
+        const minBirthday = new Date(nextMonday);
+        minBirthday.setDate(nextMonday.getDate() + 14);
+        minDate = minBirthday.toISOString().split('T')[0];
+    } else if (eventType === 'baptism' || eventType === 'debut') {
+        // 1 month from today
+        const minOther = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+        minDate = minOther.toISOString().split('T')[0];
+    } else {
+        minDate = '';
+    }
+    if (eventDateInput) {
+        eventDateInput.min = minDate;
+        if (eventDateInput.value && eventDateInput.value < minDate) {
+            eventDateInput.value = '';
+        }
+    }
 
     // Clear any selected package when event type changes
     document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
@@ -892,6 +1188,9 @@ document.getElementById('eventType').addEventListener('change', function () {
     
     // Update pricing
     calculateAndDisplayPricing();
+
+    // Show/hide church step based on event type
+    handleEventTypeChange();
 });
 
 // Add event listeners for addon changes
@@ -915,6 +1214,19 @@ packageModal.addEventListener('click', (e) => {
     }
 });
 
+// Add fetchPackages function
+async function fetchPackages(eventType) {
+    try {
+        const response = await fetch(`/api/packages?type=${eventType}`);
+        const data = await response.json();
+        if (!data.success) throw new Error('Failed to fetch packages');
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching packages:', error);
+        return [];
+    }
+}
+
 async function loadPackagesForEventType(eventType) {
     const packagesContainer = document.querySelector('.packages');
 
@@ -929,103 +1241,124 @@ async function loadPackagesForEventType(eventType) {
     try {
         // Show loading state
         packagesContainer.innerHTML = `
-            <div class="loading-message" style="text-align: center; padding: 20px;">
-                Loading packages...
-            </div>`;
+            <div class="loading">Loading packages...</div>
+        `;
 
-        const response = await fetch(`/api/packages?type=${eventType}`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        });
+        // FIX: Use fetchPackages instead of fetchVenues
+        const packages = await fetchPackages(eventType);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error('Failed to fetch packages');
-        }
-
-        // Extract packages from the response data
-        const packages = data.data || [];
-
-        // Add this debug line
-        console.log('Packages received:', packages);
-
-        if (packages.length === 0) {
-            packagesContainer.innerHTML = `
-                <div class="no-packages-message" style="text-align: center; padding: 20px;">
-                    No packages available for this event type
-                </div>`;
+        if (!packages || packages.length === 0) {
+            packagesContainer.innerHTML = '<div class="error">No packages found for this type.</div>';
             return;
         }
 
-        packagesContainer.innerHTML = packages.map(package => `
-    <div class="package-card" data-package="${package.id}">
-        <div class="package-title">${package.title || 'Untitled Package'}</div>
-        <div class="package-price">From ₱${new Intl.NumberFormat('en-PH').format(package.price || 0)}</div>
-        <p class="package-description">${package.description || 'No description available'}</p>
-        <div class="package-features">
-            ${(package.features || []).map(feature => `
-                <div class="package-feature">
-                    <i>${feature.icon || '✓'}</i>
-                    <span>${feature.title || 'Unnamed Feature'}</span>
-                </div>
-            `).join('')}
-        </div>
-        <div class="package-actions">
-            <button type="button" class="package-btn view-btn" onclick="openPackageModal(${package.id})">View Details</button>
-            <button type="button" class="package-btn select-btn" onclick="selectPackage(${package.id})">Select</button>
-        </div>
-        <input type="radio" name="package" value="${package.id}" style="display: none;">
-    </div>
-`).join('');
+        packagesContainer.innerHTML = '';
+        packages.forEach(package => {
+            const card = createPackageCard(package);
+            packagesContainer.appendChild(card);
+        });
 
-
-        // Reattach click handlers
+        // Add click and change handler for package selection
         document.querySelectorAll('.package-card').forEach(card => {
-            card.addEventListener('click', function (e) {
-                if (!e.target.classList.contains('package-btn')) {
+            // Card click
+            card.addEventListener('click', function () {
+                document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+                if (typeof populateBookingSummary === 'function') {
+                    populateBookingSummary();
+                }
+            });
+            // Radio change
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.addEventListener('change', function(e) {
                     document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-                    this.querySelector('input[type="radio"]').checked = true;
+                    card.classList.add('selected');
+                    if (typeof populateBookingSummary === 'function') {
+                        populateBookingSummary();
+                    }
+                });
+            }
+        });
+
+        // After creating package cards in loadPackagesForEventType, add this:
+        document.querySelectorAll('.package-radio').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+                const card = this.closest('.package-card');
+                if (card) card.classList.add('selected');
+                if (typeof populateBookingSummary === 'function') {
+                    populateBookingSummary();
                 }
             });
         });
     } catch (error) {
-        console.error('Error loading packages:', error);
-        packagesContainer.innerHTML = `
-            <div class="error-message" style="text-align: center; padding: 20px; color: #dc3545;">
-                Failed to load packages. Please try again.
-            </div>`;
+        console.error('Error in loadPackagesForEventType:', error);
+        packagesContainer.innerHTML = '<div class="error">Failed to load packages. Please try again.</div>';
     }
 }
 
-// Make sure the event listener is properly attached
-document.addEventListener('DOMContentLoaded', function () {
-    // Existing event listeners...
+function createPackageCard(package) {
+    const card = document.createElement('div');
+    card.className = 'venue-card package-card';
+    card.dataset.package = package.id;
 
-    // Add modal close button listener
-    const modalClose = document.querySelector('.package-modal-close');
-    if (modalClose) {
-        modalClose.addEventListener('click', closePackageModal);
+    card.innerHTML = `
+        <label style="width:100%;height:100%;display:block;cursor:pointer;">
+            <input type="radio" name="package" value="${package.id}" class="package-radio" style="position:absolute;opacity:0;width:0;height:0;">
+            <span class="venue-tag">Package</span>
+            <div class="venue-content">
+                <h3 class="package-title">${package.title || 'Untitled Package'}</h3>
+                <p class="venue-description">${package.description || 'No description available'}</p>
+                <div class="venue-actions">
+                    <div class="venue-info">
+                        <span class="package-price">From ₱${new Intl.NumberFormat('en-PH').format(package.price || 0)}</span>
+                    </div>
+                    <button type="button" class="view-more-btn">View Details</button>
+                </div>
+            </div>
+        </label>
+    `;
+
+    // Add click handler for view details
+    card.querySelector('.view-more-btn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        openPackageModal(package.id);
+    });
+
+    return card;
+}
+
+function handleEventTypeChange() {
+    const eventType = document.getElementById('eventType').value;
+    if (eventType === 'wedding' || eventType === 'baptism') {
+        churchStep.style.display = 'block';
+        venueStep1.style.display = 'none';
+        venueStep2.style.display = 'none';
+    } else {
+        churchStep.style.display = 'none';
+        venueStep1.style.display = 'block';
+        venueStep2.style.display = 'none';
     }
+}
 
-    // Close modal on outside click
-    packageModal.addEventListener('click', (e) => {
-        if (e.target === packageModal) {
-            closePackageModal();
-        }
+// When clicking 'Continue to Reception Selection' after church selection
+if (nextChurchStep) {
+    nextChurchStep.addEventListener('click', function() {
+        churchStep.style.display = 'none';
+        venueStep1.style.display = 'block';
+        venueStep2.style.display = 'none';
     });
+}
 
-    // Close modal on escape key
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && packageModal.classList.contains('active')) {
-            closePackageModal();
-        }
+// When clicking 'Back to Church Selection' from venue type
+const backToChurchFromVenueType = document.getElementById('backToChurchFromVenueType');
+if (backToChurchFromVenueType) {
+    backToChurchFromVenueType.addEventListener('click', function() {
+        venueStep1.style.display = 'none';
+        venueStep2.style.display = 'none';
+        churchStep.style.display = 'block';
     });
-});
+}

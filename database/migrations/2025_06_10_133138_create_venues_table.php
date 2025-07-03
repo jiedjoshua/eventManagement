@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('venues', function (Blueprint $table) {
             $table->id();
+            $table->boolean('is_church')->default(false)->after('id');
             $table->string('name');
             $table->enum('type', ['indoor', 'outdoor', 'both']);
             $table->integer('capacity');
@@ -27,5 +28,8 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('venues');
+        Schema::table('venues', function (Blueprint $table) {
+            $table->dropColumn('is_church');
+        });
     }
 };
