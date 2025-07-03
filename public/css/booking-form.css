@@ -495,22 +495,14 @@
         }
 
         .venue-card.unavailable {
-            filter: grayscale(100%);
-            opacity: 0.7;
+            filter: none !important;
+            opacity: 1 !important;
             cursor: not-allowed;
         }
 
-        .venue-card.unavailable:hover {
-            transform: none;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
         .venue-card.unavailable .venue-image {
-            filter: grayscale(100%);
-        }
-
-        .venue-card.unavailable .venue-content {
-            opacity: 0.8;
+            filter: grayscale(100%) !important;
+            opacity: 0.7 !important;
         }
 
         .availability-status {
@@ -1556,4 +1548,25 @@
             gap: 20px;
             justify-content: center;
             align-items: stretch;
+        }
+
+        .check-availability-btn {
+            display: none;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .check-availability-btn:hover, .check-availability-btn:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
         }

@@ -466,6 +466,25 @@
       from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    #modalCheckAvailabilityBtn {
+      background: #1976d2 !important;
+      color: #fff !important;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      box-shadow: 0 2px 8px #1976d233;
+      cursor: pointer;
+      width: 90%;
+      margin: 24px 5% 16px 5%;
+      padding: 16px 0;
+      display: block;
+      transition: background 0.15s;
+    }
+    #modalCheckAvailabilityBtn:hover, #modalCheckAvailabilityBtn:focus {
+      background: #1251a3 !important;
+      color: #fff !important;
+    }
     </style>
 
     <script src="{{ asset('js/booking-form.js') }}"></script>

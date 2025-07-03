@@ -111,6 +111,10 @@ document.getElementById('calendarConfirmBtn').onclick = function() {
         }
         closeAvailabilityCalendar();
         document.getElementById('eventDate').dispatchEvent(new Event('change'));
+        // Refresh the venue cards if venueStep2 is visible
+        if (venueStep2 && venueStep2.style.display !== 'none' && typeof populateVenues === 'function') {
+            populateVenues(selectedVenueType);
+        }
     }
 };
 
@@ -280,12 +284,17 @@ async function updateChurchAvailability() {
         card.classList.toggle('unavailable', !isAvailable);
         const availabilityStatus = card.querySelector('.availability-status');
         const availabilityText = card.querySelector('.availability-text');
-        const checkAvailabilityBtn = availabilityStatus?.querySelector('.check-availability-btn');
+        const checkAvailabilityBtn = card.querySelector('.check-availability-btn');
+        const unavailableLabel = card.querySelector('.venue-unavailable-label');
+        const viewDetailsBtn = card.querySelector('.view-more-btn');
+        const venueInfo = card.querySelector('.venue-info');
         if (availabilityStatus && availabilityText) {
             availabilityStatus.style.display = 'block';
             if (!isAvailable) {
-                availabilityText.textContent = 'Unavailable for selected date/time';
-                availabilityText.style.color = '#dc3545';
+                availabilityText.textContent = '';
+                if (unavailableLabel) unavailableLabel.style.display = 'block';
+                if (viewDetailsBtn) viewDetailsBtn.style.display = 'none';
+                if (venueInfo) venueInfo.style.display = 'none';
                 if (checkAvailabilityBtn) {
                     checkAvailabilityBtn.style.display = 'inline-block';
                     checkAvailabilityBtn.onclick = (e) => {
@@ -296,6 +305,9 @@ async function updateChurchAvailability() {
             } else {
                 availabilityText.textContent = 'Available';
                 availabilityText.style.color = '#28a745';
+                if (unavailableLabel) unavailableLabel.style.display = 'none';
+                if (viewDetailsBtn) viewDetailsBtn.style.display = 'inline-block';
+                if (venueInfo) venueInfo.style.display = 'block';
                 if (checkAvailabilityBtn) {
                     checkAvailabilityBtn.style.display = 'none';
                 }
@@ -1180,13 +1192,17 @@ async function populateVenues(type) {
                 card.classList.toggle('unavailable', !isAvailable);
                 const availabilityStatus = card.querySelector('.availability-status');
                 const availabilityText = card.querySelector('.availability-text');
-                const checkAvailabilityBtn = availabilityStatus?.querySelector('.check-availability-btn');
-                
+                const checkAvailabilityBtn = card.querySelector('.check-availability-btn');
+                const unavailableLabel = card.querySelector('.venue-unavailable-label');
+                const viewDetailsBtn = card.querySelector('.view-more-btn');
+                const venueInfo = card.querySelector('.venue-info');
                 if (availabilityStatus && availabilityText) {
                     availabilityStatus.style.display = 'block';
                     if (!isAvailable) {
-                        availabilityText.textContent = 'Unavailable for selected date/time';
-                        availabilityText.style.color = '#dc3545';
+                        availabilityText.textContent = '';
+                        if (unavailableLabel) unavailableLabel.style.display = 'block';
+                        if (viewDetailsBtn) viewDetailsBtn.style.display = 'none';
+                        if (venueInfo) venueInfo.style.display = 'none';
                         if (checkAvailabilityBtn) {
                             checkAvailabilityBtn.style.display = 'inline-block';
                             checkAvailabilityBtn.onclick = (e) => {
@@ -1197,6 +1213,9 @@ async function populateVenues(type) {
                     } else {
                         availabilityText.textContent = 'Available';
                         availabilityText.style.color = '#28a745';
+                        if (unavailableLabel) unavailableLabel.style.display = 'none';
+                        if (viewDetailsBtn) viewDetailsBtn.style.display = 'inline-block';
+                        if (venueInfo) venueInfo.style.display = 'block';
                         if (checkAvailabilityBtn) {
                             checkAvailabilityBtn.style.display = 'none';
                         }
@@ -1270,6 +1289,7 @@ function createVenueCard(venue, type = null) {
     card.innerHTML = `
         <img src="${venue.main_image}" alt="${venue.name}" class="venue-image">
         <span class="venue-tag">${venueTypeDisplay || ''}</span>
+        <span class="venue-unavailable-label" style="display:none;margin-top:4px;display:block;color:#dc3545;font-weight:700;font-size:0.98rem;text-align:center;">Unavailable</span>
         <div class="venue-content">
             <h3 class="venue-title">${venue.name}</h3>
             <p class="venue-description">${venue.description}</p>
@@ -1279,19 +1299,17 @@ function createVenueCard(venue, type = null) {
                     <span class="venue-price">${formattedPrice}</span>
                 </div>
                 <button type="button" class="view-more-btn">View Details</button>
+                <button type="button" class="check-availability-btn" style="display: none; width: 100%; margin-top: 8px; padding: 12px 0; background: #1976d2; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">📅 Check Availability</button>
             </div>
             <div class="availability-status" style="display: none;">
                 <span class="availability-text"></span>
-                <button type="button" class="check-availability-btn" style="display: none; margin-top: 8px; padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                    📅 Check Availability
-                </button>
             </div>
         </div>
     `;
     // Add loading overlay as a direct child of the card
     const overlay = document.createElement('div');
     overlay.className = 'venue-loading-overlay';
-    overlay.style = 'display: none; position: absolute; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.7); z-index:2; align-items:center; justify-content:center;';
+    overlay.style = 'display: none; position: absolute; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.7); z-index:4; align-items:center; justify-content:center;';
     overlay.innerHTML = '<div class="spinner" style="border: 3px solid #eee; border-top: 3px solid #1976d2; border-radius: 50%; width: 28px; height: 28px; animation: spin 1s linear infinite;"></div>';
     card.appendChild(overlay);
 
@@ -1370,13 +1388,12 @@ async function updateVenueAvailability() {
         
         if (availabilityStatus && availabilityText) {
             availabilityStatus.style.display = 'block';
-            const checkAvailabilityBtn = availabilityStatus.querySelector('.check-availability-btn');
+            const checkAvailabilityBtn = card.querySelector('.check-availability-btn');
             
             if (!isAvailable) {
-                availabilityText.textContent = 'Unavailable for selected date/time';
-                availabilityText.style.color = '#dc3545';
+                availabilityText.textContent = '';
                 if (checkAvailabilityBtn) {
-                    checkAvailabilityBtn.style.display = 'inline-block';
+                    checkAvailabilityBtn.style.display = 'block';
                     checkAvailabilityBtn.onclick = (e) => {
                         e.stopPropagation();
                         openAvailabilityCalendar(venueId, card.querySelector('.venue-title')?.textContent || 'Venue');
@@ -1385,9 +1402,7 @@ async function updateVenueAvailability() {
             } else {
                 availabilityText.textContent = 'Available';
                 availabilityText.style.color = '#28a745';
-                if (checkAvailabilityBtn) {
-                    checkAvailabilityBtn.style.display = 'none';
-                }
+                if (checkAvailabilityBtn) checkAvailabilityBtn.style.display = 'none';
             }
         }
     }
@@ -1513,6 +1528,31 @@ async function openVenueModal(venueId) {
             } else {
                 mapContainer.innerHTML = '<p>Location map not available</p>';
             }
+        }
+
+        // Check availability for the current event date/time
+        const eventDate = document.getElementById('eventDate').value;
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+        let isAvailable = true;
+        if (eventDate && startTime && endTime) {
+            isAvailable = await checkVenueAvailability(venueId, eventDate, startTime, endTime);
+        }
+
+        // If unavailable, add a big blue button at the bottom of the modal
+        if (!isAvailable) {
+            const modalContent = modal.querySelector('.modal-content');
+            let btn = document.createElement('button');
+            btn.id = 'modalCheckAvailabilityBtn';
+            btn.type = 'button';
+            btn.innerHTML = '<span style="font-size:1.3em;margin-right:8px;vertical-align:middle;">📅</span> <span style="vertical-align:middle;">Check Availability</span>';
+            btn.style = 'width: 90%; margin: 24px 5% 16px 5%; padding: 16px 0; background: #1976d2; color: #fff; border: none; border-radius: 8px; font-size: 1.15rem; font-weight: 600; box-shadow: 0 2px 8px #1976d233; cursor: pointer; display: block;';
+            btn.onclick = function() {
+                closeModal();
+                openAvailabilityCalendar(venueId, venue.name);
+            };
+            // Insert at the end of modal-content
+            modalContent.appendChild(btn);
         }
 
         // Show modal
