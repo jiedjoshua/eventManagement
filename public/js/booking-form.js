@@ -23,6 +23,9 @@ const churchStep = document.getElementById('churchStep');
 const nextChurchStep = document.getElementById('nextChurchStep');
 const churchGrid = document.querySelector('.church-grid');
 
+// Make selectedChurch global
+window.selectedChurch = selectedChurch;
+
 // --- Venue Availability Calendar Modal Logic ---
 let calendarVenueId = null;
 let calendarVenueName = '';
@@ -36,6 +39,10 @@ let calendarDataCache = {}; // Cache for calendar data
 let calendarMinDate = null; // Minimum selectable date
 
 window.openAvailabilityCalendar = function(venueId, venueName) {
+    // Check if user is authenticated
+    const isAuthenticated = document.querySelector('meta[name="user-authenticated"]')?.getAttribute('content') === 'true';
+    console.log('User authenticated:', isAuthenticated);
+    
     calendarVenueId = venueId;
     calendarVenueName = venueName;
     const today = new Date();
@@ -74,7 +81,9 @@ window.openAvailabilityCalendar = function(venueId, venueName) {
     document.getElementById('timeSelection').style.display = 'none';
     document.getElementById('timeConflictWarning').style.display = 'none';
     document.getElementById('availabilityCalendarModal').style.display = 'flex';
-    fetchAndRenderCalendar();
+    // Clear cache for this venue and force refresh when opening calendar
+    clearCalendarCache(venueId);
+    fetchAndRenderCalendar(true);
 }
 
 function closeAvailabilityCalendar() {
@@ -90,7 +99,7 @@ document.getElementById('calendarPrev').onclick = function() {
             calendarMonth = 11;
             calendarYear--;
         }
-        fetchAndRenderCalendar();
+        fetchAndRenderCalendar(true); // Force refresh when navigating
     }
 };
 document.getElementById('calendarNext').onclick = function() {
@@ -99,7 +108,7 @@ document.getElementById('calendarNext').onclick = function() {
         calendarMonth = 0;
         calendarYear++;
     }
-    fetchAndRenderCalendar();
+    fetchAndRenderCalendar(true); // Force refresh when navigating
 };
 
 document.getElementById('calendarConfirmBtn').onclick = function() {
@@ -152,34 +161,91 @@ function validateTimeSelection() {
     }
 }
 
-async function fetchAndRenderCalendar() {
+async function fetchAndRenderCalendar(forceRefresh = false) {
     const grid = document.getElementById('calendarGrid');
     grid.innerHTML = '<div style="grid-column: span 7; text-align:center; padding: 32px 0; color: #888; font-size: 1.2rem;">Loading...</div>';
     const cacheKey = `${calendarVenueId}-${calendarYear}-${calendarMonth+1}`;
-    if (calendarDataCache[cacheKey]) {
+    
+    // Only use cache if not forcing refresh
+    if (!forceRefresh && calendarDataCache[cacheKey]) {
         const { unavailable, bookings } = calendarDataCache[cacheKey];
         calendarUnavailableDates = unavailable;
         calendarBookedDates = bookings;
         renderCalendarGrid();
         return;
     }
+    
     const unavailableUrl = `/api/venues/unavailabilities?venue_id=${calendarVenueId}&year=${calendarYear}&month=${calendarMonth+1}`;
     const bookingsUrl = `/api/venues/bookings?venue_id=${calendarVenueId}&year=${calendarYear}&month=${calendarMonth+1}`;
     let unavailable = [];
     let bookings = [];
+    
+    // Get CSRF token
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
     try {
-        const unavailableRes = await fetch(unavailableUrl);
+        const unavailableRes = await fetch(unavailableUrl, {
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        if (!unavailableRes.ok) {
+            if (unavailableRes.status === 403) {
+                console.error('Access forbidden - user may not be authenticated');
+                throw new Error('Authentication required');
+            }
+            throw new Error(`HTTP error! status: ${unavailableRes.status}`);
+        }
         const unavailableData = await unavailableRes.json();
         if (unavailableData.success && Array.isArray(unavailableData.data)) {
             unavailable = unavailableData.data.map(u => u.date);
         }
-        const bookingsRes = await fetch(bookingsUrl);
+        
+        const bookingsRes = await fetch(bookingsUrl, {
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        if (!bookingsRes.ok) {
+            if (bookingsRes.status === 403) {
+                console.error('Access forbidden - user may not be authenticated');
+                throw new Error('Authentication required');
+            }
+            throw new Error(`HTTP error! status: ${bookingsRes.status}`);
+        }
         const bookingsData = await bookingsRes.json();
         if (bookingsData.success && Array.isArray(bookingsData.data)) {
             bookings = bookingsData.data;
         }
+        
+        console.log('Calendar data fetched:', {
+            venueId: calendarVenueId,
+            year: calendarYear,
+            month: calendarMonth + 1,
+            unavailable: unavailable,
+            bookings: bookings,
+            forceRefresh: forceRefresh
+        });
+        
+        // Additional debugging for booked dates
+        console.log('Booked dates details:', bookings.map(b => ({
+            date: b.date,
+            start_time: b.start_time,
+            end_time: b.end_time,
+            is_full_day: b.start_time === '00:00' && b.end_time === '23:59'
+        })));
     } catch (e) {
         console.error('Error fetching calendar data:', e);
+        if (e.message === 'Authentication required') {
+            // Show user-friendly error message
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '<div style="grid-column: span 7; text-align:center; padding: 32px 0; color: #dc3545; font-size: 1.2rem;">Please log in to view availability</div>';
+            return;
+        }
         unavailable = [];
         bookings = [];
     }
@@ -229,13 +295,35 @@ function renderCalendarGrid() {
         if (calendarMinDate && date < calendarMinDate) {
             dayEl.classList.add('unavailable');
         } else {
-            // Check if date is unavailable (either marked unavailable or fully booked)
+            // Check if date is unavailable (either marked unavailable or has any bookings)
             const isUnavailable = calendarUnavailableDates.includes(ymd);
             const dateBookings = calendarBookedDates.filter(b => b.date === ymd);
-            const isFullyBooked = dateBookings.length > 0 && dateBookings.every(b => 
-                b.start_time === '00:00' && b.end_time === '23:59'
-            );
-            if (isUnavailable || isFullyBooked) {
+            const hasBookings = dateBookings.length > 0;
+            
+            // A date is unavailable if it's marked unavailable OR has any bookings
+            const isDateUnavailable = isUnavailable || hasBookings;
+            
+            // Debug logging for the first few days to see what's happening
+            if (d <= 5) {
+                console.log(`Day ${d} (${ymd}):`, {
+                    isUnavailable,
+                    hasBookings,
+                    dateBookings: dateBookings.length,
+                    unavailableDates: calendarUnavailableDates,
+                    bookedDates: calendarBookedDates.length
+                });
+            }
+            
+            // Debug logging for all days that should be unavailable
+            if (isDateUnavailable) {
+                console.log(`Marking day ${d} (${ymd}) as unavailable:`, {
+                    isUnavailable,
+                    hasBookings,
+                    dateBookings: dateBookings
+                });
+            }
+            
+            if (isDateUnavailable) {
                 dayEl.classList.add('unavailable');
             } else {
                 dayEl.onclick = function() {
@@ -270,42 +358,87 @@ function renderCalendarGrid() {
 }
 
 // Function to update church availability when event details change
+// Flag to prevent multiple simultaneous calls
+let isUpdatingChurchAvailability = false;
+
 async function updateChurchAvailability() {
     if (!churchGrid || churchGrid.children.length === 0) return;
+    
+    // Prevent multiple simultaneous calls
+    if (isUpdatingChurchAvailability) return;
+    isUpdatingChurchAvailability = true;
+    
+    // Remove any existing loading divs
+    const existingLoading = document.querySelector('.church-loading');
+    if (existingLoading) {
+        existingLoading.remove();
+    }
+    
+    // Hide church grid initially and show loading
+    churchGrid.style.display = 'none';
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'church-loading';
+    loadingDiv.style.cssText = 'text-align: center; padding: 40px; color: #666; font-size: 16px;';
+    loadingDiv.textContent = 'Checking church availability...';
+    churchGrid.parentNode.insertBefore(loadingDiv, churchGrid);
+    
     setChurchCardsLoadingState(true);
     const eventDate = document.getElementById('eventDate').value;
     const startTime = document.getElementById('startTime').value;
     const endTime = document.getElementById('endTime').value;
-    if (!eventDate || !startTime || !endTime) { setChurchCardsLoadingState(false); return; }
+    
+    if (!eventDate || !startTime || !endTime) { 
+        setChurchCardsLoadingState(false); 
+        // Don't reset church cards when event details are incomplete
+        // Just show the grid and remove loading
+        churchGrid.style.display = 'flex';
+        churchGrid.style.flexDirection = 'row';
+        churchGrid.style.flexWrap = 'wrap';
+        churchGrid.style.gap = '20px';
+        churchGrid.style.justifyContent = 'center';
+        churchGrid.style.alignItems = 'stretch';
+        if (loadingDiv.parentNode) loadingDiv.remove();
+        
+        // Reset the flag
+        isUpdatingChurchAvailability = false;
+        return; 
+    }
+    
     const churchCards = churchGrid.querySelectorAll('.venue-card');
     for (const card of churchCards) {
         const venueId = card.dataset.venueId;
         const isAvailable = await checkVenueAvailability(venueId, eventDate, startTime, endTime);
         card.classList.toggle('unavailable', !isAvailable);
-        const availabilityStatus = card.querySelector('.availability-status');
-        const availabilityText = card.querySelector('.availability-text');
+        
+        const availabilityLabel = card.querySelector('.availability-label');
         const checkAvailabilityBtn = card.querySelector('.check-availability-btn');
-        const unavailableLabel = card.querySelector('.venue-unavailable-label');
         const viewDetailsBtn = card.querySelector('.view-more-btn');
         const venueInfo = card.querySelector('.venue-info');
-        if (availabilityStatus && availabilityText) {
-            availabilityStatus.style.display = 'block';
+        
+        if (availabilityLabel) {
+            availabilityLabel.style.display = 'block';
             if (!isAvailable) {
-                availabilityText.textContent = '';
-                if (unavailableLabel) unavailableLabel.style.display = 'block';
+                availabilityLabel.textContent = 'Unavailable';
+                availabilityLabel.style.background = 'rgba(220, 53, 69, 0.9)';
                 if (viewDetailsBtn) viewDetailsBtn.style.display = 'none';
-                if (venueInfo) venueInfo.style.display = 'none';
+                if (venueInfo) venueInfo.style.display = 'block';
                 if (checkAvailabilityBtn) {
-                    checkAvailabilityBtn.style.display = 'inline-block';
+                    checkAvailabilityBtn.style.display = 'block';
                     checkAvailabilityBtn.onclick = (e) => {
                         e.stopPropagation();
                         openAvailabilityCalendar(venueId, card.querySelector('.venue-title')?.textContent || 'Venue');
                     };
                 }
+                
+                // If this card was selected, clear the selection
+                if (card.classList.contains('selected')) {
+                    card.classList.remove('selected');
+                    selectedChurch = null;
+                    nextChurchStep.disabled = true;
+                }
             } else {
-                availabilityText.textContent = 'Available';
-                availabilityText.style.color = '#28a745';
-                if (unavailableLabel) unavailableLabel.style.display = 'none';
+                availabilityLabel.textContent = 'Available';
+                availabilityLabel.style.background = 'rgba(40, 167, 69, 0.9)';
                 if (viewDetailsBtn) viewDetailsBtn.style.display = 'inline-block';
                 if (venueInfo) venueInfo.style.display = 'block';
                 if (checkAvailabilityBtn) {
@@ -313,10 +446,29 @@ async function updateChurchAvailability() {
                 }
             }
         }
+        
         card.classList.remove('loading');
         const overlay = card.querySelector('.venue-loading-overlay');
         if (overlay) overlay.style.display = 'none';
     }
+    
+    // Show church grid and remove loading
+    churchGrid.style.display = 'flex';
+    churchGrid.style.flexDirection = 'row';
+    churchGrid.style.flexWrap = 'wrap';
+    churchGrid.style.gap = '20px';
+    churchGrid.style.justifyContent = 'center';
+    churchGrid.style.alignItems = 'stretch';
+    if (loadingDiv.parentNode) loadingDiv.remove();
+    
+    // Apply compact layout if there are many churches (8+)
+    const totalChurchCards = churchGrid.querySelectorAll('.venue-card');
+    if (totalChurchCards.length >= 8) {
+        churchGrid.classList.add('many-venues');
+    }
+    
+    // Reset the flag
+    isUpdatingChurchAvailability = false;
 }
 
 // Add back button for church step
@@ -545,8 +697,23 @@ nextBtn.addEventListener('click', function() {
             currentStep++;
             updateStep();
             
-            // Reset venue steps when moving to next main step
-            if (currentStep !== 2) {
+            // Handle venue step navigation
+            if (currentStep === 2) {
+                const eventType = document.getElementById('eventType').value;
+                
+                if (eventType === 'wedding' || eventType === 'baptism') {
+                    // Show church selection
+                    churchStep.style.display = 'block';
+                    venueStep1.style.display = 'none';
+                    venueStep2.style.display = 'none';
+                } else {
+                    // Show venue type selection
+                    churchStep.style.display = 'none';
+                    venueStep1.style.display = 'block';
+                    venueStep2.style.display = 'none';
+                }
+            } else {
+                // Reset venue steps when moving to other steps
                 venueStep1.style.display = 'block';
                 venueStep2.style.display = 'none';
             }
@@ -561,12 +728,18 @@ prevBtn.addEventListener('click', function () {
         currentStep--;
         updateStep();
 
-        // Reset venue steps when moving back to venue step
+        // Handle venue step navigation
         if (currentStep === 2) {
-            if (selectedVenueType) {
+            const eventType = document.getElementById('eventType').value;
+            
+            if (eventType === 'wedding' || eventType === 'baptism') {
+                // Show church selection
+                churchStep.style.display = 'block';
                 venueStep1.style.display = 'none';
-                venueStep2.style.display = 'block';
+                venueStep2.style.display = 'none';
             } else {
+                // Show venue type selection
+                churchStep.style.display = 'none';
                 venueStep1.style.display = 'block';
                 venueStep2.style.display = 'none';
             }
@@ -610,19 +783,83 @@ function updateStep() {
 }
 
 function showFormError(message) {
-    const errorDiv = document.getElementById('formError');
-    if (errorDiv) {
-        errorDiv.textContent = message;
-        errorDiv.style.display = '';
-        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Remove any existing error popup
+    const existingPopup = document.querySelector('.error-popup');
+    if (existingPopup) {
+        existingPopup.remove();
     }
+    
+    // Create new error popup
+    const popup = document.createElement('div');
+    popup.className = 'error-popup';
+    popup.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 300px;
+        word-wrap: break-word;
+        animation: slideInRight 0.3s ease;
+    `;
+    popup.textContent = message;
+    
+    // Add animation keyframes
+    if (!document.querySelector('#error-popup-styles')) {
+        const style = document.createElement('style');
+        style.id = 'error-popup-styles';
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Add to page
+    document.body.appendChild(popup);
+    
+    // Auto-remove after 3.5 seconds
+    setTimeout(() => {
+        if (popup.parentNode) {
+            popup.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.remove();
+                }
+            }, 300);
+        }
+    }, 3500);
 }
 
 function hideFormError() {
-    const errorDiv = document.getElementById('formError');
-    if (errorDiv) {
-        errorDiv.textContent = '';
-        errorDiv.style.display = 'none';
+    // Remove any existing error popup
+    const existingPopup = document.querySelector('.error-popup');
+    if (existingPopup) {
+        existingPopup.remove();
     }
 }
 
@@ -655,54 +892,74 @@ function validateCurrentStep() {
     // Special validation for venue selection in step 2
     if (currentStep === 2) {
         const eventType = document.getElementById('eventType').value;
-        if ((eventType === 'wedding' || eventType === 'baptism')) {
-            // Require church selection (by id, not by .selected class)
-            let hasChurch = false;
-            if (selectedChurch) {
-                // Check if a card with this id exists in churchGrid
-                const churchCard = churchGrid ? churchGrid.querySelector(`.venue-card[data-venue-id="${selectedChurch}"]`) : null;
-                if (churchCard) hasChurch = true;
+        
+        if (eventType === 'wedding' || eventType === 'baptism') {
+            // Check if we're on church selection step
+            if (churchStep && churchStep.style.display !== 'none') {
+                // Require church selection
+                let hasChurch = false;
+                if (selectedChurch) {
+                    const churchCard = churchGrid ? churchGrid.querySelector(`.venue-card[data-venue-id="${selectedChurch}"]`) : null;
+                    if (churchCard) hasChurch = true;
+                }
+                if (!hasChurch) {
+                    document.querySelectorAll('.venue-card', churchGrid).forEach(card => card.style.borderColor = '#dc3545');
+                    showFormError('Please select a church before proceeding');
+                    return false;
+                }
+                // Church selected, move to venue type selection
+                churchStep.style.display = 'none';
+                venueStep1.style.display = 'block';
+                venueStep2.style.display = 'none';
+                return false; // Don't proceed to next main step yet
             }
-            if (!hasChurch) {
-                document.querySelectorAll('.venue-card', churchGrid).forEach(card => card.style.borderColor = '#dc3545');
-                showFormError('Please select a church before proceeding');
+            
+            // Check if we're on venue type selection step
+            if (venueStep1 && venueStep1.style.display !== 'none') {
+                const venueTypeChecked = document.querySelector('input[name="venueType"]:checked');
+                if (!venueTypeChecked) {
+                    document.querySelectorAll('.venue-type-btn').forEach(btn => {
+                        btn.style.borderColor = '#dc3545';
+                    });
+                    showFormError('Please select a venue type');
+                    return false;
+                }
+                // Venue type selected, move to venue selection
+                venueStep1.style.display = 'none';
+                venueStep2.style.display = 'block';
+                return false; // Don't proceed to next main step yet
+            }
+            
+            // Check if we're on venue selection step
+            if (venueStep2 && venueStep2.style.display !== 'none') {
+                const selectedReceptionCard = document.querySelector('.venue-card.selected') && venueStep2.contains(document.querySelector('.venue-card.selected'))
+                    ? document.querySelector('.venue-card.selected')
+                    : null;
+                if (!selectedReceptionCard) {
+                    document.querySelectorAll('.venue-card', document.querySelector('.venue-grid')).forEach(card => card.style.borderColor = '#dc3545');
+                    showFormError('Please select a reception venue before proceeding');
+                    return false;
+                }
+            }
+        } else {
+            // For non-church events, check venue type selection
+            const venueTypeChecked = document.querySelector('input[name="venueType"]:checked');
+            if (!venueTypeChecked) {
+                document.querySelectorAll('.venue-type-btn').forEach(btn => {
+                    btn.style.borderColor = '#dc3545';
+                });
+                showFormError('Please select a venue type');
                 return false;
             }
-            // Require reception selection
-            const selectedReceptionCard = document.querySelector('.venue-card.selected') && venueStep2 && venueStep2.contains(document.querySelector('.venue-card.selected'))
-                ? document.querySelector('.venue-card.selected')
-                : null;
-            if (!selectedReceptionCard) {
-                document.querySelectorAll('.venue-card', document.querySelector('.venue-grid')).forEach(card => card.style.borderColor = '#dc3545');
-                showFormError('Please select a reception venue before proceeding');
-                return false;
-            }
-        }
-        const venueTypeChecked = document.querySelector('input[name="venueType"]:checked');
-        if (!venueTypeChecked) {
-            document.querySelectorAll('.venue-type-btn').forEach(btn => {
-                btn.style.borderColor = '#dc3545';
-            });
-            isValid = false;
-            showFormError('Please select a venue type');
-        }
 
-        if (!selectedVenue) {
-            document.querySelectorAll('.venue-card').forEach(card => {
-                card.style.borderColor = '#dc3545';
-            });
-            isValid = false;
-
-            // Show error message if on venue selection page
-            if (venueStep2.style.display !== 'none') {
+            // Check venue selection
+            if (!selectedVenue) {
+                document.querySelectorAll('.venue-card').forEach(card => {
+                    card.style.borderColor = '#dc3545';
+                });
                 showFormError('Please select a venue before proceeding');
+                return false;
             }
-        }
-
-        // If on first venue step, move to second step instead of next main step
-        if (venueStep1.style.display !== 'none' && venueTypeChecked) {
-            nextVenueStep.click();
-            return false;
         }
     }
 
@@ -824,9 +1081,62 @@ function validateCurrentStep() {
 
 
 function submitForm() {
+    const eventType = document.getElementById('eventType').value;
+    // Use the global selectedChurch variable instead of querying DOM
+    const selectedChurch = window.selectedChurch || document.querySelector('.church-grid .venue-card.selected')?.dataset.venueId;
+    const selectedReception = document.querySelector('.venue-grid .venue-card.selected')?.dataset.venueId;
+    
+    // Start countdown timer after form submission
+    startCountdownTimer();
+    
+    console.log('=== FORM SUBMISSION DEBUG ===');
+    console.log('Global selectedChurch variable:', window.selectedChurch);
+    console.log('selectedChurch from querySelector:', selectedChurch);
+    console.log('selectedReception from querySelector:', selectedReception);
+    console.log('Church cards found:', document.querySelectorAll('.church-grid .venue-card').length);
+    console.log('Selected church card:', document.querySelector('.church-grid .venue-card.selected'));
+    console.log('Reception cards found:', document.querySelectorAll('.venue-grid .venue-card').length);
+    console.log('Selected reception card:', document.querySelector('.venue-grid .venue-card.selected'));
+    
+    console.log('Form submission data:', {
+        eventType,
+        selectedChurch,
+        selectedReception,
+        selectedChurchElement: document.querySelector('.church-grid .venue-card.selected'),
+        selectedReceptionElement: document.querySelector('.venue-grid .venue-card.selected'),
+        allChurchCards: document.querySelectorAll('.church-grid .venue-card'),
+        allReceptionCards: document.querySelectorAll('.venue-grid .venue-card'),
+        selectedChurchCard: document.querySelector('.church-grid .venue-card.selected'),
+        selectedReceptionCard: document.querySelector('.venue-grid .venue-card.selected')
+    });
+    
+    // Debug: Check all church cards and their data
+    console.log('All church cards:');
+    document.querySelectorAll('.church-grid .venue-card').forEach((card, index) => {
+        console.log(`Church card ${index}:`, {
+            element: card,
+            dataset: card.dataset,
+            venueId: card.dataset.venueId,
+            venuePrice: card.dataset.venuePrice,
+            isSelected: card.classList.contains('selected')
+        });
+    });
+    
+    // Debug: Check all reception cards and their data
+    console.log('All reception cards:');
+    document.querySelectorAll('.venue-grid .venue-card').forEach((card, index) => {
+        console.log(`Reception card ${index}:`, {
+            element: card,
+            dataset: card.dataset,
+            venueId: card.dataset.venueId,
+            venuePrice: card.dataset.venuePrice,
+            isSelected: card.classList.contains('selected')
+        });
+    });
+    
     const formData = {
         eventName: document.getElementById('eventName').value,
-        eventType: document.getElementById('eventType').value,
+        eventType: eventType,
         eventDate: document.getElementById('eventDate').value,
         startTime: document.getElementById('startTime').value,
         endTime: document.getElementById('endTime').value,
@@ -837,6 +1147,24 @@ function submitForm() {
         venueNotes: document.getElementById('venueNotes').value,
         additionalNotes: document.getElementById('additionalNotes').value,
     };
+
+    // For wedding/baptism events, use reception venue as the main venue
+    if (eventType === 'wedding' || eventType === 'baptism') {
+        formData.venueId = selectedReception;
+    }
+
+    // Add church and reception IDs for wedding and baptism events
+    if (eventType === 'wedding' || eventType === 'baptism') {
+        formData.church_id = selectedChurch;
+        formData.reception_id = selectedReception;
+        
+        console.log('Added church and reception IDs to form data:', {
+            church_id: selectedChurch,
+            reception_id: selectedReception
+        });
+    }
+
+    console.log('Final form data to submit:', formData);
 
     // Get CSRF token
     const token = document.querySelector('meta[name="csrf-token"]').content;
@@ -851,8 +1179,12 @@ function submitForm() {
         },
         body: JSON.stringify(formData)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('Booking response:', data);
         if (data.success) {
             // Hide form and show confirmation
             document.getElementById('bookingForm').style.display = 'none';
@@ -892,9 +1224,7 @@ function populateBookingSummary() {
     document.getElementById('summaryGuestCount').textContent = document.getElementById('guestCount').value || 'Not specified';
 
     // Venue Details
-    const venueType = document.querySelector('input[name="venueType"]:checked');
-    document.getElementById('summaryVenueType').textContent = venueType ? 
-        venueType.parentElement.querySelector('.venue-type-label').textContent : 'Not selected';
+    // Removed venue type display from summary
     
     // Update Venue Name - Fix
     const selectedVenueCard = document.querySelector('.venue-card.selected');
@@ -913,7 +1243,6 @@ function populateBookingSummary() {
     } else {
         summaryVenueName = selectedVenueCard ? selectedVenueCard.querySelector('.venue-title').textContent : 'Not selected';
     }
-    document.getElementById('summaryVenueType').innerHTML = '';
     document.getElementById('summaryVenueName').innerHTML = summaryVenueName || 'Not selected';
     
     const venueNotes = document.getElementById('venueNotes').value;
@@ -966,21 +1295,8 @@ if (selectedPackageCard) {
 
     // Update summary to include church and reception as separate lines for wedding/baptism
     if ((eventTypeSummary === 'wedding' || eventTypeSummary === 'baptism') && selectedChurch) {
-        let summaryVenueType = '';
-        let totalVenue = 0;
-        if (selectedChurchCard && churchPrice) {
-            venueBreakdown += `<strong>Church:</strong> ₱${churchPrice.toLocaleString()}`;
-            totalVenue += churchPrice;
-        }
-        if (selectedReceptionCard && receptionPrice) {
-            if (venueBreakdown) venueBreakdown += '<br>';
-            venueBreakdown += `<strong>Reception:</strong> ₱${receptionPrice.toLocaleString()}`;
-            totalVenue += receptionPrice;
-        }
-        if (venueBreakdown) {
-            venueBreakdown += `<br><strong>Total Venue Cost:</strong> ₱${totalVenue.toLocaleString()}`;
-        }
-        document.getElementById('summaryVenuePrice').innerHTML = venueBreakdown || '₱0';
+        // The pricing breakdown is already handled in calculateAndDisplayPricing function
+        // No need to duplicate the logic here
     }
 }
 
@@ -1001,6 +1317,11 @@ function calculateAndDisplayPricing() {
         if (priceMatch) {
             packagePrice = parseInt(priceMatch[1].replace(/,/g, ''));
         }
+        console.log('Package price calculation:', {
+            packagePriceText,
+            priceMatch,
+            packagePrice
+        });
     }
 
     // Get add-ons price from database
@@ -1016,6 +1337,13 @@ function calculateAndDisplayPricing() {
             // Fallback to default price if not available
             addonsPrice += 50;
         }
+        console.log('Addon price calculation:', {
+            addonId,
+            addonElement: addonElement,
+            datasetPrice: addonElement?.dataset.price,
+            parsedPrice: parseFloat(addonElement?.dataset.price || 0),
+            currentAddonsPrice: addonsPrice
+        });
     });
 
     // Get venue prices for wedding/baptism (church + reception)
@@ -1024,7 +1352,7 @@ function calculateAndDisplayPricing() {
     let selectedReceptionCard = null;
     if ((eventTypeSummary === 'wedding' || eventTypeSummary === 'baptism')) {
         // Find selected church card in churchGrid by selectedChurch variable
-        selectedChurchCard = churchGrid && selectedChurch ? churchGrid.querySelector(`.venue-card[data-venue-id="${selectedChurch}"]`) : null;
+        selectedChurchCard = churchGrid && window.selectedChurch ? churchGrid.querySelector(`.venue-card[data-venue-id="${window.selectedChurch}"]`) : null;
         // Find selected reception card in venueStep2
         selectedReceptionCard = document.querySelector('.venue-card.selected') && venueStep2 && venueStep2.contains(document.querySelector('.venue-card.selected'))
             ? document.querySelector('.venue-card.selected')
@@ -1036,16 +1364,32 @@ function calculateAndDisplayPricing() {
             receptionPrice = parseFloat(selectedReceptionCard.dataset.venuePrice);
         }
         venuePrice = churchPrice + receptionPrice;
+        
+        console.log('Venue price calculation for wedding/baptism:', {
+            selectedChurchCard: selectedChurchCard,
+            selectedReceptionCard: selectedReceptionCard,
+            churchPrice,
+            receptionPrice,
+            venuePrice,
+            churchDatasetPrice: selectedChurchCard?.dataset.venuePrice,
+            receptionDatasetPrice: selectedReceptionCard?.dataset.venuePrice
+        });
     } else {
         // Get venue price from selected venue card (normal case)
         const selectedVenueCard = document.querySelector('.venue-card.selected');
         if (selectedVenueCard && selectedVenueCard.dataset.venuePrice) {
             venuePrice = parseFloat(selectedVenueCard.dataset.venuePrice);
         }
+        
+        console.log('Venue price calculation for other events:', {
+            selectedVenueCard: selectedVenueCard,
+            venuePrice,
+            datasetPrice: selectedVenueCard?.dataset.venuePrice
+        });
     }
 
     // Calculate total
-    const totalPrice = packagePrice + addonsPrice + (eventTypeSummary === 'wedding' || eventTypeSummary === 'baptism' ? (churchPrice + receptionPrice) : venuePrice);
+    const totalPrice = packagePrice + addonsPrice + venuePrice;
 
     // Display prices
     document.getElementById('summaryPackagePrice').textContent = `₱${packagePrice.toLocaleString()}`;
@@ -1071,6 +1415,17 @@ function calculateAndDisplayPricing() {
         document.getElementById('summaryVenuePrice').textContent = `₱${venuePrice.toLocaleString()}`;
     }
     document.getElementById('summaryTotalPrice').textContent = `₱${totalPrice.toLocaleString()}`;
+    
+    // Debug logging
+    console.log('Pricing calculation:', {
+        packagePrice,
+        addonsPrice,
+        venuePrice,
+        churchPrice,
+        receptionPrice,
+        totalPrice,
+        eventType: eventTypeSummary
+    });
 }
 
 // Initialize modal elements when DOM is loaded
@@ -1117,19 +1472,73 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Attach click handlers to static church cards (Blade-rendered)
     document.querySelectorAll('.church-grid .venue-card').forEach(card => {
+        console.log('Attaching event handler to church card:', {
+            card: card,
+            venueId: card.dataset.venueId,
+            venuePrice: card.dataset.venuePrice
+        });
+        
         card.addEventListener('click', function(e) {
+            console.log('Church card clicked:', {
+                card: this,
+                venueId: this.dataset.venueId,
+                target: e.target,
+                targetClass: e.target.classList
+            });
+            
             if (e.target.classList.contains('view-more-btn')) {
                 // Open modal for this church
-                openVenueModal(card.dataset.venueId);
+                console.log('Opening church modal for venue ID:', this.dataset.venueId);
+                openVenueModal(this.dataset.venueId);
             } else {
                 // Select this church
+                console.log('Selecting church:', this.dataset.venueId);
                 document.querySelectorAll('.church-grid .venue-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                selectedChurch = card.dataset.venueId;
+                this.classList.add('selected');
+                selectedChurch = this.dataset.venueId;
+                window.selectedChurch = this.dataset.venueId; // Update global variable
+                console.log('Church selected:', selectedChurch); // Debug log
+                console.log('selectedChurch variable set to:', selectedChurch);
+                console.log('typeof selectedChurch:', typeof selectedChurch);
+                console.log('selectedChurch === null:', selectedChurch === null);
+                console.log('selectedChurch === undefined:', selectedChurch === undefined);
+                console.log('Global selectedChurch:', window.selectedChurch);
                 nextChurchStep.disabled = false;
+                
+                // Update pricing when church is selected
+                if (typeof calculateAndDisplayPricing === 'function') {
+                    calculateAndDisplayPricing();
+                }
             }
         });
     });
+    
+    // Debug: Check if church cards exist
+    const churchCards = document.querySelectorAll('.church-grid .venue-card');
+    console.log('Found church cards:', churchCards.length);
+    churchCards.forEach((card, index) => {
+        console.log(`Church card ${index}:`, {
+            element: card,
+            dataset: card.dataset,
+            venueId: card.dataset.venueId,
+            venuePrice: card.dataset.venuePrice
+        });
+    });
+    
+    // Add event listeners for event details changes to update church availability
+    const eventDateInput = document.getElementById('eventDate');
+    const startTimeInput = document.getElementById('startTime');
+    const endTimeInput = document.getElementById('endTime');
+    const eventTypeInput = document.getElementById('eventType');
+    
+    if (eventTypeInput) {
+        eventTypeInput.addEventListener('change', function() {
+            console.log('Event type input changed to:', this.value);
+            handleEventTypeChange();
+        });
+    }
+    
+
 });
 
 // Define the functions first
@@ -1158,17 +1567,25 @@ async function populateVenues(type) {
     const venueGrid = document.querySelector('.venue-grid');
     console.log('Found venue grid:', venueGrid); // Debug log
 
-    venueGrid.innerHTML = '<div class="loading">Loading venues...</div>';
+    // Show loading state and hide venue grid initially
+    venueGrid.innerHTML = '<div class="loading" style="text-align: center; padding: 40px; color: #666; font-size: 16px;">Loading venues...</div>';
+    venueGrid.style.display = 'flex';
+    venueGrid.style.flexDirection = 'row';
+    venueGrid.style.flexWrap = 'wrap';
+    venueGrid.style.gap = '20px';
+    venueGrid.style.justifyContent = 'center';
+    venueGrid.style.alignItems = 'stretch';
 
     try {
         const venues = await fetchVenues(type);
         console.log('Venues to display:', venues); // Debug log
 
         if (!venues || venues.length === 0) {
-            venueGrid.innerHTML = '<div class="error">No venues found for this type.</div>';
+            venueGrid.innerHTML = '<div class="error" style="text-align: center; padding: 40px; color: #dc3545; font-size: 16px;">No venues found for this type.</div>';
             return;
         }
 
+        // Clear loading message and prepare for venue cards
         venueGrid.innerHTML = '';
         
         // Get current event details for availability checking
@@ -1178,42 +1595,44 @@ async function populateVenues(type) {
 
         // Check if we have all the required event details
         if (eventDate && startTime && endTime) {
-            // Check availability for each venue
+            // Create all venue cards first but keep them hidden
+            const venueCards = [];
             for (const venue of venues) {
                 const card = createVenueCard(venue);
-                venueGrid.appendChild(card);
-                
+                venueCards.push({ card, venue });
+            }
+            
+            // Check availability for each venue
+            for (const { card, venue } of venueCards) {
                 // Show loading overlay
                 card.classList.add('loading');
                 const overlay = card.querySelector('.venue-loading-overlay');
                 if (overlay) overlay.style.display = 'flex';
+                
                 // Check availability
                 const isAvailable = await checkVenueAvailability(venue.id, eventDate, startTime, endTime);
                 card.classList.toggle('unavailable', !isAvailable);
-                const availabilityStatus = card.querySelector('.availability-status');
-                const availabilityText = card.querySelector('.availability-text');
+                const availabilityLabel = card.querySelector('.availability-label');
                 const checkAvailabilityBtn = card.querySelector('.check-availability-btn');
-                const unavailableLabel = card.querySelector('.venue-unavailable-label');
                 const viewDetailsBtn = card.querySelector('.view-more-btn');
                 const venueInfo = card.querySelector('.venue-info');
-                if (availabilityStatus && availabilityText) {
-                    availabilityStatus.style.display = 'block';
+                if (availabilityLabel) {
+                    availabilityLabel.style.display = 'block';
                     if (!isAvailable) {
-                        availabilityText.textContent = '';
-                        if (unavailableLabel) unavailableLabel.style.display = 'block';
+                        availabilityLabel.textContent = 'Unavailable';
+                        availabilityLabel.style.background = 'rgba(220, 53, 69, 0.9)';
                         if (viewDetailsBtn) viewDetailsBtn.style.display = 'none';
-                        if (venueInfo) venueInfo.style.display = 'none';
+                        if (venueInfo) venueInfo.style.display = 'block';
                         if (checkAvailabilityBtn) {
-                            checkAvailabilityBtn.style.display = 'inline-block';
+                            checkAvailabilityBtn.style.display = 'block';
                             checkAvailabilityBtn.onclick = (e) => {
                                 e.stopPropagation();
                                 openAvailabilityCalendar(venue.id, venue.name);
                             };
                         }
                     } else {
-                        availabilityText.textContent = 'Available';
-                        availabilityText.style.color = '#28a745';
-                        if (unavailableLabel) unavailableLabel.style.display = 'none';
+                        availabilityLabel.textContent = 'Available';
+                        availabilityLabel.style.background = 'rgba(40, 167, 69, 0.9)';
                         if (viewDetailsBtn) viewDetailsBtn.style.display = 'inline-block';
                         if (venueInfo) venueInfo.style.display = 'block';
                         if (checkAvailabilityBtn) {
@@ -1224,16 +1643,26 @@ async function populateVenues(type) {
                 card.classList.remove('loading');
                 if (overlay) overlay.style.display = 'none';
             }
+            
+            // Now add all cards to the grid at once
+            venueCards.forEach(({ card }) => {
+                venueGrid.appendChild(card);
+            });
+            
+            // Apply compact layout if there are many venues (8+)
+            if (venueCards.length >= 8) {
+                venueGrid.classList.add('many-venues');
+            }
         } else {
             // If event details are not complete, just show venues without availability
-        venues.forEach(venue => {
-            const card = createVenueCard(venue);
-            venueGrid.appendChild(card);
-        });
+            venues.forEach(venue => {
+                const card = createVenueCard(venue);
+                venueGrid.appendChild(card);
+            });
         }
     } catch (error) {
         console.error('Error in populateVenues:', error);
-        venueGrid.innerHTML = '<div class="error">Failed to load venues. Please try again.</div>';
+        venueGrid.innerHTML = '<div class="error" style="text-align: center; padding: 40px; color: #dc3545; font-size: 16px;">Failed to load venues. Please try again.</div>';
     }
 }
 
@@ -1248,6 +1677,7 @@ async function checkVenueAvailability(venueId, date, startTime, endTime) {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             },
+            credentials: 'same-origin', // <-- Ensure cookies are sent for CSRF/session
             body: JSON.stringify({
                 venue_id: venueId,
                 date: date,
@@ -1289,20 +1719,16 @@ function createVenueCard(venue, type = null) {
     card.innerHTML = `
         <img src="${venue.main_image}" alt="${venue.name}" class="venue-image">
         <span class="venue-tag">${venueTypeDisplay || ''}</span>
-        <span class="venue-unavailable-label" style="display:none;margin-top:4px;display:block;color:#dc3545;font-weight:700;font-size:0.98rem;text-align:center;">Unavailable</span>
+        <span class="availability-label" style="display: none; position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; z-index: 2;"></span>
         <div class="venue-content">
             <h3 class="venue-title">${venue.name}</h3>
-            <p class="venue-description">${venue.description}</p>
-            <div class="venue-actions">
-                <div class="venue-info">
-                    <span>Capacity: ${venue.capacity}</span>
-                    <span class="venue-price">${formattedPrice}</span>
-                </div>
-                <button type="button" class="view-more-btn">View Details</button>
-                <button type="button" class="check-availability-btn" style="display: none; width: 100%; margin-top: 8px; padding: 12px 0; background: #1976d2; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">📅 Check Availability</button>
+            <div class="venue-info">
+                <span class="venue-price">${formattedPrice}</span>
+                <span>Capacity: ${venue.capacity}</span>
             </div>
-            <div class="availability-status" style="display: none;">
-                <span class="availability-text"></span>
+            <div class="venue-actions">
+                <button type="button" class="view-more-btn">View Details</button>
+                <button type="button" class="check-availability-btn" style="display: none; width: 100%; margin-top: 8px; padding: 7px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">📅 Check Availability</button>
             </div>
         </div>
     `;
@@ -1383,15 +1809,15 @@ async function updateVenueAvailability() {
         // Update styling
         card.classList.toggle('unavailable', !isAvailable);
         
-        const availabilityStatus = card.querySelector('.availability-status');
-        const availabilityText = card.querySelector('.availability-text');
+        const availabilityLabel = card.querySelector('.availability-label');
         
-        if (availabilityStatus && availabilityText) {
-            availabilityStatus.style.display = 'block';
+        if (availabilityLabel) {
+            availabilityLabel.style.display = 'block';
             const checkAvailabilityBtn = card.querySelector('.check-availability-btn');
             
             if (!isAvailable) {
-                availabilityText.textContent = '';
+                availabilityLabel.textContent = 'Unavailable';
+                availabilityLabel.style.background = 'rgba(220, 53, 69, 0.9)';
                 if (checkAvailabilityBtn) {
                     checkAvailabilityBtn.style.display = 'block';
                     checkAvailabilityBtn.onclick = (e) => {
@@ -1400,8 +1826,8 @@ async function updateVenueAvailability() {
                     };
                 }
             } else {
-                availabilityText.textContent = 'Available';
-                availabilityText.style.color = '#28a745';
+                availabilityLabel.textContent = 'Available';
+                availabilityLabel.style.background = 'rgba(40, 167, 69, 0.9)';
                 if (checkAvailabilityBtn) checkAvailabilityBtn.style.display = 'none';
             }
         }
@@ -1417,19 +1843,13 @@ document.querySelectorAll('.venue-type-btn').forEach(btn => {
         this.classList.add('selected');
         this.querySelector('input[type="radio"]').checked = true;
         selectedVenueType = this.dataset.venueType;
-        nextVenueStep.disabled = false;
-    });
-     populateBookingSummary();
-});
-
-// 2. Next step button
-nextVenueStep.addEventListener('click', () => {
-    console.log('Next step clicked, selectedVenueType:', selectedVenueType); // Debug log
-    if (selectedVenueType) {
+        
+        // Automatically proceed to next step
         venueStep1.style.display = 'none';
         venueStep2.style.display = 'block';
         populateVenues(selectedVenueType);
-    }
+    });
+     populateBookingSummary();
 });
 
 // 3. Back button
@@ -1801,7 +2221,7 @@ function createPackageCard(package) {
                 <p class="venue-description">${package.description || 'No description available'}</p>
                 <div class="venue-actions">
                     <div class="venue-info">
-                        <span class="package-price">From ₱${new Intl.NumberFormat('en-PH').format(package.price || 0)}</span>
+                        <span class="package-price">From ₱${new Intl.NumberFormat('en-PH').format(package.base_price || package.price || 0)}</span>
                     </div>
                     <button type="button" class="view-more-btn">View Details</button>
                 </div>
@@ -1821,35 +2241,49 @@ function createPackageCard(package) {
 
 function handleEventTypeChange() {
     const eventType = document.getElementById('eventType').value;
+    console.log('Event type changed to:', eventType);
+    
     if (eventType === 'wedding' || eventType === 'baptism') {
+        console.log('Showing church step for wedding/baptism');
         churchStep.style.display = 'block';
         venueStep1.style.display = 'none';
         venueStep2.style.display = 'none';
+        
+        // Reset church cards to their default state when showing church step
+        setTimeout(() => {
+            const churchCards = document.querySelectorAll('.church-grid .venue-card');
+            console.log('Church cards available after showing church step:', churchCards.length);
+            churchCards.forEach((card, index) => {
+                // Reset card to default state
+                card.classList.remove('unavailable');
+                const availabilityLabel = card.querySelector('.availability-label');
+                const checkAvailabilityBtn = card.querySelector('.check-availability-btn');
+                const viewDetailsBtn = card.querySelector('.view-more-btn');
+                const venueInfo = card.querySelector('.venue-info');
+                
+                // Reset all elements to default state
+                if (availabilityLabel) availabilityLabel.style.display = 'none';
+                if (checkAvailabilityBtn) checkAvailabilityBtn.style.display = 'none';
+                if (viewDetailsBtn) viewDetailsBtn.style.display = 'inline-block';
+                if (venueInfo) venueInfo.style.display = 'block';
+                
+                console.log(`Church card ${index} after step change:`, {
+                    element: card,
+                    venueId: card.dataset.venueId,
+                    venuePrice: card.dataset.venuePrice,
+                    isVisible: card.offsetParent !== null
+                });
+            });
+        }, 100);
     } else {
+        console.log('Hiding church step for other event types');
         churchStep.style.display = 'none';
         venueStep1.style.display = 'block';
         venueStep2.style.display = 'none';
     }
 }
 
-// When clicking 'Continue to Reception Selection' after church selection
-if (nextChurchStep) {
-    nextChurchStep.addEventListener('click', function() {
-        churchStep.style.display = 'none';
-        venueStep1.style.display = 'block';
-        venueStep2.style.display = 'none';
-    });
-}
-
-// When clicking 'Back to Church Selection' from venue type
-const backToChurchFromVenueType = document.getElementById('backToChurchFromVenueType');
-if (backToChurchFromVenueType) {
-    backToChurchFromVenueType.addEventListener('click', function() {
-        venueStep1.style.display = 'none';
-        venueStep2.style.display = 'none';
-        churchStep.style.display = 'block';
-    });
-}
+// Church selection is now handled by the main Next button validation
 
 // Add event listeners for date and time changes to update venue availability
 document.addEventListener('DOMContentLoaded', function() {
@@ -1886,7 +2320,73 @@ document.addEventListener('DOMContentLoaded', function() {
             updateChurchAvailability();
         }
     }, 1000);
+    
+    // Add click handlers for static church cards
+    document.querySelectorAll('.church-grid .venue-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.classList.contains('view-more-btn') || e.target.classList.contains('check-availability-btn')) {
+                return; // Don't handle clicks on buttons
+            }
+            
+            if (this.classList.contains('unavailable')) {
+                showFormError('This venue is not available for the selected date and time. Please choose a different date/time or venue.');
+                // Clear any existing selection
+                document.querySelectorAll('.church-grid .venue-card').forEach(c => c.classList.remove('selected'));
+                selectedChurch = null;
+                nextChurchStep.disabled = true;
+                return;
+            }
+            
+            // Remove selection from other church cards
+            document.querySelectorAll('.church-grid .venue-card').forEach(c => c.classList.remove('selected'));
+            
+            // Select this church card
+            this.classList.add('selected');
+            selectedChurch = this.dataset.venueId;
+            nextChurchStep.disabled = false;
+        });
+    });
 });
+
+// Function to clear calendar cache for a specific venue
+function clearCalendarCache(venueId = null) {
+    if (venueId) {
+        // Clear cache for specific venue
+        Object.keys(calendarDataCache).forEach(key => {
+            if (key.startsWith(`${venueId}-`)) {
+                delete calendarDataCache[key];
+            }
+        });
+    } else {
+        // Clear all cache
+        calendarDataCache = {};
+    }
+    console.log('Calendar cache cleared for venue:', venueId);
+}
+
+// Countdown timer function
+function startCountdownTimer() {
+    let countdown = 10;
+    const countdownElement = document.getElementById('countdown');
+    const countdownBar = document.getElementById('countdownBar');
+    
+    if (!countdownElement || !countdownBar) return;
+    
+    const timer = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+        
+        // Update progress bar
+        const progress = (countdown / 10) * 100;
+        countdownBar.style.width = progress + '%';
+        
+        if (countdown <= 0) {
+            clearInterval(timer);
+            // Redirect to home page
+            window.location.href = '/';
+        }
+    }, 1000);
+}
 
 // Add spinner keyframes
 const style = document.createElement('style');

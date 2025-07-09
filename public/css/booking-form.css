@@ -495,14 +495,11 @@
         }
 
         .venue-card.unavailable {
-            filter: none !important;
-            opacity: 1 !important;
             cursor: not-allowed;
         }
 
         .venue-card.unavailable .venue-image {
-            filter: grayscale(100%) !important;
-            opacity: 0.7 !important;
+            filter: grayscale(100%);
         }
 
         .availability-status {
@@ -558,10 +555,20 @@
         }
         .venue-info {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            gap: 8px;
             font-size: 0.82rem;
             color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .venue-info .venue-price {
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .venue-info span:not(.venue-price) {
+            display: block;
         }
         .venue-actions span {
             color: #667eea;
@@ -571,7 +578,6 @@
             font-size: 1.05rem;
             font-weight: 700;
             color: #667eea;
-            margin-bottom: 10px;
         }
         .view-more-btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -1548,25 +1554,412 @@
             gap: 20px;
             justify-content: center;
             align-items: stretch;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 20px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #f0f0f0;
         }
 
-        .check-availability-btn {
-            display: none;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        /* Custom scrollbar for webkit browsers */
+        .horizontal-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .horizontal-grid::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .horizontal-grid::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .horizontal-grid::-webkit-scrollbar-thumb:hover {
+            background: #5a6fd8;
+        }
+
+        /* Venue grid specific optimizations */
+        .venue-grid.horizontal-grid {
+            max-height: 65vh;
+            padding: 15px 0;
+        }
+
+        /* Church grid specific optimizations */
+        .church-grid.horizontal-grid {
+            max-height: 60vh;
+            padding: 15px 0;
+        }
+
+        /* Compact card layout for many venues */
+        .horizontal-grid.many-venues .venue-card {
+            max-width: 260px;
+            flex: 0 1 260px;
+        }
+
+        .horizontal-grid.many-venues .venue-content {
+            padding: 12px;
+        }
+
+        .horizontal-grid.many-venues .venue-title {
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .horizontal-grid.many-venues .venue-info {
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .horizontal-grid.many-venues .view-more-btn {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+
+        /* Calendar Styles */
+        .calendar-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .calendar-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-nav button {
+            background: #667eea;
             color: white;
             border: none;
-            padding: 7px 16px;
+            padding: 8px 12px;
             border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav button:hover:not(:disabled) {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        .calendar-nav button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #calendarGrid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+        }
+
+        .calendar-day:hover:not(.unavailable) {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .calendar-day.selected {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .calendar-day.unavailable {
+            background: #dc3545;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .calendar-day.unavailable:hover {
+            background: #dc3545;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #667eea;
+            background: #e3f2fd;
+            color: #667eea;
             font-weight: 600;
+        }
+
+        .calendar-day.today:hover:not(.unavailable) {
+            background: #667eea;
+            color: white;
+        }
+
+        .time-selection {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .time-selection h4 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .time-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .time-inputs input {
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .time-inputs input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .time-conflict-warning {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .calendar-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .calendar-actions button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.85rem;
-            width: 100%;
-            margin-top: 8px;
         }
-        .check-availability-btn:hover, .check-availability-btn:focus {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+
+        .calendar-actions .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+        }
+
+        .calendar-actions .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .calendar-actions .btn-primary {
+            background: #667eea;
+            color: white;
+            border: none;
+        }
+
+        .calendar-actions .btn-primary:hover:not(:disabled) {
+            background: #5a6fd8;
+        }
+
+        .calendar-actions .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .selected-date-display {
+            color: #667eea;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-container {
+                padding: 15px;
+            }
+
+            .calendar-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .calendar-nav {
+                justify-content: center;
+            }
+
+            .calendar-day {
+                font-size: 0.85rem;
+            }
+
+            .time-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .calendar-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .calendar-actions button {
+                width: 100%;
+            }
+        }
+
+        /* Additional responsive improvements for many venues */
+        @media (max-width: 768px) {
+            .horizontal-grid {
+                max-height: 60vh;
+                gap: 15px;
+                padding: 15px 0;
+            }
+            
+            .horizontal-grid.many-venues .venue-card {
+                max-width: 240px;
+                flex: 0 1 240px;
+            }
+            
+            .horizontal-grid.many-venues .venue-content {
+                padding: 10px;
+            }
+            
+            .horizontal-grid.many-venues .venue-title {
+                font-size: 0.95rem;
+            }
+            
+            .horizontal-grid.many-venues .venue-info {
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .horizontal-grid {
+                max-height: 55vh;
+                gap: 12px;
+            }
+            
+            .horizontal-grid.many-venues .venue-card {
+                max-width: 220px;
+                flex: 0 1 220px;
+            }
+        }
+
+        /* Loading state improvements for many venues */
+        .horizontal-grid.loading-many {
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        .horizontal-grid.loading-many .loading {
+            font-size: 18px;
+            padding: 60px 40px;
+        }
+
+        /* Countdown Timer Styles */
+        .countdown-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .countdown-text {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .countdown-number {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.3rem;
+        }
+
+        .countdown-progress {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .countdown-bar {
+            height: 100%;
             background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
+            border-radius: 4px;
+            width: 100%;
+            transition: width 1s linear;
+            animation: countdownPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes countdownPulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* Responsive countdown */
+        @media (max-width: 768px) {
+            .countdown-container {
+                padding: 15px;
+                margin-top: 15px;
+            }
+            
+            .countdown-text {
+                font-size: 1rem;
+            }
+            
+            .countdown-number {
+                font-size: 1.2rem;
+            }
         }

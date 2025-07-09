@@ -12,6 +12,8 @@ class Booking extends Model
         'user_id',
         'venue_id',
         'package_id',
+        'church_id',
+        'reception_id',
         'reference',
         'event_name',
         'event_type',
@@ -52,6 +54,16 @@ class Booking extends Model
     public function venue(): BelongsTo
     {
         return $this->belongsTo(Venue::class);
+    }
+
+    public function church(): BelongsTo
+    {
+        return $this->belongsTo(Venue::class, 'church_id');
+    }
+
+    public function reception(): BelongsTo
+    {
+        return $this->belongsTo(Venue::class, 'reception_id');
     }
 
     public function package(): BelongsTo

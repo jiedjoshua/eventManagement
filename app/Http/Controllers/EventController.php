@@ -32,6 +32,12 @@ class EventController extends Controller
     public function store(Request $request)
     {
         Log::info('Booking form submitted:', $request->all());
+        Log::info('Church and reception IDs received:', [
+            'church_id' => $request->church_id,
+            'reception_id' => $request->reception_id,
+            'venue_id' => $request->venue_id,
+            'event_type' => $request->eventType
+        ]);
 
         try {
             DB::beginTransaction();
@@ -50,17 +56,55 @@ class EventController extends Controller
                 'addons.*' => 'exists:addons,id',
                 'venueNotes' => 'nullable|string',
                 'additionalNotes' => 'nullable|string',
+                'church_id' => 'nullable|exists:venues,id',
+                'reception_id' => 'nullable|exists:venues,id',
             ]);
 
-            // Check venue availability
-            $venue = Venue::findOrFail($request->venueId);
-            if (!$venue->isAvailable($request->eventDate, $request->startTime, $request->endTime)) {
-                throw new \Exception('Selected venue is not available for the chosen date and time.');
+            // Additional validation for wedding/baptism events
+            if ($request->eventType === 'wedding' || $request->eventType === 'baptism') {
+                if (!$request->church_id && !$request->reception_id) {
+                    throw new \Exception('For wedding and baptism events, you must select both a church and reception venue.');
+                }
             }
 
-            // Check venue capacity
-            if ($request->guestCount > $venue->capacity) {
-                throw new \Exception('Guest count exceeds venue capacity.');
+            // Check venue availability based on event type
+            $eventType = $request->eventType;
+            $venue = Venue::findOrFail($request->venueId);
+            
+            if ($eventType === 'wedding' || $eventType === 'baptism') {
+                // For wedding/baptism, check both church and reception availability
+                $church = null;
+                $reception = null;
+                
+                if ($request->has('church_id') && $request->church_id) {
+                    $church = Venue::findOrFail($request->church_id);
+                    if (!$church->isAvailable($request->eventDate, $request->startTime, $request->endTime)) {
+                        throw new \Exception('Selected church is not available for the chosen date and time.');
+                    }
+                }
+                
+                if ($request->has('reception_id') && $request->reception_id) {
+                    $reception = Venue::findOrFail($request->reception_id);
+                    if (!$reception->isAvailable($request->eventDate, $request->startTime, $request->endTime)) {
+                        throw new \Exception('Selected reception venue is not available for the chosen date and time.');
+                    }
+                }
+                
+                // Check capacity (use the larger capacity between church and reception)
+                $maxCapacity = max($church ? $church->capacity : 0, $reception ? $reception->capacity : 0);
+                if ($request->guestCount > $maxCapacity) {
+                    throw new \Exception('Guest count exceeds venue capacity.');
+                }
+            } else {
+                // For other event types, check single venue availability
+                if (!$venue->isAvailable($request->eventDate, $request->startTime, $request->endTime)) {
+                    throw new \Exception('Selected venue is not available for the chosen date and time.');
+                }
+                
+                // Check venue capacity
+                if ($request->guestCount > $venue->capacity) {
+                    throw new \Exception('Guest count exceeds venue capacity.');
+                }
             }
 
             // Get package
@@ -80,6 +124,17 @@ class EventController extends Controller
             $booking->venue_notes = $request->venueNotes;
             $booking->additional_notes = $request->additionalNotes;
 
+            // Set church and reception IDs for wedding/baptism
+            if ($eventType === 'wedding' || $eventType === 'baptism') {
+                $booking->church_id = $request->church_id;
+                $booking->reception_id = $request->reception_id;
+                
+                Log::info('Church and reception IDs set:', [
+                    'church_id' => $request->church_id,
+                    'reception_id' => $request->reception_id
+                ]);
+            }
+
             // Handle addons if selected
             if ($request->has('addons')) {
                 $booking->selected_addons = $request->addons;
@@ -96,12 +151,45 @@ class EventController extends Controller
                 $booking->addons_price_at_booking = 0;
             }
 
-            // Calculate total price
-            $booking->total_price = $booking->package_price_at_booking + $booking->addons_price_at_booking;
+            // Calculate venue costs
+            $venueCost = 0;
+            if ($eventType === 'wedding' || $eventType === 'baptism') {
+                if ($request->has('church_id') && $request->church_id) {
+                    $church = Venue::find($request->church_id);
+                    if ($church) {
+                        $venueCost += $church->price_range;
+                        Log::info('Church venue cost added:', ['church_id' => $request->church_id, 'church_price' => $church->price_range]);
+                    } else {
+                        Log::warning('Church not found:', ['church_id' => $request->church_id]);
+                    }
+                }
+                if ($request->has('reception_id') && $request->reception_id) {
+                    $reception = Venue::find($request->reception_id);
+                    if ($reception) {
+                        $venueCost += $reception->price_range;
+                        Log::info('Reception venue cost added:', ['reception_id' => $request->reception_id, 'reception_price' => $reception->price_range]);
+                    } else {
+                        Log::warning('Reception not found:', ['reception_id' => $request->reception_id]);
+                    }
+                }
+            } else {
+                $venueCost = $venue->price_range;
+            }
+
+            // Calculate total price (package + addons + venue costs)
+            $booking->total_price = $booking->package_price_at_booking + $booking->addons_price_at_booking + $venueCost;
+
+            Log::info('Price calculation:', [
+                'package_price' => $booking->package_price_at_booking,
+                'addons_price' => $booking->addons_price_at_booking,
+                'venue_cost' => $venueCost,
+                'total_price' => $booking->total_price,
+                'event_type' => $eventType
+            ]);
 
             // Validate that total price is greater than 0
             if ($booking->total_price <= 0) {
-                throw new \Exception('Total price must be greater than 0. Please check package and addon prices.');
+                throw new \Exception('Total price must be greater than 0. Please check package, addon, and venue prices.');
             }
 
             // Set initial status
@@ -109,6 +197,14 @@ class EventController extends Controller
 
             // Save the booking
             $booking->save();
+
+            Log::info('Booking saved successfully:', [
+                'booking_id' => $booking->id,
+                'reference' => $booking->reference,
+                'church_id' => $booking->church_id,
+                'reception_id' => $booking->reception_id,
+                'total_price' => $booking->total_price
+            ]);
 
             DB::commit();
 

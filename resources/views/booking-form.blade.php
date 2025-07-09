@@ -6,6 +6,7 @@
     <title>Event Booking Form</title>
     <link rel="stylesheet" href="{{ asset('css/booking-form.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="user-authenticated" content="{{ auth()->check() ? 'true' : 'false' }}">
 </head>
 <body>
     <div class="container">
@@ -38,7 +39,6 @@
         </div>
 
         <form id="bookingForm">
-            <div id="formError" class="form-error" style="display:none;color:#dc3545;background:#fff3f3;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-weight:600;text-align:center;max-width:400px;margin-left:auto;margin-right:auto;"></div>
             <div class="form-content">
                  <!-- Step 1: Event Details -->
                 <div class="step-content active" data-step="1">
@@ -107,19 +107,16 @@
                                 <div class="venue-card" data-venue-id="{{ $church->id }}" data-venue-price="{{ $church->price_range }}">
                                     <img src="{{ $church->main_image }}" alt="{{ $church->name }}" class="venue-image">
                                     <span class="venue-tag">Church</span>
+                                    <span class="availability-label" style="display: none; position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; z-index: 2;"></span>
                                     <div class="venue-content">
                                         <h3 class="venue-title">{{ $church->name }}</h3>
-                                        <p class="venue-description">{{ $church->description }}</p>
-                                        <div class="venue-actions">
-                                            <div class="venue-info">
-                                                <span>Capacity: {{ $church->capacity }}</span>
-                                                <span class="venue-price">₱{{ number_format($church->price_range) }}</span>
-                                            </div>
-                                            <button type="button" class="view-more-btn">View Details</button>
+                                        <div class="venue-info">
+                                            <span class="venue-price">₱{{ number_format($church->price_range) }}</span>
+                                            <span>Capacity: {{ $church->capacity }}</span>
                                         </div>
-                                        <div class="availability-status" style="display: none;">
-                                            <span class="availability-text"></span>
-                                            <button type="button" class="check-availability-btn" style="display: none; margin-top: 8px; padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                        <div class="venue-actions">
+                                            <button type="button" class="view-more-btn">View Details</button>
+                                            <button type="button" class="check-availability-btn" style="display: none; width: 100%; margin-top: 8px; padding: 7px 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                                                 📅 Check Availability
                                             </button>
                                         </div>
@@ -128,7 +125,7 @@
                             @endforeach
                         </div>
                         <div class="venue-navigation">
-                            <button type="button" class="btn btn-primary" id="nextChurchStep" disabled>Continue to Reception Selection</button>
+                            <!-- Navigation handled by main Next/Previous buttons -->
                         </div>
                     </div>
                     <!-- Existing Venue Type Selection Step -->
@@ -151,9 +148,7 @@
                                 <input type="radio" name="venueType" value="outdoor" required style="display: none;">
                             </div>
                         </div>
-                        <div class="venue-navigation">
-                            <button type="button" class="btn btn-primary" id="nextVenueStep" disabled>Continue to Venue Selection</button>
-                        </div>
+
                     </div>
 
                     <div class="venue-step" id="venueStep2" style="display: none;">
@@ -299,9 +294,6 @@
                         <div class="form-group">
                             <h3>Selected Venue</h3>
                             <div class="summary-item">
-                                <strong>Venue Type:</strong> <span id="summaryVenueType"></span>
-                            </div>
-                            <div class="summary-item">
                                 <strong>Venue Name:</strong> <span id="summaryVenueName"></span>
                             </div>
                             <div class="summary-item">
@@ -336,7 +328,7 @@
                                     <strong>Venue Cost:</strong> <span id="summaryVenuePrice">₱0</span>
                                 </div>
                                 <div class="summary-item total-price">
-                                    <strong>Total Estimated Cost: </strong> <span id="summaryTotalPrice">₱0</span>
+                                    <strong>Total Cost: </strong> <span id="summaryTotalPrice">₱0</span>
                                 </div>
                             </div>
                         </div>
@@ -368,6 +360,13 @@
             <p>Thank you for choosing us for your special event. We'll review your request and get back to you within 24 hours.</p>
             <br>
             <p><strong>Booking Reference:</strong><span id="bookingRef"></span></p>
+            <br>
+            <div class="countdown-container">
+                <p class="countdown-text">You will be redirected to home page in <span id="countdown" class="countdown-number">10</span> seconds</p>
+                <div class="countdown-progress">
+                    <div class="countdown-bar" id="countdownBar"></div>
+                </div>
+            </div>
         </div>
     </div>
 

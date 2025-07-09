@@ -49,6 +49,8 @@ class VenueController extends Controller
 
     public function checkAvailability(Request $request)
     {
+        Log::info('checkAvailability called', $request->all());
+        
         $request->validate([
             'venue_id' => 'required|exists:venues,id',
             'date' => 'required|date|after_or_equal:today',
@@ -58,6 +60,15 @@ class VenueController extends Controller
 
         $venue = Venue::findOrFail($request->venue_id);
         $isAvailable = $venue->isAvailable($request->date, $request->start_time, $request->end_time);
+
+        Log::info('Availability check result', [
+            'venue_id' => $venue->id,
+            'venue_name' => $venue->name,
+            'date' => $request->date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'is_available' => $isAvailable
+        ]);
 
         return response()->json([
             'success' => true,
@@ -131,6 +142,8 @@ class VenueController extends Controller
 
     public function getUnavailabilities(Request $request)
     {
+        Log::info('getUnavailabilities called', $request->all());
+        
         $request->validate([
             'venue_id' => 'required|exists:venues,id',
             'year' => 'required|integer',
@@ -153,6 +166,8 @@ class VenueController extends Controller
                 ];
             });
 
+        Log::info('Unavailabilities found', ['count' => $unavailabilities->count()]);
+
         return response()->json([
             'success' => true,
             'data' => $unavailabilities
@@ -161,13 +176,20 @@ class VenueController extends Controller
 
     public function getVenueBookings(Request $request)
     {
+        Log::info('getVenueBookings called', $request->all());
+        Log::info('User authenticated:', ['user_id' => auth()->id(), 'authenticated' => auth()->check()]);
+        
         $request->validate([
             'venue_id' => 'required|exists:venues,id',
             'year' => 'required|integer',
             'month' => 'required|integer|between:1,12',
         ]);
 
-        $bookings = \App\Models\Booking::where('venue_id', $request->venue_id)
+        $bookings = \App\Models\Booking::where(function($query) use ($request) {
+                $query->where('venue_id', $request->venue_id)
+                      ->orWhere('church_id', $request->venue_id)
+                      ->orWhere('reception_id', $request->venue_id);
+            })
             ->whereYear('event_date', $request->year)
             ->whereMonth('event_date', $request->month)
             ->whereIn('status', ['approved', 'pending']) // Only consider active bookings
@@ -182,6 +204,14 @@ class VenueController extends Controller
                     'status' => $booking->status,
                 ];
             });
+
+        Log::info('Bookings found', [
+            'count' => $bookings->count(),
+            'venue_id' => $request->venue_id,
+            'year' => $request->year,
+            'month' => $request->month,
+            'bookings' => $bookings->toArray()
+        ]);
 
         return response()->json([
             'success' => true,
