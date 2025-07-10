@@ -233,10 +233,10 @@
                         </div>
 
                         <div>
-                            <label for="venuePriceRange" class="block text-sm font-semibold text-gray-800 mb-2">Price Range *</label>
-                            <input type="text" id="venuePriceRange" name="price_range" required placeholder="e.g., ₱1,000 - ₱5,000"
+                            <label for="venuePriceRange" class="block text-sm font-semibold text-gray-800 mb-2">Price *</label>
+                            <input type="text" id="venuePriceRange" name="price_range" required placeholder="e.g. 1000"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                            <p class="mt-1 text-sm text-gray-600">Enter price range in Philippine Pesos (₱)</p>
+                            <p class="mt-1 text-sm text-gray-600">Enter price in Philippine Pesos (₱)</p>
                         </div>
                     </div>
                 </div>
