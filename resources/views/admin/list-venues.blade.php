@@ -992,10 +992,10 @@
                         <select id="editVenueType" name="type" required
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Select Type</option>
-                            <option value="indoor" {{ $venue->type === 'indoor' ? 'selected' : '' }}>Indoor</option>
-                            <option value="outdoor" {{ $venue->type === 'outdoor' ? 'selected' : '' }}>Outdoor</option>
-                            <option value="both" {{ $venue->type === 'both' ? 'selected' : '' }}>Both (Indoor & Outdoor)</option>
-                            <option value="church" {{ $venue->type === 'church' ? 'selected' : '' }}>Church</option>
+                            <option value="indoor" ${venue.type === 'indoor' ? 'selected' : ''}>Indoor</option>
+                            <option value="outdoor" ${venue.type === 'outdoor' ? 'selected' : ''}>Outdoor</option>
+                            <option value="both" ${venue.type === 'both' ? 'selected' : ''}>Both (Indoor & Outdoor)</option>
+                            <option value="church" ${venue.type === 'church' ? 'selected' : ''}>Church</option>
                         </select>
                     </div>
 
