@@ -38,6 +38,9 @@ class PackageController extends Controller
                 case 'baptism':
                     $activePage = 'baptism-packages';
                     break;
+                case 'debut':
+                    $activePage = 'debut-packages';
+                    break;
                 default:
                     $activePage = 'packages';
                     break;

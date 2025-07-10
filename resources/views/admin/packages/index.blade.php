@@ -40,6 +40,7 @@
                 <option value="Wedding">Wedding</option>
                 <option value="Birthday">Birthday</option>
                 <option value="Baptism">Baptism</option>
+                <option value="Debut">Debut</option>
             </select>
         </div>
         <div class="flex-1">
@@ -83,7 +84,9 @@
                             <!-- Type Badge -->
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold 
                                        {{ $package->type === 'Wedding' ? 'bg-gradient-to-r from-purple-100 to-violet-100 text-purple-800 border border-purple-200' : 
-                                          ($package->type === 'Birthday' ? 'bg-gradient-to-r from-pink-100 to-rose-100 text-pink-800 border border-pink-200' : 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200') }}">
+                                          ($package->type === 'Birthday' ? 'bg-gradient-to-r from-pink-100 to-rose-100 text-pink-800 border border-pink-200' : 
+                                          ($package->type === 'Debut' ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border border-yellow-200' : 
+                                          'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200')) }}">
                                 {{ $package->type }}
                             </span>
                         </div>
@@ -245,6 +248,7 @@
                                 <option value="Wedding">Wedding</option>
                                 <option value="Birthday">Birthday</option>
                                 <option value="Baptism">Baptism</option>
+                                <option value="Debut">Debut</option>
                             </select>
                         </div>
 
