@@ -21,7 +21,6 @@ class Venue extends Model
     ];
 
     protected $casts = [
-        'price_range' => 'decimal:2',
         'is_active' => 'boolean'
     ];
 

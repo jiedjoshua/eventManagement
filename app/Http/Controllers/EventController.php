@@ -157,8 +157,9 @@ class EventController extends Controller
                 if ($request->has('church_id') && $request->church_id) {
                     $church = Venue::find($request->church_id);
                     if ($church) {
-                        $venueCost += $church->price_range;
-                        Log::info('Church venue cost added:', ['church_id' => $request->church_id, 'church_price' => $church->price_range]);
+                        $churchPrice = $this->extractPriceFromRange($church->price_range);
+                        $venueCost += $churchPrice;
+                        Log::info('Church venue cost added:', ['church_id' => $request->church_id, 'church_price' => $churchPrice]);
                     } else {
                         Log::warning('Church not found:', ['church_id' => $request->church_id]);
                     }
@@ -166,14 +167,15 @@ class EventController extends Controller
                 if ($request->has('reception_id') && $request->reception_id) {
                     $reception = Venue::find($request->reception_id);
                     if ($reception) {
-                        $venueCost += $reception->price_range;
-                        Log::info('Reception venue cost added:', ['reception_id' => $request->reception_id, 'reception_price' => $reception->price_range]);
+                        $receptionPrice = $this->extractPriceFromRange($reception->price_range);
+                        $venueCost += $receptionPrice;
+                        Log::info('Reception venue cost added:', ['reception_id' => $request->reception_id, 'reception_price' => $receptionPrice]);
                     } else {
                         Log::warning('Reception not found:', ['reception_id' => $request->reception_id]);
                     }
                 }
             } else {
-                $venueCost = $venue->price_range;
+                $venueCost = $this->extractPriceFromRange($venue->price_range);
             }
 
             // Calculate total price (package + addons + venue costs)
@@ -571,5 +573,36 @@ class EventController extends Controller
 
         // Return ZIP as download, with event name as filename
         return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Extract numeric price from price range string
+     * Handles formats like "₱1,000 - ₱5,000" or "₱1,000" or "1000"
+     */
+    private function extractPriceFromRange($priceRange)
+    {
+        if (empty($priceRange)) {
+            return 0;
+        }
+
+        // Remove peso symbol and spaces
+        $cleanPrice = str_replace(['₱', ' ', ','], '', $priceRange);
+        
+        // If it's a range (contains "-"), take the first number
+        if (strpos($cleanPrice, '-') !== false) {
+            $parts = explode('-', $cleanPrice);
+            $firstPart = trim($parts[0]);
+            // Extract first number from the string
+            if (preg_match('/\d+/', $firstPart, $matches)) {
+                return (float) $matches[0];
+            }
+        } else {
+            // Single price, extract the number
+            if (preg_match('/\d+/', $cleanPrice, $matches)) {
+                return (float) $matches[0];
+            }
+        }
+        
+        return 0; // Default fallback
     }
 }
