@@ -49,21 +49,33 @@
     </div>
 
     <!-- Calendar Grid -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <!-- Calendar Header -->
-        <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
-            <div class="p-4 text-center text-sm font-medium text-gray-500">Sun</div>
-            <div class="p-4 text-center text-sm font-medium text-gray-500">Mon</div>
-            <div class="p-4 text-center text-sm font-medium text-gray-500">Tue</div>
-            <div class="p-4 text-center text-sm font-medium text-gray-500">Wed</div>
-            <div class="p-4 text-center text-sm font-medium text-gray-500">Thu</div>
-            <div class="p-4 text-center text-sm font-medium text-gray-500">Fri</div>
-            <div class="p-4 text-center text-sm font-medium text-gray-500">Sat</div>
+    <div class="relative">
+        <!-- Loading Overlay -->
+        <div id="calendarLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-20 hidden">
+            <div class="flex flex-col items-center">
+                <svg class="animate-spin h-10 w-10 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+                <span class="text-indigo-700 font-medium">Loading calendar...</span>
+            </div>
         </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Calendar Header -->
+            <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
+                <div class="p-4 text-center text-sm font-medium text-gray-500">Sun</div>
+                <div class="p-4 text-center text-sm font-medium text-gray-500">Mon</div>
+                <div class="p-4 text-center text-sm font-medium text-gray-500">Tue</div>
+                <div class="p-4 text-center text-sm font-medium text-gray-500">Wed</div>
+                <div class="p-4 text-center text-sm font-medium text-gray-500">Thu</div>
+                <div class="p-4 text-center text-sm font-medium text-gray-500">Fri</div>
+                <div class="p-4 text-center text-sm font-medium text-gray-500">Sat</div>
+            </div>
 
-        <!-- Calendar Days -->
-        <div id="calendarGrid" class="grid grid-cols-7">
-            <!-- Calendar days will be populated by JavaScript -->
+            <!-- Calendar Days -->
+            <div id="calendarGrid" class="grid grid-cols-7">
+                <!-- Calendar days will be populated by JavaScript -->
+            </div>
         </div>
     </div>
 
@@ -267,6 +279,8 @@
         }
 
         function loadBookings() {
+            const loading = document.getElementById('calendarLoading');
+            loading.classList.remove('hidden');
             const params = new URLSearchParams();
             if (selectedVenueId) {
                 params.append('venue_id', selectedVenueId);
@@ -286,6 +300,9 @@
                 })
                 .catch(error => {
                     console.error('Error loading bookings:', error);
+                })
+                .finally(() => {
+                    loading.classList.add('hidden');
                 });
         }
 

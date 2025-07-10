@@ -39,7 +39,7 @@ class UserController extends Controller
         // Dashboard stats
         $stats = $this->getDashboardStats($user, $bookings, $invitedEvents);
 
-        return view('user.dashboard', compact('participationData', 'eventTypesData', 'stats'));
+        return view('user.dashboard', compact('participationData', 'eventTypesData', 'stats', 'bookings'));
     }
 
     private function getParticipationData($bookings)

@@ -31,13 +31,15 @@ class Booking extends Model
         'rejection_reason',
         'amount_due',
         'amount_paid',
-        'payment_status'
+        'payment_status',
+        'payment_due_date'
     ];
 
     protected $casts = [
         'event_date' => 'date',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
+        'payment_due_date' => 'date',
         'selected_addons' => 'array',
         'package_price_at_booking' => 'decimal:2',
         'addons_price_at_booking' => 'decimal:2',

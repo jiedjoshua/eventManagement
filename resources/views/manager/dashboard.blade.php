@@ -117,6 +117,16 @@
                     </div>
                 </div>
             </a>
+            
+            <a href="{{ route('manager.paymentHistory') }}" class="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-4 rounded-xl shadow-lg hover:from-emerald-700 hover:to-emerald-800 transition-all transform hover:-translate-y-1">
+                <div class="flex items-center">
+                    <i class="fas fa-credit-card text-2xl mr-3"></i>
+                    <div>
+                        <p class="font-semibold">Payment History</p>
+                        <p class="text-xs opacity-90">View all payments</p>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
 

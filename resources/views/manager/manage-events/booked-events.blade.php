@@ -240,6 +240,15 @@
                         }
                     }
 
+                    // Check if church should be displayed (for wedding or baptism events)
+                    const showChurch = booking.event_type === 'wedding' || booking.event_type === 'baptism';
+                    const churchHtml = showChurch ? `
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500">Church</h4>
+                            <p class="text-base">${booking.church ? booking.church.name : 'N/A'}</p>
+                        </div>
+                    ` : '';
+
                     detailsContainer.innerHTML = `
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-4">
@@ -266,6 +275,7 @@
                             <h4 class="text-sm font-medium text-gray-500">Venue</h4>
                             <p class="text-base">${booking.venue ? booking.venue.name : 'N/A'}</p>
                         </div>
+                        ${churchHtml}
                         <div>
                             <h4 class="text-sm font-medium text-gray-500">Package</h4>
                             <p class="text-base">${booking.package ? booking.package.name : 'N/A'}</p>

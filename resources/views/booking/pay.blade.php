@@ -56,6 +56,17 @@
               <span class="text-gray-600">Already Paid:</span>
               <span class="font-semibold text-green-600">₱{{ number_format($booking->amount_paid, 2) }}</span>
             </div>
+            @if($booking->payment_due_date)
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Payment Due:</span>
+              <span class="font-semibold {{ \Carbon\Carbon::parse($booking->payment_due_date)->isPast() ? 'text-red-600' : 'text-gray-900' }}">
+                {{ \Carbon\Carbon::parse($booking->payment_due_date)->format('M d, Y') }}
+                @if(\Carbon\Carbon::parse($booking->payment_due_date)->isPast())
+                  <span class="text-xs text-red-500 ml-1">(Overdue)</span>
+                @endif
+              </span>
+            </div>
+            @endif
             <div class="border-t border-gray-200 pt-3">
               <div class="flex justify-between items-center">
                 <span class="font-semibold text-gray-800">Amount to Pay:</span>
@@ -86,7 +97,12 @@
                   <div class="flex items-center justify-between">
                     <div>
                       <span class="font-semibold text-gray-800">Pay 20% Downpayment</span>
-                      <p class="text-sm text-gray-600 mt-1">Secure your booking with a downpayment</p>
+                      <p class="text-sm text-gray-600 mt-1">
+                        Secure your booking with a downpayment
+                        @if($booking->payment_due_date)
+                          <br><span class="text-xs text-orange-600">Due: {{ \Carbon\Carbon::parse($booking->payment_due_date)->format('M d, Y') }}</span>
+                        @endif
+                      </p>
                     </div>
                     <span class="font-bold text-[#EF7C79]">₱{{ number_format($booking->amount_due * 0.2, 2) }}</span>
                   </div>
@@ -96,7 +112,12 @@
                   <div class="flex items-center justify-between">
                     <div>
                       <span class="font-semibold text-gray-800">Pay Full Amount</span>
-                      <p class="text-sm text-gray-600 mt-1">Complete payment in one transaction</p>
+                      <p class="text-sm text-gray-600 mt-1">
+                        Complete payment in one transaction
+                        @if($booking->payment_due_date)
+                          <br><span class="text-xs text-orange-600">Due: {{ \Carbon\Carbon::parse($booking->payment_due_date)->format('M d, Y') }}</span>
+                        @endif
+                      </p>
                     </div>
                     <span class="font-bold text-[#EF7C79]">₱{{ number_format($booking->amount_due, 2) }}</span>
                   </div>
@@ -115,6 +136,14 @@
                 <div>
                   <p class="font-semibold text-yellow-800">Downpayment Received</p>
                   <p class="text-yellow-700 text-sm">Please pay the remaining balance of <strong class="font-bold">₱{{ number_format($remainingBalance, 2) }}</strong></p>
+                  @if($booking->payment_due_date)
+                    <p class="text-yellow-700 text-sm mt-1">
+                      <strong>Due by:</strong> {{ \Carbon\Carbon::parse($booking->payment_due_date)->format('M d, Y') }}
+                      @if(\Carbon\Carbon::parse($booking->payment_due_date)->isPast())
+                        <span class="text-red-600 font-semibold"> (Overdue)</span>
+                      @endif
+                    </p>
+                  @endif
                 </div>
               </div>
               <input type="hidden" name="amount" value="{{ $remainingBalance }}">

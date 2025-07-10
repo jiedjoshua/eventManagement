@@ -40,11 +40,24 @@ class PaymentController extends Controller
 
         // Update booking
         $booking->amount_paid += $amount;
+        
+        // Check if this is a down payment (20% of total)
+        $downPaymentAmount = $booking->total_price * 0.2;
+        
         if ($booking->amount_paid >= $booking->amount_due) {
+            // Full payment completed
             $booking->payment_status = 'paid';
-        } elseif ($booking->amount_paid > 0) {
+            $booking->payment_due_date = null; // No more due dates
+        } elseif ($booking->amount_paid >= $downPaymentAmount) {
+            // Down payment completed, set full payment due date
             $booking->payment_status = 'partial';
+            $booking->payment_due_date = $booking->event_date->subWeek(); // Due 1 week before event
+        } else {
+            // Still in down payment phase
+            $booking->payment_status = 'partial';
+            // Keep the original down payment due date
         }
+        
         $booking->save();
 
        return redirect()->route('payment.success')->with('payment_reference', $reference);

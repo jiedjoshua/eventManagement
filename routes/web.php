@@ -207,6 +207,14 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/manager/feedback-analytics', [ManagerFeedbackController::class, 'analytics'])->name('manager.feedback.analytics');
     Route::get('/manager/events/{event}/feedbacks', [ManagerFeedbackController::class, 'eventFeedbacks'])->name('manager.event.feedbacks');
     Route::get('/manager/event-summary', [ManagerFeedbackController::class, 'eventSummary'])->name('manager.event.summary');
+    
+    // Payment History
+    Route::get('/manager/payment-history', [EventManagerController::class, 'paymentHistory'])->name('manager.paymentHistory');
+
+    // Ended Events & Feedbacks
+    Route::get('/manager/ended-events', [EventManagerController::class, 'endedEventsWithFeedback'])->name('manager.endedEvents');
+    Route::get('/manager/ended-events/ajax', [EventManagerController::class, 'ajaxEndedEventsWithFeedback'])->name('manager.endedEvents.ajax');
+    Route::get('/manager/ended-events/{event}/feedbacks', [EventManagerController::class, 'showEventFeedbacks'])->name('manager.eventFeedbacks');
 });
 
 

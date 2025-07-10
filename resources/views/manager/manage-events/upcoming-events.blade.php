@@ -173,6 +173,14 @@
                         </svg>
                         <span class="font-medium">{{ ucwords($event->venue_name) }}</span>
                     </div>
+                    @if(in_array(strtolower($event->event_type), ['wedding', 'baptism']))
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span class="font-medium">Church: {{ $event->booking && $event->booking->church ? $event->booking->church->name : 'N/A' }}</span>
+                    </div>
+                    @endif
                     <div class="flex items-center gap-2">
                         <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -546,6 +554,12 @@
                                     <h4 class="text-sm font-medium text-gray-500">Venue</h4>
                                     <p class="text-lg">${toTitleCase(event.venue_name)}</p>
                                 </div>
+                                ${(event.event_type === 'wedding' || event.event_type === 'baptism') ? `
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-500">Church</h4>
+                                    <p class="text-lg">${event.church_name ? event.church_name : 'N/A'}</p>
+                                </div>
+                                ` : ''}
                             </div>
 
                             <div class="space-y-4">

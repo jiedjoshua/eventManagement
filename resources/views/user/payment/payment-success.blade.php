@@ -1,4 +1,12 @@
-<x-customer-layout title="Payment Successful">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful</title>
+  <link href="/css/app.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen flex items-center justify-center">
   <main class="flex-1 p-6 md:p-10 overflow-auto flex items-center justify-center">
     <div class="relative z-10 bg-white/90 backdrop-blur-md p-6 md:p-10 rounded-3xl shadow-2xl text-center max-w-md w-full border border-indigo-100">
       <div class="flex justify-center mb-4">
@@ -37,4 +45,5 @@
     }
     window.onload = updateCountdown;
   </script>
-</x-customer-layout>
+</body>
+</html>

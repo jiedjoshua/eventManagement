@@ -18,7 +18,7 @@ class InviteController extends Controller
         return redirect()->route('login');
     }
 
-    $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
+    $event = Event::with(['venue', 'booking.venue', 'booking.church'])->findOrFail($eventId);
     $userId = Auth::id();
 
     // Check if user already responded
@@ -56,7 +56,7 @@ class InviteController extends Controller
         return redirect()->route('login');
     }
 
-    $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
+    $event = Event::with(['venue', 'booking.venue', 'booking.church'])->findOrFail($eventId);
     $userId = Auth::id();
     
     // Get RSVP status if exists
@@ -100,7 +100,7 @@ class InviteController extends Controller
         return redirect()->route('login');
     }
 
-    $event = Event::with(['venue', 'booking.venue'])->findOrFail($eventId);
+    $event = Event::with(['venue', 'booking.venue', 'booking.church'])->findOrFail($eventId);
     $userId = Auth::id();
 
     // Get RSVP status if exists

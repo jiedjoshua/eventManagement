@@ -262,6 +262,30 @@ use Carbon\Carbon;
             <span class="font-medium">{{ $venueName }}</span>
           @endif
         </div>
+        
+        <!-- Always show church section for debugging -->
+        <div class="flex items-center justify-center space-x-3 text-black">
+          <svg class="w-5 h-5 text-black text-opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          @php
+              $church = $event->booking->church ?? null;
+              $churchName = $church ? $church->name : 'N/A';
+          @endphp
+          @if($church && $church->latitude && $church->longitude)
+            <a href="https://www.google.com/maps/dir/?api=1&destination={{ $church->latitude }},{{ $church->longitude }}" 
+               target="_blank" 
+               class="font-medium hover:text-blue-600 hover:underline transition-colors duration-200 cursor-pointer"
+               title="Get directions to {{ $churchName }}">
+              {{ $churchName }}
+              <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              </svg>
+            </a>
+          @else
+            <span class="font-medium">{{ $churchName }}</span>
+          @endif
+        </div>
       </div>
     </div>
 

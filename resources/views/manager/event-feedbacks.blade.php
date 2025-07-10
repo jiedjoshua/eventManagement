@@ -1,42 +1,49 @@
-<x-manager-layout title="Feedbacks for {{ $event->event_name }}" :active-page="'feedback-analytics'">
-    <h1 class="text-3xl font-bold mb-8">Feedbacks for {{ $event->event_name }}</h1>
+<x-manager-layout title="Event Feedbacks" :active-page="'ended-events'">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Feedbacks for: {{ $event->event_name }}</h1>
+        <p class="text-gray-600 mb-2">Event Date: {{ \Carbon\Carbon::parse($event->event_date)->format('M d, Y') }}</p>
+        <a href="{{ route('manager.endedEvents') }}" class="text-indigo-600 hover:underline text-sm">&larr; Back to Ended Events</a>
+    </div>
+
+    <!-- Star Filter -->
+    <form method="GET" action="" class="mb-6 flex items-center space-x-2">
+        <label for="rating" class="text-sm font-medium text-gray-700">Filter by Rating:</label>
+        <select name="rating" id="rating" onchange="this.form.submit()" class="border border-gray-300 rounded px-2 py-1 focus:ring-indigo-500 focus:border-indigo-500">
+            <option value="" {{ empty($selectedRating) ? 'selected' : '' }}>All</option>
+            @for($i = 5; $i >= 1; $i--)
+                <option value="{{ $i }}" {{ $selectedRating == $i ? 'selected' : '' }}>{{ $i }} star{{ $i > 1 ? 's' : '' }}</option>
+            @endfor
+        </select>
+    </form>
 
     <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead>
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comments</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse ($feedbacks as $feedback)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $feedback->user->first_name ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <svg class="w-5 h-5 {{ $i <= $feedback->rating ? 'text-yellow-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
-                                        </svg>
-                                    @endfor
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $feedback->title }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $feedback->comments }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $feedback->created_at->format('Y-m-d H:i') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">No feedbacks found for this event.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        @if($feedbacks->isEmpty())
+            <div class="text-gray-500 text-center py-8">
+                No feedbacks submitted for this event{{ $selectedRating ? ' with ' . $selectedRating . ' star' . ($selectedRating > 1 ? 's' : '') : '' }}.
+            </div>
+        @else
+            <div class="space-y-6">
+                @foreach($feedbacks as $feedback)
+                    <div class="border-b pb-4">
+                        <div class="flex items-center mb-2">
+                            <span class="font-semibold text-gray-800 mr-2">{{ $feedback->user->first_name }} {{ $feedback->user->last_name }}</span>
+                            <span class="ml-2 text-yellow-500">
+                                @for($i = 0; $i < $feedback->rating; $i++)
+                                    <i class="fas fa-star"></i>
+                                @endfor
+                                @for($i = $feedback->rating; $i < 5; $i++)
+                                    <i class="far fa-star text-gray-300"></i>
+                                @endfor
+                            </span>
+                            <span class="ml-auto text-xs text-gray-500">{{ $feedback->created_at->format('M d, Y h:i A') }}</span>
+                        </div>
+                        @if($feedback->title)
+                            <div class="font-bold text-indigo-700 mb-1">{{ $feedback->title }}</div>
+                        @endif
+                        <div class="text-gray-700">{{ $feedback->comments }}</div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 </x-manager-layout> 

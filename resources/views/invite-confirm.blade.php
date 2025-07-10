@@ -340,6 +340,30 @@
                         <span>{{ $venueName }}</span>
                     @endif
                 </div>
+                @if(in_array(strtolower($event->event_type), ['wedding', 'baptism']))
+                <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    @php
+                        $church = $event->booking->church ?? null;
+                        $churchName = $church ? $church->name : 'N/A';
+                    @endphp
+                    @if($church && $church->latitude && $church->longitude)
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ $church->latitude }},{{ $church->longitude }}" 
+                           target="_blank" 
+                           class="hover:text-blue-200 hover:underline transition-colors duration-200 cursor-pointer"
+                           title="Get directions to {{ $churchName }}">
+                            {{ $churchName }}
+                            <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </a>
+                    @else
+                        <span>{{ $churchName }}</span>
+                    @endif
+                </div>
+                @endif
             </div>
             
             <div class="flex items-center justify-center text-white text-opacity-80 text-sm">

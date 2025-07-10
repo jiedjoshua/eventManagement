@@ -1,4 +1,55 @@
 <x-customer-layout :active-page="'dashboard'" :title="'Dashboard'">
+    <!-- Downpayment Reminder Modal -->
+    @php
+        // Try to get bookings from $bookings, $user->bookings, or fallback to []
+        $dashboardBookings = isset($bookings) ? $bookings : (isset($user) && method_exists($user, 'booking') ? $user->booking : collect());
+        if (!isset($dashboardBookings) || !is_iterable($dashboardBookings)) $dashboardBookings = collect();
+        $unpaidBookings = $dashboardBookings->filter(function($b) { 
+            return $b->status === 'approved' && $b->payment_status !== 'paid'; 
+        });
+    @endphp
+    @if($unpaidBookings->count())
+        <div id="downpayment-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 relative border border-indigo-100">
+                <button onclick="document.getElementById('downpayment-modal').style.display='none'" class="absolute top-3 right-3 text-indigo-300 hover:text-indigo-600 text-2xl transition-colors">&times;</button>
+                <div class="flex items-center mb-4">
+                    <svg class="w-8 h-8 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" />
+                    </svg>
+                    <h2 class="text-xl font-bold text-indigo-800">Downpayment Required</h2>
+                </div>
+                <p class="mb-4 text-gray-700">A <span class="font-semibold text-indigo-700">20% downpayment</span> is required to secure your booking. Please pay before the deadline to avoid cancellation.</p>
+                <ul class="mb-4 space-y-2">
+                    @foreach($unpaidBookings as $booking)
+                        <li class="flex items-center justify-between bg-indigo-50 rounded p-3">
+                            <div>
+                                <span class="font-semibold text-indigo-900">{{ $booking->event_name }}</span>
+                                <span class="ml-2 text-xs text-gray-500">({{ \Carbon\Carbon::parse($booking->event_date)->format('M d, Y') }})</span>
+                            </div>
+                            <div>
+                                @if($booking->payment_due_date)
+                                    <span class="text-sm font-medium {{ \Carbon\Carbon::parse($booking->payment_due_date)->isPast() ? 'text-red-600' : 'text-indigo-700' }}">
+                                        Due: {{ \Carbon\Carbon::parse($booking->payment_due_date)->format('M d, Y') }}
+                                        @if(\Carbon\Carbon::parse($booking->payment_due_date)->isPast())
+                                            <span class="text-xs text-red-500">(Overdue)</span>
+                                        @endif
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-400">No due date set</span>
+                                @endif
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+                <button onclick="document.getElementById('downpayment-modal').style.display='none'" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold mt-2 transition-colors">OK, Got it</button>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('downpayment-modal').style.display = 'flex';
+            });
+        </script>
+    @endif
     <!-- Dashboard Header -->
     <div class="mb-8">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">

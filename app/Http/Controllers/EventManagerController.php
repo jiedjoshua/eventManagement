@@ -131,6 +131,10 @@ class EventManagerController extends Controller
             return redirect()->back()->with('error', 'Cannot approve booking with zero or invalid total price. Please check package and addon prices.');
         }
 
+        // Calculate payment due dates
+        $downPaymentDueDate = now()->addWeek(); // 20% down payment due 1 week after approval
+        $fullPaymentDueDate = $booking->event_date->subWeek(); // Full payment due 1 week before event
+
         // Update booking status
         $booking->update([
             'status' => 'approved',
@@ -138,6 +142,7 @@ class EventManagerController extends Controller
             'amount_due' => $booking->total_price,
             'amount_paid' => 0,
             'payment_status' => 'pending',
+            'payment_due_date' => $downPaymentDueDate, // Initially set to down payment due date
         ]);
 
         // Create new event from booking
@@ -184,7 +189,7 @@ class EventManagerController extends Controller
 
     public function getDetails(Booking $booking)
     {
-        $booking->load(['venue', 'package']);
+        $booking->load(['venue', 'package', 'church']);
 
         // Add formatted date and time
         $booking->formatted_date = date('F d, Y', strtotime($booking->event_date));
@@ -198,7 +203,7 @@ class EventManagerController extends Controller
 
     public function upcomingEvents(Request $request)
     {
-        $query = Event::with(['booking', 'user']) // Add 'booking' to the with()
+        $query = Event::with(['booking.church', 'user']) // Add 'booking.church' to the with()
             ->where('status', 'upcoming')
             ->where('event_date', '>=', now());
 
@@ -279,7 +284,12 @@ class EventManagerController extends Controller
     public function details(Event $event)
     {
         try {
-            $event->load(['booking', 'user']);
+            $event->load(['booking.church', 'user']);
+
+            $churchName = null;
+            if (in_array(strtolower($event->event_type), ['wedding', 'baptism'])) {
+                $churchName = $event->booking && $event->booking->church ? $event->booking->church->name : null;
+            }
 
             return response()->json([
                 'event' => [
@@ -293,6 +303,7 @@ class EventManagerController extends Controller
                     'guest_count' => $event->guest_count,
                     'package_type' => $event->package_type,
                     'status' => $event->status,
+                    'church_name' => $churchName,
                     'booking' => [
                         'reference' => $event->booking->reference ?? null
                     ],
@@ -367,6 +378,92 @@ class EventManagerController extends Controller
     {
         $user = Auth::user();
         return view('manager.account-settings', compact('user'));
+    }
+
+    public function paymentHistory(Request $request)
+    {
+        $query = \App\Models\Payment::with(['booking.user', 'user'])
+            ->orderBy('paid_at', 'desc');
+
+        // Search by payment reference, event name, or customer name
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('reference', 'like', "%{$search}%")
+                  ->orWhereHas('booking', function($bookingQuery) use ($search) {
+                      $bookingQuery->where('event_name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('first_name', 'like', "%{$search}%")
+                               ->orWhere('last_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by payment date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('paid_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('paid_at', '<=', $request->date_to);
+        }
+
+        $payments = $query->paginate(20)->withQueryString();
+        
+        return view('manager.payment-history', compact('payments'));
+    }
+
+    public function endedEventsWithFeedback()
+    {
+        $search = request('search');
+        $query = \App\Models\Event::whereIn('status', ['completed', 'ended']);
+        if ($search) {
+            $query->whereRaw('LOWER(event_name) LIKE ?', ['%' . strtolower($search) . '%']);
+        }
+        $events = $query
+            ->withCount('feedbacks')
+            ->with(['feedbacks'])
+            ->orderByDesc('event_date')
+            ->get();
+        // Calculate average rating for each event
+        foreach ($events as $event) {
+            $event->average_rating = $event->feedbacks->avg('rating');
+        }
+        return view('manager.ended-events', compact('events', 'search'));
+    }
+
+    public function ajaxEndedEventsWithFeedback()
+    {
+        $search = request('search');
+        $query = \App\Models\Event::whereIn('status', ['completed', 'ended']);
+        if ($search) {
+            $query->whereRaw('LOWER(event_name) LIKE ?', ['%' . strtolower($search) . '%']);
+        }
+        $events = $query
+            ->withCount('feedbacks')
+            ->with(['feedbacks'])
+            ->orderByDesc('event_date')
+            ->get();
+        foreach ($events as $event) {
+            $event->average_rating = $event->feedbacks->avg('rating');
+        }
+        return view('manager.partials.ended-events-table', compact('events'))->render();
+    }
+
+    public function showEventFeedbacks(\App\Models\Event $event)
+    {
+        $rating = request('rating');
+        $event->load(['feedbacks.user']);
+        $feedbacks = $event->feedbacks;
+        if ($rating && in_array($rating, ['1','2','3','4','5'])) {
+            $feedbacks = $feedbacks->where('rating', (int)$rating);
+        }
+        return view('manager.event-feedbacks', [
+            'event' => $event,
+            'feedbacks' => $feedbacks,
+            'selectedRating' => $rating,
+        ]);
     }
 
     public function updateEvent(Request $request, Event $event)
