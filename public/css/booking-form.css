@@ -1212,7 +1212,7 @@
         .venue-tag {
             position: absolute;
             top: 15px;
-            right: 15px;
+            left: 15px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             padding: 5px 12px;
@@ -1221,6 +1221,13 @@
             font-weight: 600;
             z-index: 10;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Package card specific tag positioning */
+        .package-card .venue-tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
         }
 
         .venue-content {
