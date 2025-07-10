@@ -49,7 +49,7 @@ class PackageController extends Controller
 
     public function create()
     {
-        $types = ['Wedding', 'Birthday', 'Baptism'];
+        $types = ['Wedding', 'Birthday', 'Baptism', 'Debut'];
         return view('admin.packages.create', compact('types'));
     }
 
@@ -59,7 +59,7 @@ class PackageController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'type' => 'required|in:Wedding,Birthday,Baptism',
+                'type' => 'required|in:Wedding,Birthday,Baptism,Debut',
                 'title' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
                 'description' => 'required|string',
@@ -149,7 +149,7 @@ class PackageController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'type' => 'required|in:Wedding,Birthday,Baptism',
+                'type' => 'required|in:Wedding,Birthday,Baptism,Debut',
                 'title' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
                 'description' => 'required|string',
