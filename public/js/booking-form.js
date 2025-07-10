@@ -1086,8 +1086,7 @@ function submitForm() {
     const selectedChurch = window.selectedChurch || document.querySelector('.church-grid .venue-card.selected')?.dataset.venueId;
     const selectedReception = document.querySelector('.venue-grid .venue-card.selected')?.dataset.venueId;
     
-    // Start countdown timer after form submission
-    startCountdownTimer();
+
     
     console.log('=== FORM SUBMISSION DEBUG ===');
     console.log('Global selectedChurch variable:', window.selectedChurch);
@@ -1196,9 +1195,9 @@ function submitForm() {
             
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
-             setTimeout(() => {
-            window.location.href = '/';
-        }, 5000);
+            
+            // Start countdown timer for 10 seconds before redirect
+            startCountdownTimer();
         } else {
             showFormError(data.message || 'An error occurred while submitting your booking.');
         }

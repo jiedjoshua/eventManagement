@@ -1212,7 +1212,7 @@
         .venue-tag {
             position: absolute;
             top: 15px;
-            left: 15px;
+            right: 15px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             padding: 5px 12px;
