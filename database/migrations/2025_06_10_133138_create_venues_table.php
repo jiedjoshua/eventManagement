@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('venues', function (Blueprint $table) {
             $table->id();
-            $table->boolean('is_church')->default(false)->after('id');
+            $table->boolean('is_church')->default(false);
             $table->string('name');
             $table->enum('type', ['indoor', 'outdoor', 'both']);
             $table->integer('capacity');
