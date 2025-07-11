@@ -177,7 +177,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
       @if($content['services']->service_cards ?? false)
         @foreach($content['services']->service_cards as $service)
-          <a href="{{ $service['link'] ?? route('packages') . '?type=' . strtolower($service['type']) }}" class="group bg-white rounded-3xl shadow-xl hover:shadow-2xl p-6 transform hover:-translate-y-3 transition-all duration-500 border border-gray-100">
+          <a href="{{ route('packages') . '?type=' . strtolower($service['type']) }}" class="group bg-white rounded-3xl shadow-xl hover:shadow-2xl p-6 transform hover:-translate-y-3 transition-all duration-500 border border-gray-100">
             <div class="relative overflow-hidden rounded-2xl mb-6">
               @if(isset($service['image_path']))
                 <img src="{{ asset($service['image_path']) }}" alt="{{ $service['title'] }}" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" />
