@@ -118,7 +118,7 @@
       {{ $content['hero']->subtitle ?? 'We make your dream events come true — weddings, birthdays, and more!' }}
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-      <a href="{{ $content['hero']->button_link ?? route('book-now') }}" class="bg-gradient-to-r from-[#EF7C79] to-[#D76C69] hover:from-[#D76C69] hover:to-[#C55A57] text-white rounded-full px-8 py-4 text-lg font-semibold shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300">
+      <a href="{{ route('book-now') }}" class="bg-gradient-to-r from-[#EF7C79] to-[#D76C69] hover:from-[#D76C69] hover:to-[#C55A57] text-white rounded-full px-8 py-4 text-lg font-semibold shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300">
         <i class="fas fa-calendar-check mr-3"></i>{{ $content['hero']->button_text ?? 'Book Now' }}
       </a>
       <a href="{{ route('services') }}" class="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full px-8 py-4 text-lg font-semibold border border-white/30 transition-all duration-300">
