@@ -362,7 +362,8 @@
                                 fetch(checkInUrl + '?data=' + encodeURIComponent(code.data), {
                                         method: 'GET',
                                         headers: {
-                                            'Accept': 'application/json'
+                                            'Accept': 'application/json',
+                                            'Content-Type': 'application/json'
                                         }
                                     })
                                     .then(async response => {

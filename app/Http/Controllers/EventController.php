@@ -305,6 +305,8 @@ class EventController extends Controller
             return response()->json(['error' => 'No QR data found.'], 400);
         }
 
+        // URL decode the data first, then JSON decode
+        $dataJson = urldecode($dataJson);
         $data = json_decode($dataJson, true);
 
         if (!$data) {
