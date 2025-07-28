@@ -264,27 +264,23 @@
 
         .package-card .package-title,
         .venue-card.package-card .package-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            line-height: 1.2;
-            letter-spacing: -0.01em;
-            display: block !important;
-            visibility: visible !important;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 7px;
+            line-height: 1.3;
         }
 
         .package-card .venue-description,
         .venue-card.package-card .venue-description {
             color: #666;
-            line-height: 1.4;
-            margin-bottom: 10px;
+            line-height: 1.5;
+            margin-bottom: 14px;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            font-size: 0.85rem;
-            opacity: 0.8;
+            font-size: 0.93rem;
         }
 
         .package-card .venue-info,

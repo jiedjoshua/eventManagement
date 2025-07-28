@@ -603,7 +603,7 @@ function openPackageModal(packageId) {
             // Update modal content
             const titleElement = document.querySelector('.package-modal-title');
             if (titleElement) {
-                titleElement.textContent = package.title || 'Untitled Package';
+                titleElement.textContent = package.name || 'Untitled Package';
             }
             
             const priceElement = document.querySelector('.package-modal-price');
@@ -975,25 +975,6 @@ function validateCurrentStep() {
         }
     }
 
-    // Special validation for terms and conditions in step 4
-    if (currentStep === 4) {
-        const termsChecked = document.getElementById('terms').checked;
-        if (!termsChecked) {
-            document.getElementById('terms').style.borderColor = '#dc3545';
-            document.getElementById('terms').style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
-            isValid = false;
-            showFormError('Please agree to the terms and conditions before proceeding');
-            
-            // Add event listener to remove error styling when checked
-            document.getElementById('terms').addEventListener('change', function() {
-                if (this.checked) {
-                    this.style.borderColor = '#e1e5e9';
-                    this.style.boxShadow = 'none';
-                }
-            }, { once: true });
-        }
-    }
-
     // Additional validation for guest count in step 1
     if (currentStep === 1) {
         const guestCountInput = document.getElementById('guestCount');
@@ -1100,25 +1081,6 @@ function validateCurrentStep() {
 
 
 function submitForm() {
-    // Check terms and conditions before submitting
-    const termsChecked = document.getElementById('terms').checked;
-    if (!termsChecked) {
-        document.getElementById('terms').style.borderColor = '#dc3545';
-        document.getElementById('terms').style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
-        showFormError('Please agree to the terms and conditions before submitting your booking');
-        document.getElementById('terms').focus();
-        
-        // Add event listener to remove error styling when checked
-        document.getElementById('terms').addEventListener('change', function() {
-            if (this.checked) {
-                this.style.borderColor = '#e1e5e9';
-                this.style.boxShadow = 'none';
-            }
-        }, { once: true });
-        
-        return;
-    }
-
     const eventType = document.getElementById('eventType').value;
     // Use the global selectedChurch variable instead of querying DOM
     const selectedChurch = window.selectedChurch || document.querySelector('.church-grid .venue-card.selected')?.dataset.venueId;
@@ -2199,7 +2161,6 @@ async function loadPackagesForEventType(eventType) {
 
         packagesContainer.innerHTML = '';
         packages.forEach(package => {
-            console.log('Processing package:', package);
             const card = createPackageCard(package);
             packagesContainer.appendChild(card);
         });
@@ -2246,7 +2207,6 @@ async function loadPackagesForEventType(eventType) {
 }
 
 function createPackageCard(package) {
-    console.log('Creating package card with data:', package);
     const card = document.createElement('div');
     card.className = 'venue-card package-card';
     card.dataset.package = package.id;
@@ -2256,7 +2216,7 @@ function createPackageCard(package) {
             <input type="radio" name="package" value="${package.id}" class="package-radio" style="position:absolute;opacity:0;width:0;height:0;">
             <span class="venue-tag">Package</span>
             <div class="venue-content">
-                <h3 class="package-title" style="color: red !important; font-size: 18px !important;">${package.name || package.title || 'Untitled Package'}</h3>
+                <h3 class="package-title">${package.name || 'Untitled Package'}</h3>
                 <p class="venue-description">${package.description || 'No description available'}</p>
                 <div class="venue-actions">
                     <div class="venue-info">
