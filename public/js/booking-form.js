@@ -1812,15 +1812,27 @@ function createVenueCard(venue, type = null) {
             }
             
             if (churchStep && churchStep.style.display !== 'none' && churchGrid && churchGrid.contains(this)) {
-                document.querySelectorAll('.venue-card', churchGrid).forEach(c => c.classList.remove('selected'));
+                // Clear error styling from all church cards
+                document.querySelectorAll('.venue-card', churchGrid).forEach(c => {
+                    c.classList.remove('selected');
+                    c.style.borderColor = '#e1e5e9'; // Reset border color
+                });
                 this.classList.add('selected');
+                this.style.borderColor = '#3498db'; // Set selected border color
                 selectedChurch = venue.id;
                 nextChurchStep.disabled = false;
+                hideFormError(); // Hide any previous error messages
             } else {
-                document.querySelectorAll('.venue-card', document.querySelector('.venue-grid')).forEach(c => c.classList.remove('selected'));
+                // Clear error styling from all venue cards
+                document.querySelectorAll('.venue-card', document.querySelector('.venue-grid')).forEach(c => {
+                    c.classList.remove('selected');
+                    c.style.borderColor = '#e1e5e9'; // Reset border color
+                });
                 this.classList.add('selected');
+                this.style.borderColor = '#3498db'; // Set selected border color
                 selectedVenue = venue.id;
                 calculateAndDisplayPricing();
+                hideFormError(); // Hide any previous error messages
             }
         }
     });
@@ -1846,16 +1858,21 @@ function selectChurchCard(venueId, venueCapacity) {
         return false;
     }
     
-    // Remove selection from other church cards
-    document.querySelectorAll('.church-grid .venue-card').forEach(c => c.classList.remove('selected'));
+    // Remove selection from other church cards and clear error styling
+    document.querySelectorAll('.church-grid .venue-card').forEach(c => {
+        c.classList.remove('selected');
+        c.style.borderColor = '#e1e5e9'; // Reset border color
+    });
     
     // Select this church card
     const selectedCard = document.querySelector(`.church-grid .venue-card[data-venue-id="${venueId}"]`);
     if (selectedCard) {
         selectedCard.classList.add('selected');
+        selectedCard.style.borderColor = '#3498db'; // Set selected border color
         selectedChurch = venueId;
         window.selectedChurch = venueId;
         nextChurchStep.disabled = false;
+        hideFormError(); // Hide any previous error messages
         return true;
     }
     return false;
