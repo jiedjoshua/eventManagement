@@ -267,11 +267,8 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #333;
-            margin-top: 8px;
             margin-bottom: 7px;
             line-height: 1.3;
-            position: relative;
-            z-index: 5;
         }
 
         .package-card .venue-description,
@@ -1263,20 +1260,10 @@
         }
 
         /* Package card specific tag positioning */
-        .package-card .venue-tag,
-        .venue-card.package-card .venue-tag,
-        .venue-card.package-card span.venue-tag,
-        .package-card span.venue-tag,
-        .package-card [class*="venue-tag"],
-        .venue-card.package-card [class*="venue-tag"] {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-        }
-        
-        /* Hide any venue-tag with "Package" text specifically */
-        .venue-tag:contains("Package") {
-            display: none !important;
+        .package-card .venue-tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
         }
 
         /* Force package cards to use venue card layout with higher specificity */

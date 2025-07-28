@@ -603,7 +603,7 @@ function openPackageModal(packageId) {
             // Update modal content
             const titleElement = document.querySelector('.package-modal-title');
             if (titleElement) {
-                titleElement.textContent = package.name || 'Untitled Package';
+                titleElement.textContent = package.title || 'Untitled Package';
             }
             
             const priceElement = document.querySelector('.package-modal-price');
@@ -2164,15 +2164,6 @@ async function loadPackagesForEventType(eventType) {
             const card = createPackageCard(package);
             packagesContainer.appendChild(card);
         });
-        
-        // Remove any "Package" labels from package cards
-        setTimeout(() => {
-            document.querySelectorAll('.package-card .venue-tag, .venue-card.package-card .venue-tag').forEach(tag => {
-                if (tag.textContent.trim() === 'Package') {
-                    tag.remove();
-                }
-            });
-        }, 100);
 
         // Add click and change handler for package selection
         document.querySelectorAll('.package-card').forEach(card => {
@@ -2224,7 +2215,7 @@ function createPackageCard(package) {
         <label style="width:100%;height:100%;display:block;cursor:pointer;">
             <input type="radio" name="package" value="${package.id}" class="package-radio" style="position:absolute;opacity:0;width:0;height:0;">
             <div class="venue-content">
-                <h3 class="package-title">${package.name || 'Untitled Package'}</h3>
+                <h3 class="package-title">${package.title || 'Untitled Package'}</h3>
                 <p class="venue-description">${package.description || 'No description available'}</p>
                 <div class="venue-actions">
                     <div class="venue-info">
