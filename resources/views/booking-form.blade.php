@@ -486,7 +486,7 @@
     }
     </style>
 
-    <script src="{{ asset('/public/js/booking-form.js') }}"></script>
+    <script src="{{ asset('/public/js/booking-form.js') }}?v={{ time() }}"></script>
     <!-- 
     VENUE MAPS:
     Venue locations are displayed using OpenStreetMap iframe.
