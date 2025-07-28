@@ -1263,10 +1263,9 @@
         }
 
         /* Package card specific tag positioning */
-        .package-card .venue-tag {
-            position: absolute;
-            top: 15px;
-            right: 15px;
+        .package-card .venue-tag,
+        .venue-card.package-card .venue-tag {
+            display: none !important;
         }
 
         /* Force package cards to use venue card layout with higher specificity */
