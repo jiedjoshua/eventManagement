@@ -56,14 +56,17 @@
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-3xl font-bold text-gray-800">Checked-in Guests</h1>
                 <div class="text-sm text-gray-600 bg-white px-4 py-2 rounded shadow font-medium">
-                    Total Checked-in: <span class="font-semibold text-indigo-600">{{ $event->guests->count() }}</span>
+                    Total Checked-in: <span class="font-semibold text-indigo-600">{{ $event->guests->count() + $event->checked_in_external_guests->count() }}</span>
                 </div>
             </div>
             <p class="text-gray-600">View all guests who have checked in to the event.</p>
         </div>
 
-        <!-- Table Section -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <!-- Registered Guests Section -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-800">Registered Guests</h3>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
@@ -106,8 +109,66 @@
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                                         </svg>
-                                        <p class="text-lg font-medium">No guests have checked in yet</p>
-                                        <p class="text-sm text-gray-500 mt-1">Guests will appear here once they check in</p>
+                                        <p class="text-lg font-medium">No registered guests have checked in yet</p>
+                                        <p class="text-sm text-gray-500 mt-1">Registered guests will appear here once they check in</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- External Guests Section -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-800">External Guests</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50 border-b">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guest Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-in Time</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($event->checked_in_external_guests as $guest)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                                            <span class="text-green-600 font-medium">
+                                                {{ strtoupper(substr($guest->name ?? 'E', 0, 1)) }}
+                                            </span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ $guest->name ?? 'External Guest' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">External Guest</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        {{ \Carbon\Carbon::parse($guest->checked_in_at)->format('F d, Y g:i A') }}
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                        </svg>
+                                        <p class="text-lg font-medium">No external guests have checked in yet</p>
+                                        <p class="text-sm text-gray-500 mt-1">External guests will appear here once they check in</p>
                                     </div>
                                 </td>
                             </tr>
