@@ -12,4 +12,9 @@ class ExternalGuest extends Model
         'unique_code',
         'checked_in_at',
     ];
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
 } 
