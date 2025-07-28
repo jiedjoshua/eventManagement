@@ -294,41 +294,42 @@ class UserController extends Controller
         // Round to 2 decimal places
         $refundAmount = round($refundAmount, 2);
 
-        // Update booking status
+        // Update booking status only (avoid updating non-existent fields)
         $booking->update([
             'status' => 'cancelled'
         ]);
         
-        // Try to update cancellation fields if they exist
-        try {
-            $booking->update([
-                'cancellation_reason' => $request->cancellation_reason,
-                'cancelled_at' => now()
-            ]);
-        } catch (\Exception $e) {
-            \Log::info('Cancellation fields not available in database yet');
-        }
+        // Store cancellation reason in additional_notes for now
+        $booking->update([
+            'additional_notes' => $booking->additional_notes . "\n\nCANCELLED: " . $request->cancellation_reason . " (Cancelled at: " . now()->format('Y-m-d H:i:s') . ")"
+        ]);
 
         // Update associated event if it exists
         if ($booking->event) {
             $booking->event->update([
-                'status' => 'cancelled',
-                'cancellation_reason' => $request->cancellation_reason,
-                'cancelled_at' => now()
+                'status' => 'cancelled'
             ]);
         }
 
         // Create refund record (simulation)
         if ($refundAmount > 0) {
-            \App\Models\Payment::create([
+            $paymentData = [
                 'reference' => 'REFUND-' . strtoupper(\Illuminate\Support\Str::random(8)),
                 'booking_id' => $booking->id,
                 'user_id' => $booking->user_id,
                 'amount' => -$refundAmount, // Negative amount for refund
-                'paid_at' => now(),
-                'payment_type' => 'refund',
-                'refund_reason' => $request->cancellation_reason
-            ]);
+                'paid_at' => now()
+            ];
+            
+            // Only add payment_type and refund_reason if they exist
+            try {
+                $paymentData['payment_type'] = 'refund';
+                $paymentData['refund_reason'] = $request->cancellation_reason;
+            } catch (\Exception $e) {
+                \Log::info('Payment refund fields not available');
+            }
+            
+            \App\Models\Payment::create($paymentData);
         }
 
         return response()->json([
