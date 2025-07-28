@@ -210,8 +210,21 @@ class UserController extends Controller
             // Simple test to see if the method is being called
             \Log::info('Cancel booking method called', [
                 'reference' => $reference,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
+                'authenticated' => Auth::check(),
+                'request_method' => $request->method(),
+                'has_csrf_token' => $request->has('_token'),
+                'session_id' => session()->getId()
             ]);
+            
+            // Check if user is authenticated
+            if (!Auth::check()) {
+                \Log::warning('User not authenticated');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated.'
+                ], 401);
+            }
             
             // Basic validation
             $request->validate([
@@ -220,6 +233,21 @@ class UserController extends Controller
             
             // Find the booking
             $booking = Booking::where('reference', $reference)->first();
+            
+            \Log::info('Booking lookup result', [
+                'booking_found' => $booking ? true : false,
+                'booking_user_id' => $booking ? $booking->user_id : null,
+                'auth_user_id' => Auth::id(),
+                'booking_status' => $booking ? $booking->status : null,
+                'reference_searched' => $reference
+            ]);
+            
+            // Debug: Let's also check if there are any bookings at all for this user
+            $userBookings = Booking::where('user_id', Auth::id())->get();
+            \Log::info('User bookings count', [
+                'total_user_bookings' => $userBookings->count(),
+                'user_booking_references' => $userBookings->pluck('reference')->toArray()
+            ]);
             
             if (!$booking) {
                 return response()->json([
@@ -230,6 +258,10 @@ class UserController extends Controller
             
             // Check authorization
             if ($booking->user_id !== Auth::id()) {
+                \Log::warning('Authorization failed', [
+                    'booking_user_id' => $booking->user_id,
+                    'auth_user_id' => Auth::id()
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized.'
