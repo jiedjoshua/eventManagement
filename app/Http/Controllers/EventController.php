@@ -305,8 +305,6 @@ class EventController extends Controller
             return response()->json(['error' => 'No QR data found.'], 400);
         }
 
-        // URL decode the data first, then JSON decode
-        $dataJson = urldecode($dataJson);
         $data = json_decode($dataJson, true);
 
         if (!$data) {
@@ -421,25 +419,12 @@ class EventController extends Controller
 
     public function showCheckedInList($eventId)
     {
-        // Get the event and load only guests who have checked in
-        $event = Event::findOrFail($eventId);
-        
-        // Get checked-in registered guests
-        $checkedInGuests = $event->guests()
-            ->wherePivotNotNull('checked_in_at')
-            ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
-            ->get();
-        
-        // Get checked-in external guests
-        $checkedInExternalGuests = \App\Models\ExternalGuest::where('event_id', $eventId)
-            ->whereNotNull('checked_in_at')
-            ->get();
-        
-        // Replace the guests relationship with only checked-in guests
-        $event->setRelation('guests', $checkedInGuests);
-        
-        // Add external guests to the event object for the view
-        $event->checked_in_external_guests = $checkedInExternalGuests;
+        // Eager load only guests who have checked in (checked_in_at is not null)
+        $event = Event::with(['guests' => function ($query) {
+            $query->select('users.id', 'first_name', 'last_name', 'email')
+                ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
+                ->wherePivotNotNull('checked_in_at');
+        }])->findOrFail($eventId);
 
         return view('manager.manage-events.view.checkedIn', compact('event'));
     }
