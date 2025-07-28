@@ -179,9 +179,17 @@
                         <h2 class="text-xl font-semibold text-indigo-700 flex items-center">
                             <i class="fas fa-qrcode mr-2"></i>Camera Scanner
                         </h2>
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                            <span class="text-sm text-gray-600" id="status-text">Ready</span>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <button id="sound-toggle" class="flex items-center gap-2 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors">
+                                    <i class="fas fa-volume-up text-green-600" id="sound-icon"></i>
+                                    <span id="sound-text">Sound On</span>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                                <span class="text-sm text-gray-600" id="status-text">Ready</span>
+                            </div>
                         </div>
                     </div>
 
@@ -291,6 +299,123 @@
 
     <script>
         const checkInUrl = "{{ route('checkin.scan') }}";
+        
+        // Create audio context for sound effects
+        let audioContext;
+        let scanSound;
+        
+        // Initialize audio context and create scan sound
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                createScanSound();
+            } catch (error) {
+                console.warn('Audio not supported:', error);
+            }
+        }
+        
+        // Create a beep sound for QR code detection
+        function createScanSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800Hz beep
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+        
+        // Create a success sound (higher pitch, longer duration)
+        function createSuccessSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(1200, audioContext.currentTime); // 1200Hz success tone
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+        
+        // Create an error sound (lower pitch, shorter duration)
+        function createErrorSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime); // 400Hz error tone
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+        
+        // Play scan sound
+        function playScanSound() {
+            if (!soundEnabled) return;
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            createScanSound();
+        }
+        
+        // Play success sound
+        function playSuccessSound() {
+            if (!soundEnabled) return;
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            createSuccessSound();
+        }
+        
+        // Play error sound
+        function playErrorSound() {
+            if (!soundEnabled) return;
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            createErrorSound();
+        }
+        
+        // Sound toggle functionality
+        soundToggle.addEventListener('click', function() {
+            soundEnabled = !soundEnabled;
+            
+            if (soundEnabled) {
+                soundIcon.className = 'fas fa-volume-up text-green-600';
+                soundText.textContent = 'Sound On';
+            } else {
+                soundIcon.className = 'fas fa-volume-mute text-gray-500';
+                soundText.textContent = 'Sound Off';
+            }
+        });
     </script>
     <script>
         const video = document.getElementById('qr-video');
@@ -301,9 +426,18 @@
         const scannerOverlay = document.getElementById('scanner-overlay');
         const cameraPlaceholder = document.getElementById('camera-placeholder');
         const resultCard = document.getElementById('result-card');
+        const soundToggle = document.getElementById('sound-toggle');
+        const soundIcon = document.getElementById('sound-icon');
+        const soundText = document.getElementById('sound-text');
 
         let scanning = false;
         let stream = null;
+        let soundEnabled = true;
+        
+        // Initialize audio when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initAudio();
+        });
 
         function updateResultCard(type, message) {
             resultCard.className = `result-card ${type} p-4 rounded-lg border-2 mb-4`;
@@ -362,6 +496,9 @@
                             const code = jsQR(imageData.data, imageData.width, imageData.height);
 
                             if (code) {
+                                // Play scan sound when QR code is detected
+                                playScanSound();
+                                
                                 updateResultCard('waiting', 'Checking in...');
 
                                 clearInterval(interval);
@@ -380,6 +517,7 @@
                                         const data = await response.json();
 
                                         if (!response.ok) {
+                                            playErrorSound();
                                             updateResultCard('error', data.error);
                                             if (data.checked_in_at) {
                                                 result.textContent += `\nPreviously checked in at: ${data.checked_in_at}`;
@@ -398,12 +536,15 @@
                                                 successMessage = `✅ Check-in successful!\n👤 Guest: ${data.guest.name}`;
                                             }
                                             
+                                            playSuccessSound();
                                             updateResultCard('success', successMessage);
                                         } else {
+                                            playErrorSound();
                                             updateResultCard('error', 'Unknown response from server.');
                                         }
                                     })
                                     .catch(err => {
+                                        playErrorSound();
                                         updateResultCard('error', 'Failed to check in: ' + err.message);
                                     });
                             }
