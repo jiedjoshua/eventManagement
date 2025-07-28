@@ -545,7 +545,7 @@
         .availability-status {
             position: absolute;
             top: 10px;
-            left: 10px;
+            right: 10px;
             background: rgba(255, 255, 255, 0.95);
             padding: 5px 10px;
             border-radius: 20px;
@@ -558,6 +558,19 @@
         .availability-text {
             font-size: 0.75rem;
             font-weight: 600;
+        }
+        
+        .availability-label {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 2;
         }
         .venue-image {
             width: 100%;
