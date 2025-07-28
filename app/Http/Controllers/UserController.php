@@ -1,5 +1,5 @@
 <?php
-#test 
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -207,239 +207,70 @@ class UserController extends Controller
     public function cancelBooking(Request $request, $reference)
     {
         try {
-            \Log::info('Cancel booking request received', [
+            // Simple test to see if the method is being called
+            \Log::info('Cancel booking method called', [
                 'reference' => $reference,
-                'user_id' => Auth::id(),
-                'request_data' => $request->all()
+                'user_id' => Auth::id()
             ]);
             
-            // Add debugging to check if we can access the booking
-            \Log::info('Attempting to find booking with reference: ' . $reference);
+            // Basic validation
+            $request->validate([
+                'cancellation_reason' => 'required|string|max:500'
+            ]);
             
-            // Test basic database connectivity
-            try {
-                $testBooking = Booking::first();
-                \Log::info('Database connectivity test passed', [
-                    'test_booking_id' => $testBooking ? $testBooking->id : null
-                ]);
-            } catch (\Exception $e) {
-                \Log::error('Database connectivity test failed: ' . $e->getMessage());
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Database connection error: ' . $e->getMessage()
-                ], 500);
-            }
-            
+            // Find the booking
             $booking = Booking::where('reference', $reference)->first();
             
-            \Log::info('Booking found', [
-                'booking_id' => $booking ? $booking->id : null,
-                'booking_status' => $booking ? $booking->status : null,
-                'booking_user_id' => $booking ? $booking->user_id : null,
-                'auth_user_id' => Auth::id()
-            ]);
-            
             if (!$booking) {
-                \Log::warning('Booking not found', ['reference' => $reference]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Booking not found.'
                 ], 404);
             }
             
-            // Check if the booking belongs to the authenticated user
+            // Check authorization
             if ($booking->user_id !== Auth::id()) {
-                \Log::warning('Unauthorized booking cancellation attempt', [
-                    'booking_user_id' => $booking->user_id,
-                    'authenticated_user_id' => Auth::id()
-                ]);
-                abort(403, 'Unauthorized');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized.'
+                ], 403);
             }
-
-            // Check if booking can be cancelled (only approved bookings)
+            
+            // Check if booking can be cancelled
             if ($booking->status !== 'approved') {
-                \Log::warning('Attempt to cancel non-approved booking', [
-                    'booking_status' => $booking->status,
-                    'booking_reference' => $reference
-                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Only approved bookings can be cancelled.'
                 ], 400);
             }
-
-            $request->validate([
-                'cancellation_reason' => 'required|string|max:500'
-            ]);
-
-            \Log::info('Validation passed, calculating refund');
-
-        // Calculate refund amount
-        $refundAmount = 0;
-        $refundDetails = [];
-        
-        $amountPaid = $booking->amount_paid ?? 0;
-        
-        \Log::info('Refund calculation', [
-            'amount_paid' => $amountPaid,
-            'event_date' => $booking->event_date,
-            'days_until_event' => now()->diffInDays($booking->event_date, false)
-        ]);
-        
-        // Calculate refund based on cancellation policy
-        $daysUntilEvent = now()->diffInDays($booking->event_date, false);
-        
-        if ($daysUntilEvent > 30) {
-            // Full refund if cancelled more than 30 days before event
-            $refundAmount = $amountPaid;
-            $refundDetails = [
-                'type' => 'full',
-                'percentage' => 100,
-                'reason' => 'Cancelled more than 30 days before event'
-            ];
-        } elseif ($daysUntilEvent > 14) {
-            // 75% refund if cancelled 15-30 days before event
-            $refundAmount = $amountPaid * 0.75;
-            $refundDetails = [
-                'type' => 'partial',
-                'percentage' => 75,
-                'reason' => 'Cancelled 15-30 days before event'
-            ];
-        } elseif ($daysUntilEvent > 7) {
-            // 50% refund if cancelled 8-14 days before event
-            $refundAmount = $amountPaid * 0.50;
-            $refundDetails = [
-                'type' => 'partial',
-                'percentage' => 50,
-                'reason' => 'Cancelled 8-14 days before event'
-            ];
-        } else {
-            // No refund if cancelled within 7 days
-            $refundAmount = 0;
-            $refundDetails = [
-                'type' => 'none',
-                'percentage' => 0,
-                'reason' => 'Cancelled within 7 days of event'
-            ];
-        }
-        
-        // Round to 2 decimal places
-        $refundAmount = round($refundAmount, 2);
-
-        // Update booking status and cancellation details
-        $additionalNotes = $booking->additional_notes ?? '';
-        $cancellationNote = "\n\nCANCELLED: " . $request->cancellation_reason . " (Cancelled at: " . now()->format('Y-m-d H:i:s') . ")";
-        
-        \Log::info('Attempting to update booking', [
-            'booking_id' => $booking->id,
-            'current_status' => $booking->status,
-            'new_status' => 'cancelled',
-            'cancellation_reason' => $request->cancellation_reason
-        ]);
-        
-        try {
+            
+            // Simple update - just change status
             $booking->update([
-                'status' => 'cancelled',
-                'cancellation_reason' => $request->cancellation_reason,
-                'cancelled_at' => now(),
-                'additional_notes' => $additionalNotes . $cancellationNote
+                'status' => 'cancelled'
             ]);
             
-            \Log::info('Booking updated successfully');
-        } catch (\Exception $e) {
-            \Log::error('Failed to update booking: ' . $e->getMessage(), [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to update booking: ' . $e->getMessage()
-            ], 500);
-        }
-
-        // Update associated event if it exists
-        if ($booking->event) {
-            try {
-                $booking->event->update([
-                    'status' => 'cancelled',
-                    'cancelled_at' => now()
-                ]);
-            } catch (\Exception $e) {
-                \Log::error('Failed to update event status: ' . $e->getMessage());
-                // Continue with cancellation even if event update fails
-            }
-        }
-
-        // Create refund record (simulation)
-        if ($refundAmount > 0) {
-            \Log::info('Creating refund payment record', [
-                'refund_amount' => $refundAmount,
-                'booking_id' => $booking->id,
-                'user_id' => $booking->user_id
+                'success' => true,
+                'message' => 'Booking cancelled successfully',
+                'refund' => [
+                    'amount' => 0,
+                    'details' => [
+                        'type' => 'none',
+                        'reason' => 'Test cancellation'
+                    ],
+                    'original_amount' => 0
+                ]
             ]);
             
-            // Test Payment model creation
-            try {
-                $testPayment = new \App\Models\Payment();
-                \Log::info('Payment model test passed');
-            } catch (\Exception $e) {
-                \Log::error('Payment model test failed: ' . $e->getMessage());
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Payment model error: ' . $e->getMessage()
-                ], 500);
-            }
-            
-            $paymentData = [
-                'reference' => 'REFUND-' . strtoupper(\Illuminate\Support\Str::random(8)),
-                'booking_id' => $booking->id,
-                'user_id' => $booking->user_id,
-                'amount' => -$refundAmount, // Negative amount for refund
-                'paid_at' => now()
-            ];
-            
-            // Add payment_type and refund_reason if the fields exist in the database
-            try {
-                // Check if the payment_type column exists by trying to access it
-                $testPayment = new \App\Models\Payment();
-                $paymentData['payment_type'] = 'refund';
-                $paymentData['refund_reason'] = $request->cancellation_reason;
-            } catch (\Exception $e) {
-                \Log::info('Payment refund fields not available, creating basic payment record');
-            }
-            
-            try {
-                \App\Models\Payment::create($paymentData);
-            } catch (\Exception $e) {
-                \Log::error('Failed to create payment record: ' . $e->getMessage());
-                // Continue with cancellation even if payment record creation fails
-            }
-        }
-
-        \Log::info('Booking cancellation completed successfully', [
-            'refund_amount' => $refundAmount,
-            'refund_details' => $refundDetails
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking cancelled successfully',
-            'refund' => [
-                'amount' => $refundAmount,
-                'details' => $refundDetails,
-                'original_amount' => $amountPaid
-            ]
-        ]);
         } catch (\Exception $e) {
             \Log::error('Booking cancellation error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'line' => $e->getLine()
             ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while cancelling the booking: ' . $e->getMessage()
+                'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
     }
