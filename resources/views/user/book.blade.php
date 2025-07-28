@@ -50,26 +50,11 @@
               });
           },
           cancelBooking() {
-              const reason = document.getElementById('cancel_reason').value.trim();
-              
-              if (!reason) {
-                  showErrorNotification('Please provide a cancellation reason.');
-                  return;
-              }
-              
               const formData = new FormData();
-              formData.append('cancellation_reason', reason);
+              formData.append('cancellation_reason', document.getElementById('cancel_reason').value);
               formData.append('_token', document.querySelector('meta[name=csrf-token]').getAttribute('content'));
               
               console.log('Cancelling booking:', this.currentBooking.reference);
-              
-              // Show loading state
-              const confirmButton = document.querySelector('[x-text="Confirm Cancellation"]') || 
-                                  document.querySelector('button[onclick="cancelBooking()"]');
-              if (confirmButton) {
-                  confirmButton.disabled = true;
-                  confirmButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Processing...';
-              }
               
               fetch(`/user/bookings/${this.currentBooking.reference}/cancel`, {
                   method: 'POST',
@@ -117,13 +102,13 @@
                           }
                       }
                       
-                      showSuccessNotification(message);
+                      alert(message);
                       this.showCancelModal = false;
                       setTimeout(() => {
                           window.location.reload();
                       }, 2000);
                   } else {
-                      showErrorNotification(data.message || 'Failed to cancel booking.');
+                      alert(data.message || 'Failed to cancel booking.');
                   }
               })
               .catch(error => {
@@ -142,14 +127,7 @@
                       errorMessage = error.message;
                   }
                   
-                  showErrorNotification(errorMessage);
-              })
-              .finally(() => {
-                  // Reset button state
-                  if (confirmButton) {
-                      confirmButton.disabled = false;
-                      confirmButton.innerHTML = 'Confirm Cancellation';
-                  }
+                  alert(errorMessage);
               });
           },
           showCancelModal(reference, eventName) {
@@ -338,8 +316,8 @@
               <!-- Cancel Button for Approved Events -->
               <button type="button"
                 @click="showCancelModal('{{ $booking->reference }}', '{{ addslashes($booking->event_name) }}')"
-                class="w-full mt-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm py-3 px-4 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="w-full mt-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm py-2 px-3 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
                 Cancel Event
@@ -605,7 +583,7 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden"
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
           @click.away="showCancelModal = false"
           x-transition:enter="transition ease-out duration-300"
           x-transition:enter-start="opacity-0 transform scale-95"
@@ -632,7 +610,7 @@
           <!-- Modal Body -->
           <div class="p-6">
             <div class="mb-6">
-              <p class="text-gray-700 mb-4 text-base">Are you sure you want to cancel this event?</p>
+              <p class="text-gray-700 mb-4">Are you sure you want to cancel this event?</p>
               <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div class="flex">
                   <svg class="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -673,11 +651,11 @@
 
             <div class="flex gap-3">
               <button type="button" @click="showCancelModal = false"
-                class="flex-1 bg-gray-300 text-gray-700 px-4 py-3 rounded-xl hover:bg-gray-400 transition-colors font-medium">
+                class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
                 Keep Event
               </button>
               <button type="button" @click="cancelBooking()"
-                class="flex-1 bg-red-600 text-white px-4 py-3 rounded-xl hover:bg-red-700 transition-colors font-medium">
+                class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium">
                 Confirm Cancellation
               </button>
             </div>
@@ -686,59 +664,6 @@
       </div>
     </main>
   </x-customer-layout>
-
-  <!-- Notification System -->
-  <div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-2">
-    <!-- Success Notification -->
-    <div id="successNotification" class="hidden bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out">
-      <div class="flex items-center space-x-2">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        <span id="successMessage"></span>
-      </div>
-    </div>
-
-    <!-- Error Notification -->
-    <div id="errorNotification" class="hidden bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out">
-      <div class="flex items-center space-x-2">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-        <span id="errorMessage"></span>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Notification functions
-    function showNotification(message, type = 'success') {
-      const notification = type === 'success' ? document.getElementById('successNotification') : document.getElementById('errorNotification');
-      const messageElement = type === 'success' ? document.getElementById('successMessage') : document.getElementById('errorMessage');
-      
-      if (!notification || !messageElement) return;
-      
-      messageElement.textContent = message;
-      
-      notification.classList.remove('hidden');
-      notification.classList.add('transform', 'translate-y-0');
-      
-      setTimeout(() => {
-        notification.classList.add('transform', '-translate-y-full');
-        setTimeout(() => {
-          notification.classList.add('hidden');
-        }, 300);
-      }, 4000);
-    }
-
-    function showErrorNotification(message) {
-      showNotification(message, 'error');
-    }
-
-    function showSuccessNotification(message) {
-      showNotification(message, 'success');
-    }
-  </script>
 
 </body>
 
