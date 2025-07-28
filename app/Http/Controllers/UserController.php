@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -208,36 +207,23 @@ class UserController extends Controller
     public function cancelBooking(Request $request, $reference)
     {
         try {
-            // Debug logging
-            \Log::info('Cancel booking request received', [
+            // Simple test to see if the method is being called
+            \Log::info('Cancel booking method called', [
                 'reference' => $reference,
                 'user_id' => Auth::id(),
-                'user_role' => Auth::user() ? Auth::user()->role : 'none',
                 'authenticated' => Auth::check(),
                 'request_method' => $request->method(),
                 'has_csrf_token' => $request->has('_token'),
-                'headers' => $request->headers->all()
+                'session_id' => session()->getId()
             ]);
             
             // Check if user is authenticated
             if (!Auth::check()) {
-                \Log::warning('User not authenticated for cancellation');
+                \Log::warning('User not authenticated');
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated.'
                 ], 401);
-            }
-            
-            // Check if user has regular_user role
-            if (Auth::user()->role !== 'regular_user') {
-                \Log::warning('User role not authorized for cancellation', [
-                    'user_role' => Auth::user()->role,
-                    'expected_role' => 'regular_user'
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized access.'
-                ], 403);
             }
             
             // Basic validation
@@ -248,6 +234,21 @@ class UserController extends Controller
             // Find the booking
             $booking = Booking::where('reference', $reference)->first();
             
+            \Log::info('Booking lookup result', [
+                'booking_found' => $booking ? true : false,
+                'booking_user_id' => $booking ? $booking->user_id : null,
+                'auth_user_id' => Auth::id(),
+                'booking_status' => $booking ? $booking->status : null,
+                'reference_searched' => $reference
+            ]);
+            
+            // Debug: Let's also check if there are any bookings at all for this user
+            $userBookings = Booking::where('user_id', Auth::id())->get();
+            \Log::info('User bookings count', [
+                'total_user_bookings' => $userBookings->count(),
+                'user_booking_references' => $userBookings->pluck('reference')->toArray()
+            ]);
+            
             if (!$booking) {
                 return response()->json([
                     'success' => false,
@@ -257,6 +258,10 @@ class UserController extends Controller
             
             // Check authorization
             if ($booking->user_id !== Auth::id()) {
+                \Log::warning('Authorization failed', [
+                    'booking_user_id' => $booking->user_id,
+                    'auth_user_id' => Auth::id()
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized.'
@@ -317,26 +322,17 @@ class UserController extends Controller
             // Round to 2 decimal places
             $refundAmount = round($refundAmount, 2);
             
-            // Update booking status
+            // Update booking with cancellation details
             $booking->update([
                 'status' => 'cancelled',
                 'cancellation_reason' => $request->cancellation_reason,
                 'cancelled_at' => now()
             ]);
             
-            // Also update the associated event status if it exists
-            if ($booking->event) {
-                $booking->event->update([
-                    'status' => 'cancelled',
-                    'cancel_reason' => $request->cancellation_reason,
-                    'cancelled_at' => now()
-                ]);
-            }
-            
-            // Create refund record (simulation)
+            // Create refund record if applicable
             if ($refundAmount > 0) {
                 \App\Models\Payment::create([
-                    'reference' => 'REFUND-' . strtoupper(Str::random(8)),
+                    'reference' => 'REFUND-' . strtoupper(\Illuminate\Support\Str::random(8)),
                     'booking_id' => $booking->id,
                     'user_id' => $booking->user_id,
                     'amount' => -$refundAmount, // Negative amount for refund
@@ -359,8 +355,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             \Log::error('Booking cancellation error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'line' => $e->getLine()
             ]);
             
             return response()->json([
