@@ -206,16 +206,17 @@ class UserController extends Controller
 
     public function cancelBooking(Request $request, $reference)
     {
-        $booking = Booking::where('reference', $reference)->firstOrFail();
-        
-        // Check if the booking belongs to the authenticated user
-        if ($booking->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
+        try {
+            $booking = Booking::where('reference', $reference)->firstOrFail();
+            
+            // Check if the booking belongs to the authenticated user
+            if ($booking->user_id !== Auth::id()) {
+                abort(403, 'Unauthorized');
+            }
 
-        $request->validate([
-            'cancellation_reason' => 'required|string|max:500'
-        ]);
+            $request->validate([
+                'cancellation_reason' => 'required|string|max:500'
+            ]);
 
         // Calculate refund amount
         $refundAmount = 0;
@@ -301,5 +302,12 @@ class UserController extends Controller
                 'original_amount' => $amountPaid
             ]
         ]);
+        } catch (\Exception $e) {
+            \Log::error('Booking cancellation error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while cancelling the booking: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

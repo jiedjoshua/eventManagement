@@ -57,10 +57,23 @@
                   method: 'PATCH',
                   body: formData,
                   headers: {
-                      'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                      'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/x-www-form-urlencoded'
                   }
               })
-              .then(response => response.json())
+              .then(response => {
+                  if (!response.ok) {
+                      if (response.status === 403) {
+                          throw new Error('Access denied. Please refresh the page and try again.');
+                      }
+                      if (response.status === 404) {
+                          throw new Error('Booking not found. Please refresh the page.');
+                      }
+                      throw new Error(`Server error: ${response.status}`);
+                  }
+                  return response.json();
+              })
               .then(data => {
                   if (data.success) {
                       let message = data.message || 'Booking cancelled successfully!';
@@ -91,7 +104,7 @@
               })
               .catch(error => {
                   console.error('Error cancelling booking:', error);
-                  alert('An error occurred while cancelling the booking.');
+                  alert('An error occurred while cancelling the booking: ' + error.message);
               });
           }
       }">
