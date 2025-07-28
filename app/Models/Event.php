@@ -88,4 +88,14 @@ protected $fillable = [
             'venue_id' // Local key on bookings table
         );
     }
+
+    public function externalGuests()
+    {
+        return $this->hasMany(ExternalGuest::class);
+    }
+
+    public function checkedInExternalGuests()
+    {
+        return $this->hasMany(ExternalGuest::class)->whereNotNull('checked_in_at');
+    }
 }

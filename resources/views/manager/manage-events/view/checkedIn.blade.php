@@ -132,10 +132,10 @@
                         <span class="font-semibold text-indigo-600">{{ $event->guests->count() }}</span> Registered
                     </div>
                     <div class="text-sm text-gray-600 bg-white px-4 py-2 rounded shadow font-medium">
-                        <span class="font-semibold text-green-600">{{ $event->checked_in_external_guests->count() }}</span> External
+                        <span class="font-semibold text-green-600">{{ $event->checkedInExternalGuests->count() }}</span> External
                     </div>
                     <div class="text-sm text-gray-600 bg-white px-4 py-2 rounded shadow font-medium">
-                        Total: <span class="font-semibold text-indigo-600">{{ $event->guests->count() + $event->checked_in_external_guests->count() }}</span>
+                        Total: <span class="font-semibold text-indigo-600">{{ $event->guests->count() + $event->checkedInExternalGuests->count() }}</span>
                     </div>
                 </div>
             </div>
@@ -163,7 +163,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">External Guests</p>
-                        <p class="text-2xl font-bold text-green-600">{{ $event->checked_in_external_guests->count() }}</p>
+                        <p class="text-2xl font-bold text-green-600">{{ $event->checkedInExternalGuests->count() }}</p>
                     </div>
                 </div>
             </div>
@@ -175,7 +175,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Total Checked-in</p>
-                        <p class="text-2xl font-bold text-blue-600">{{ $event->guests->count() + $event->checked_in_external_guests->count() }}</p>
+                        <p class="text-2xl font-bold text-blue-600">{{ $event->guests->count() + $event->checkedInExternalGuests->count() }}</p>
                     </div>
                 </div>
             </div>
@@ -258,7 +258,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($event->checked_in_external_guests as $guest)
+                        @forelse($event->checkedInExternalGuests as $guest)
                             <tr class="hover:bg-green-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
