@@ -207,34 +207,14 @@ class UserController extends Controller
 
     public function cancelBooking(Request $request, $reference)
     {
-        // Simple test to see if method is called
-        \Log::info('=== CANCEL BOOKING METHOD CALLED ===');
-        \Log::info('cancelBooking method called', [
-            'reference' => $reference,
-            'method' => $request->method(),
-            'user_authenticated' => Auth::check(),
-            'user_id' => Auth::check() ? Auth::id() : null,
-            'user_role' => Auth::check() ? Auth::user()->role : null,
-            'request_headers' => $request->headers->all()
-        ]);
-        
         try {
             // Check if user is authenticated
             if (!Auth::check()) {
-                \Log::warning('User not authenticated for booking cancellation');
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated.'
                 ], 401);
             }
-            
-            // Check if user has regular_user role
-            $user = Auth::user();
-            \Log::info('User attempting to cancel booking', [
-                'user_id' => $user->id,
-                'user_role' => $user->role,
-                'reference' => $reference
-            ]);
             
             // Basic validation
             $request->validate([
@@ -320,7 +300,7 @@ class UserController extends Controller
                 'cancelled_at' => now()
             ]);
             
-            // Update associated event if it exists
+            // Also update the associated event status if it exists
             if ($booking->event) {
                 $booking->event->update([
                     'status' => 'cancelled',

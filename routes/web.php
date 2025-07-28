@@ -227,8 +227,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('user/bookings/{reference}/edit', [UserController::class, 'editBooking'])->name('bookings.edit');
     Route::post('user/bookings/{reference}/update', [UserController::class, 'updateBooking'])->name('bookings.update');
     Route::post('user/bookings/{reference}/cancel', [UserController::class, 'cancelBooking'])->name('user.bookings.cancel');
-    // Alternative route for testing - using string parameter
-    Route::post('user/bookings/cancel/{reference}', [UserController::class, 'cancelBooking'])->name('user.bookings.cancel.alt');
     Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments');
     Route::get('/user/account-settings', [UserController::class, 'showAccountSettings'])->name('user.accountSettings');
     Route::get('user/events/{event}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
