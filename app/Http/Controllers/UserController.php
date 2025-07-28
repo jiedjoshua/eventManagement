@@ -207,11 +207,41 @@ class UserController extends Controller
     public function cancelBooking(Request $request, $reference)
     {
         try {
-            $booking = Booking::where('reference', $reference)->firstOrFail();
+            \Log::info('Cancel booking request received', [
+                'reference' => $reference,
+                'user_id' => Auth::id(),
+                'request_data' => $request->all()
+            ]);
+            
+            $booking = Booking::where('reference', $reference)->first();
+            
+            if (!$booking) {
+                \Log::warning('Booking not found', ['reference' => $reference]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Booking not found.'
+                ], 404);
+            }
             
             // Check if the booking belongs to the authenticated user
             if ($booking->user_id !== Auth::id()) {
+                \Log::warning('Unauthorized booking cancellation attempt', [
+                    'booking_user_id' => $booking->user_id,
+                    'authenticated_user_id' => Auth::id()
+                ]);
                 abort(403, 'Unauthorized');
+            }
+
+            // Check if booking can be cancelled (only approved bookings)
+            if ($booking->status !== 'approved') {
+                \Log::warning('Attempt to cancel non-approved booking', [
+                    'booking_status' => $booking->status,
+                    'booking_reference' => $reference
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only approved bookings can be cancelled.'
+                ], 400);
             }
 
             $request->validate([
@@ -266,10 +296,18 @@ class UserController extends Controller
 
         // Update booking status
         $booking->update([
-            'status' => 'cancelled',
-            'cancellation_reason' => $request->cancellation_reason,
-            'cancelled_at' => now()
+            'status' => 'cancelled'
         ]);
+        
+        // Try to update cancellation fields if they exist
+        try {
+            $booking->update([
+                'cancellation_reason' => $request->cancellation_reason,
+                'cancelled_at' => now()
+            ]);
+        } catch (\Exception $e) {
+            \Log::info('Cancellation fields not available in database yet');
+        }
 
         // Update associated event if it exists
         if ($booking->event) {

@@ -53,13 +53,14 @@
               formData.append('cancellation_reason', document.getElementById('cancel_reason').value);
               formData.append('_token', document.querySelector('meta[name=csrf-token]').getAttribute('content'));
               
+              console.log('Cancelling booking:', this.currentBooking.reference);
+              console.log('CSRF token:', document.querySelector('meta[name=csrf-token]').getAttribute('content'));
+              
               fetch(`/user/bookings/${this.currentBooking.reference}/cancel`, {
                   method: 'PATCH',
                   body: formData,
                   headers: {
-                      'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
-                      'Accept': 'application/json',
-                      'Content-Type': 'application/x-www-form-urlencoded'
+                      'Accept': 'application/json'
                   }
               })
               .then(response => {
@@ -69,6 +70,11 @@
                       }
                       if (response.status === 404) {
                           throw new Error('Booking not found. Please refresh the page.');
+                      }
+                      if (response.status === 400) {
+                          return response.json().then(data => {
+                              throw new Error(data.message || 'Invalid request.');
+                          });
                       }
                       throw new Error(`Server error: ${response.status}`);
                   }
