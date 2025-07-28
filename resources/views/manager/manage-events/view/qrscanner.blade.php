@@ -92,7 +92,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                 </svg>
                                 <p class="text-gray-600 font-medium">Camera not available</p>
-                                <p class="text-sm text-gray-500 mt-1">Try the file upload option below</p>
+                                <p class="text-sm text-gray-500 mt-1">Click "Start Scanner" to try again</p>
                             </div>
                         </div>
                     </div>
@@ -106,16 +106,6 @@
                     </div>
 
                     <button id="start-scan" class="w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">Start Scanner</button>
-                    
-                    <!-- File Upload Option -->
-                    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                        <p class="text-sm font-medium text-green-800 mb-2">Upload QR Code Image</p>
-                        <p class="text-xs text-green-600 mb-3">If camera doesn't work, upload a QR code image instead.</p>
-                        <input type="file" id="qr-file-input" accept="image/*" class="hidden">
-                        <button id="upload-qr-btn" class="w-full px-3 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition">
-                            Choose QR Image
-                        </button>
-                    </div>
                     
                     <!-- Manual Entry Option -->
                     <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -162,8 +152,6 @@
         const startButton = document.getElementById('start-scan');
         const cameraPlaceholder = document.getElementById('camera-placeholder');
         const httpsWarning = document.getElementById('https-warning');
-        const fileInput = document.getElementById('qr-file-input');
-        const uploadBtn = document.getElementById('upload-qr-btn');
 
         let scanning = false;
         let stream = null;
@@ -182,76 +170,6 @@
             video.style.display = 'block';
             cameraPlaceholder.classList.add('hidden');
         }
-
-        function processQRCode(qrData) {
-            result.textContent = 'Checking in...';
-            
-            fetch(checkInUrl + '?data=' + encodeURIComponent(qrData), {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(async response => {
-                const data = await response.json();
-
-                // Clear previous styling
-                result.classList.remove('text-green-600', 'text-red-600', 'text-gray-800');
-
-                if (!response.ok) {
-                    result.textContent = data.error;
-                    result.classList.add('text-red-600');
-                    if (data.checked_in_at) {
-                        result.textContent += `\nPreviously checked in at: ${data.checked_in_at}`;
-                    }
-                } else if (data.message) {
-                    result.textContent = data.message;
-                    result.classList.add('text-green-600');
-                } else {
-                    result.textContent = 'Unknown response from server.';
-                    result.classList.add('text-gray-800');
-                }
-            })
-            .catch(err => {
-                result.textContent = 'Failed to check in: ' + err.message;
-                result.classList.add('text-red-600');
-            });
-        }
-
-        // File upload handler
-        uploadBtn.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-                        
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const code = jsQR(imageData.data, imageData.width, imageData.height);
-                        
-                        if (code) {
-                            processQRCode(code.data);
-                        } else {
-                            result.textContent = 'No QR code found in the image. Please try another image.';
-                            result.classList.remove('text-green-600', 'text-red-600');
-                            result.classList.add('text-red-600');
-                        }
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
 
         startButton.addEventListener('click', async () => {
             try {
@@ -294,10 +212,46 @@
                             const code = jsQR(imageData.data, imageData.width, imageData.height);
 
                             if (code) {
+                                result.textContent = 'Checking in...';
+
                                 clearInterval(interval);
                                 stream.getTracks().forEach(track => track.stop());
                                 scanning = false;
-                                processQRCode(code.data);
+
+                                // Send QR code data to backend
+                                fetch(checkInUrl + '?data=' + encodeURIComponent(code.data), {
+                                        method: 'GET',
+                                        headers: {
+                                            'Accept': 'application/json'
+                                        }
+                                    })
+                                    .then(async response => {
+                                        const data = await response.json();
+
+                                        // Clear previous styling
+                                        result.classList.remove('text-green-600', 'text-red-600', 'text-gray-800');
+
+                                        if (!response.ok) {
+                                            // Handle error responses (status codes 400, 403, 404, etc.)
+                                            result.textContent = data.error;
+                                            result.classList.add('text-red-600');
+                                            if (data.checked_in_at) {
+                                                result.textContent += `\nPreviously checked in at: ${data.checked_in_at}`;
+                                            }
+                                        } else if (data.message) {
+                                            // Handle successful check-in
+                                            result.textContent = data.message;
+                                            result.classList.add('text-green-600');
+                                        } else {
+                                            // Handle unexpected response
+                                            result.textContent = 'Unknown response from server.';
+                                            result.classList.add('text-gray-800');
+                                        }
+                                    })
+                                    .catch(err => {
+                                        result.textContent = 'Failed to check in: ' + err.message;
+                                        result.classList.add('text-red-600');
+                                    });
                             }
                         } catch (error) {
                             console.warn("Frame grab failed", error);

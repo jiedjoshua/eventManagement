@@ -40,8 +40,8 @@ return [
     */
 
     'csp' => [
-        'default_src' => ["'self'"],
-        'script_src' => [
+        'default-src' => ["'self'"],
+        'script-src' => [
             "'self'",
             "'unsafe-inline'", // Consider removing in production
             "'unsafe-eval'",   // Consider removing in production
@@ -51,20 +51,20 @@ return [
             // 'https://js.stripe.com',
             // 'https://www.paypal.com',
         ],
-        'style_src' => [
+        'style-src' => [
             "'self'",
             "'unsafe-inline'", // Consider removing in production
             'https://fonts.googleapis.com',
             'https://cdn.jsdelivr.net',
             'https://unpkg.com',
         ],
-        'font_src' => [
+        'font-src' => [
             "'self'",
             'https://fonts.gstatic.com',
             'https://cdn.jsdelivr.net',
             'https://unpkg.com',
         ],
-        'img_src' => [
+        'img-src' => [
             "'self'",
             'data:',
             'https:',
@@ -73,7 +73,7 @@ return [
             // 'https://maps.googleapis.com',
             // 'https://maps.gstatic.com',
         ],
-        'connect_src' => [
+        'connect-src' => [
             "'self'",
             'https:',
             'wss:',
@@ -81,19 +81,19 @@ return [
             // 'https://api.stripe.com',
             // 'https://api.paypal.com',
         ],
-        'media_src' => ["'self'"],
-        'object_src' => ["'none'"],
-        'frame_src' => [
+        'media-src' => ["'self'"],
+        'object-src' => ["'none'"],
+        'frame-src' => [
             "'self'",
             // Add payment gateway frame domains here if needed
             // 'https://js.stripe.com',
             // 'https://www.paypal.com',
         ],
-        'worker_src' => ["'self'"],
-        'manifest_src' => ["'self'"],
-        'form_action' => ["'self'"],
-        'base_uri' => ["'self'"],
-        'frame_ancestors' => ["'none'"],
+        'worker-src' => ["'self'"],
+        'manifest-src' => ["'self'"],
+        'form-action' => ["'self'"],
+        'base-uri' => ["'self'"],
+        'frame-ancestors' => ["'none'"],
     ],
 
     /*
