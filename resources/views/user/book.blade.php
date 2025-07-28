@@ -51,13 +51,13 @@
           cancelBooking() {
               const formData = new FormData();
               formData.append('cancellation_reason', document.getElementById('cancel_reason').value);
-              formData.append('_token', document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'));
+              formData.append('_token', document.querySelector('meta[name=csrf-token]').getAttribute('content'));
               
               fetch(`/user/bookings/${this.currentBooking.reference}/cancel`, {
                   method: 'PATCH',
                   body: formData,
                   headers: {
-                      'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content')
+                      'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
                   }
               })
               .then(response => response.json())
@@ -69,13 +69,13 @@
                       if (data.refund) {
                           const refund = data.refund;
                           if (refund.amount > 0) {
-                              message += `\n\n💰 Refund Details:\n`;
+                              message += '\n\n💰 Refund Details:\n';
                               message += `• Original Amount: ₱${refund.original_amount.toLocaleString()}\n`;
                               message += `• Refund Amount: ₱${refund.amount.toLocaleString()}\n`;
                               message += `• Refund Type: ${refund.details.type.toUpperCase()}\n`;
                               message += `• Reason: ${refund.details.reason}`;
                           } else {
-                              message += `\n\n⚠️ No refund available\n`;
+                              message += '\n\n⚠️ No refund available\n';
                               message += `• Reason: ${refund.details.reason}`;
                           }
                       }
