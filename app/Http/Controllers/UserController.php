@@ -256,23 +256,30 @@ class UserController extends Controller
                 ], 404);
             }
             
-            // Check authorization
+            // Check authorization - Allow users to cancel their own bookings
             if ($booking->user_id !== Auth::id()) {
                 \Log::warning('Authorization failed', [
                     'booking_user_id' => $booking->user_id,
-                    'auth_user_id' => Auth::id()
+                    'auth_user_id' => Auth::id(),
+                    'booking_reference' => $reference,
+                    'booking_status' => $booking->status
                 ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unauthorized.'
+                    'message' => 'You can only cancel bookings that belong to your account. Please contact support if you believe this is an error.'
                 ], 403);
             }
             
             // Check if booking can be cancelled
             if ($booking->status !== 'approved') {
+                \Log::warning('Booking status check failed', [
+                    'booking_status' => $booking->status,
+                    'booking_reference' => $reference,
+                    'auth_user_id' => Auth::id()
+                ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only approved bookings can be cancelled.'
+                    'message' => 'Only approved bookings can be cancelled. Current status: ' . ucfirst($booking->status)
                 ], 400);
             }
             
