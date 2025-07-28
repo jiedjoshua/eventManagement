@@ -208,12 +208,36 @@ class UserController extends Controller
     public function cancelBooking(Request $request, $reference)
     {
         try {
+            // Debug logging
+            \Log::info('Cancel booking request received', [
+                'reference' => $reference,
+                'user_id' => Auth::id(),
+                'user_role' => Auth::user() ? Auth::user()->role : 'none',
+                'authenticated' => Auth::check(),
+                'request_method' => $request->method(),
+                'has_csrf_token' => $request->has('_token'),
+                'headers' => $request->headers->all()
+            ]);
+            
             // Check if user is authenticated
             if (!Auth::check()) {
+                \Log::warning('User not authenticated for cancellation');
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated.'
                 ], 401);
+            }
+            
+            // Check if user has regular_user role
+            if (Auth::user()->role !== 'regular_user') {
+                \Log::warning('User role not authorized for cancellation', [
+                    'user_role' => Auth::user()->role,
+                    'expected_role' => 'regular_user'
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access.'
+                ], 403);
             }
             
             // Basic validation
@@ -335,7 +359,8 @@ class UserController extends Controller
         } catch (\Exception $e) {
             \Log::error('Booking cancellation error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
-                'line' => $e->getLine()
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
