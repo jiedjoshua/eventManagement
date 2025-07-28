@@ -2214,7 +2214,6 @@ function createPackageCard(package) {
     card.innerHTML = `
         <label style="width:100%;height:100%;display:block;cursor:pointer;">
             <input type="radio" name="package" value="${package.id}" class="package-radio" style="position:absolute;opacity:0;width:0;height:0;">
-            <span class="venue-tag">Package</span>
             <div class="venue-content">
                 <h3 class="package-title">${package.name || 'Untitled Package'}</h3>
                 <p class="venue-description">${package.description || 'No description available'}</p>
