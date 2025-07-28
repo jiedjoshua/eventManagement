@@ -206,6 +206,16 @@ class UserController extends Controller
     public function cancelBooking(Request $request, $reference)
     {
         try {
+            // Debug logging
+            \Log::info('Cancel booking method called', [
+                'reference' => $reference,
+                'user_id' => Auth::id(),
+                'authenticated' => Auth::check(),
+                'request_method' => $request->method(),
+                'has_csrf_token' => $request->has('_token'),
+                'session_id' => session()->getId()
+            ]);
+            
             // Check if user is authenticated
             if (!Auth::check()) {
                 return response()->json([

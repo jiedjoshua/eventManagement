@@ -224,14 +224,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user/dashboard', [UserController::class, 'index'])->name('user.dashboard');
     Route::get('/user/events/booked', [UserController::class, 'bookedEvents'])->name('user.bookedEvents');
 
-    Route::get('/user/bookings/{reference}/edit', [UserController::class, 'editBooking'])->name('bookings.edit');
-    Route::post('/user/bookings/{reference}/update', [UserController::class, 'updateBooking'])->name('bookings.update');
-    Route::post('/user/bookings/{reference}/cancel', [UserController::class, 'cancelBooking'])->name('user.bookings.cancel');
+    Route::get('/user/test-cancel', function() {
+        return response()->json(['success' => true, 'message' => 'Test route works']);
+    })->name('user.test.cancel');
     Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments');
     Route::get('/user/account-settings', [UserController::class, 'showAccountSettings'])->name('user.accountSettings');
     Route::get('/user/events/{event}/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
     Route::post('/user/events/{event}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
-    Route::get('/user/bookings/{reference}/guest-list', [UserController::class, 'showGuestList'])->name('user.guest-list');
 });
 Route::get('/user/events/attending', [UserController::class, 'attendingEvents'])->name('user.attendingEvents');
 
@@ -257,7 +256,15 @@ Route::prefix('venues')->group(function () {
 Route::get('/api/packages', [PackageController::class, 'getPackages']);
 Route::get('/api/packages/{id}', [PackageController::class, 'getPackage']);
 
-// Booking Routes
+// User-specific booking routes (must come before general booking routes)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/user/bookings/{reference}/cancel', [UserController::class, 'cancelBooking'])->name('user.bookings.cancel');
+    Route::get('/user/bookings/{reference}/edit', [UserController::class, 'editBooking'])->name('bookings.edit');
+    Route::post('/user/bookings/{reference}/update', [UserController::class, 'updateBooking'])->name('bookings.update');
+    Route::get('/user/bookings/{reference}/guest-list', [UserController::class, 'showGuestList'])->name('user.guest-list');
+});
+
+// General Booking Routes
 Route::middleware(['auth'])->group(function () {
     Route::post('/bookings', [EventController::class, 'store'])->name('bookings.store');
 
