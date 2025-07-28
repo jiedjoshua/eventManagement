@@ -56,6 +56,17 @@
                   return;
               }
 
+              // Show loading state
+              const confirmButton = document.querySelector('[x-on\\:click="cancelEvent()"]');
+              const originalText = confirmButton.innerHTML;
+              confirmButton.innerHTML = `
+                  <svg class="animate-spin w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                  Processing...
+              `;
+              confirmButton.disabled = true;
+
               try {
                   const response = await fetch(`/user/bookings/${this.currentBooking.reference}/cancel`, {
                       method: 'POST',
@@ -88,19 +99,82 @@
                           }
                       }
                       
-                      alert(message);
+                      // Show success notification
+                      this.showSuccessNotification(message);
                       this.showCancelModal = false;
                       this.cancelReason = '';
                       setTimeout(() => {
                           window.location.reload();
-                      }, 2000);
+                      }, 3000);
                   } else {
-                      alert(data.message || 'Failed to cancel event.');
+                      this.showErrorNotification(data.message || 'Failed to cancel event.');
                   }
               } catch (error) {
                   console.error('Error cancelling event:', error);
-                  alert('An error occurred while cancelling the event.');
+                  this.showErrorNotification('An error occurred while cancelling the event. Please try again.');
+              } finally {
+                  // Restore button state
+                  confirmButton.innerHTML = originalText;
+                  confirmButton.disabled = false;
               }
+          },
+          
+          showSuccessNotification(message) {
+              // Create notification element
+              const notification = document.createElement('div');
+              notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-transform duration-300 ease-in-out z-50';
+              notification.innerHTML = `
+                  <div class="flex items-center space-x-2">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      <span class="whitespace-pre-line">${message}</span>
+                  </div>
+              `;
+              
+              document.body.appendChild(notification);
+              
+              // Animate in
+              setTimeout(() => {
+                  notification.classList.add('translate-y-0');
+              }, 100);
+              
+              // Remove after 5 seconds
+              setTimeout(() => {
+                  notification.classList.add('-translate-y-full');
+                  setTimeout(() => {
+                      document.body.removeChild(notification);
+                  }, 300);
+              }, 5000);
+          },
+          
+          showErrorNotification(message) {
+              // Create notification element
+              const notification = document.createElement('div');
+              notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-transform duration-300 ease-in-out z-50';
+              notification.innerHTML = `
+                  <div class="flex items-center space-x-2">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                      <span>${message}</span>
+                  </div>
+              `;
+              
+              document.body.appendChild(notification);
+              
+              // Animate in
+              setTimeout(() => {
+                  notification.classList.add('translate-y-0');
+              }, 100);
+              
+              // Remove after 4 seconds
+              setTimeout(() => {
+                  notification.classList.add('-translate-y-full');
+                  setTimeout(() => {
+                      document.body.removeChild(notification);
+                  }, 300);
+              }, 4000);
           }
       }">
       
@@ -281,18 +355,24 @@
                 @endif
               </div>
 
-              <!-- Cancel Event Button -->
+              <!-- Enhanced Cancel Event Button - Only show for future events -->
+              @if(!$isPast)
               <button type="button"
                 @click="showCancelModal = true; currentBooking = {{ $booking->toJson() }}"
-                class="w-full mt-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm py-2 px-3 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="w-full mt-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm py-3 px-4 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
                 Cancel Event
               </button>
-
-
-              
+              @else
+              <div class="w-full mt-2 bg-gray-200 text-gray-500 text-sm py-3 px-4 rounded-xl text-center font-medium">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Event Already Passed
+              </div>
+              @endif
 
               @endif
             @endif
@@ -544,7 +624,7 @@
         </div>
       </div>
 
-      <!-- Cancel Event Modal -->
+      <!-- Enhanced Cancel Event Modal -->
       <div x-show="showCancelModal"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
         x-transition:enter="transition ease-out duration-300"
@@ -553,7 +633,7 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden"
           @click.away="showCancelModal = false"
           x-transition:enter="transition ease-out duration-300"
           x-transition:enter-start="opacity-0 transform scale-95"
@@ -570,7 +650,7 @@
               </svg>
               Cancel Event
             </h3>
-            <button @click="showCancelModal = false" class="text-red-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-200">
+            <button @click="showCancelModal = false; cancelReason = ''" class="text-red-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-200">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
@@ -581,31 +661,54 @@
           <div class="p-6">
             <div class="mb-6">
               <p class="text-gray-700 mb-4">Are you sure you want to cancel this event?</p>
-              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              
+              <!-- Event Details -->
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                 <div class="flex">
                   <svg class="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                   </svg>
-                  <div>
+                  <div class="flex-1">
                     <h4 class="text-sm font-medium text-red-800">Event to Cancel:</h4>
-                    <p class="text-sm text-red-700 mt-1" x-text="currentBooking?.event_name?.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')"></p>
+                    <p class="text-sm text-red-700 mt-1 font-semibold" x-text="currentBooking?.event_name?.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')"></p>
+                    <div class="mt-2 text-xs text-red-600">
+                      <p x-text="'Date: ' + (currentBooking?.event_date ? new Date(currentBooking.event_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A')"></p>
+                      <p x-text="'Reference: ' + (currentBooking?.reference?.toUpperCase() || 'N/A')"></p>
+                    </div>
                   </div>
                 </div>
               </div>
               
-              <!-- Refund Information -->
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+              <!-- Enhanced Refund Information -->
+              <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
                 <div class="flex">
-                  <svg class="w-5 h-5 text-blue-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-5 h-5 text-blue-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
                   </svg>
-                  <div>
-                    <h4 class="text-sm font-medium text-blue-800">Refund Policy:</h4>
-                    <div class="text-sm text-blue-700 mt-1 space-y-1">
-                      <p>• <strong>30+ days before:</strong> 100% refund</p>
-                      <p>• <strong>15-30 days before:</strong> 75% refund</p>
-                      <p>• <strong>8-14 days before:</strong> 50% refund</p>
-                      <p>• <strong>Within 7 days:</strong> No refund</p>
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-blue-800 mb-2">Refund Policy:</h4>
+                    <div class="text-sm text-blue-700 space-y-1">
+                      <div class="flex justify-between items-center">
+                        <span>• <strong>30+ days before:</strong></span>
+                        <span class="font-semibold text-green-600">100% refund</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span>• <strong>15-30 days before:</strong></span>
+                        <span class="font-semibold text-yellow-600">75% refund</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span>• <strong>8-14 days before:</strong></span>
+                        <span class="font-semibold text-orange-600">50% refund</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span>• <strong>Within 7 days:</strong></span>
+                        <span class="font-semibold text-red-600">No refund</span>
+                      </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-blue-200">
+                      <p class="text-xs text-blue-600">
+                        <strong>Note:</strong> Refund processing may take 5-10 business days to reflect in your account.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -614,14 +717,17 @@
 
             <div class="space-y-4">
               <div>
-                <label for="cancel_reason" class="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason</label>
+                <label for="cancel_reason" class="block text-sm font-medium text-gray-700 mb-2">
+                  Cancellation Reason <span class="text-red-500">*</span>
+                </label>
                 <textarea 
                   x-model="cancelReason"
                   id="cancel_reason" 
                   rows="3"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  placeholder="Please provide a reason for cancellation..." 
+                  placeholder="Please provide a detailed reason for cancellation..." 
                   required></textarea>
+                <p class="text-xs text-gray-500 mt-1">This information helps us improve our services.</p>
               </div>
 
               <div class="flex gap-3 pt-4">
@@ -632,7 +738,10 @@
                 </button>
                 <button 
                   @click="cancelEvent()"
-                  class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                  class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
                   Confirm Cancellation
                 </button>
               </div>
