@@ -495,11 +495,33 @@
             }
         });
 
-        // Voice functionality
-        let voiceEnabled = true;
+
+    </script>
+    <script>
+        const video = document.getElementById('qr-video');
+        const result = document.getElementById('qr-result');
+        const startButton = document.getElementById('start-scan');
+        const stopButton = document.getElementById('stop-scan');
+        const statusText = document.getElementById('status-text');
+        const scannerOverlay = document.getElementById('scanner-overlay');
+        const cameraPlaceholder = document.getElementById('camera-placeholder');
+        const resultCard = document.getElementById('result-card');
+        const soundToggle = document.getElementById('sound-toggle');
+        const soundIcon = document.getElementById('sound-icon');
+        const soundText = document.getElementById('sound-text');
         const voiceToggle = document.getElementById('voice-toggle');
         const voiceIcon = document.getElementById('voice-icon');
         const voiceText = document.getElementById('voice-text');
+
+        let scanning = false;
+        let stream = null;
+        let soundEnabled = true;
+        let voiceEnabled = true;
+        
+        // Initialize audio when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initAudio();
+        });
 
         // Function to speak welcome message
         function speakWelcome(name) {
@@ -538,28 +560,6 @@
                 voiceIcon.className = 'fas fa-microphone-slash text-gray-500';
                 voiceText.textContent = 'Voice Off';
             }
-        });
-    </script>
-    <script>
-        const video = document.getElementById('qr-video');
-        const result = document.getElementById('qr-result');
-        const startButton = document.getElementById('start-scan');
-        const stopButton = document.getElementById('stop-scan');
-        const statusText = document.getElementById('status-text');
-        const scannerOverlay = document.getElementById('scanner-overlay');
-        const cameraPlaceholder = document.getElementById('camera-placeholder');
-        const resultCard = document.getElementById('result-card');
-        const soundToggle = document.getElementById('sound-toggle');
-        const soundIcon = document.getElementById('sound-icon');
-        const soundText = document.getElementById('sound-text');
-
-        let scanning = false;
-        let stream = null;
-        let soundEnabled = true;
-        
-        // Initialize audio when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initAudio();
         });
 
         function updateResultCard(type, message) {
