@@ -253,18 +253,22 @@
                         <h2 class="text-xl font-semibold text-indigo-700 flex items-center">
                             <i class="fas fa-qrcode mr-2"></i>Camera Scanner
                         </h2>
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center gap-2">
-                                <button id="sound-toggle" class="flex items-center gap-2 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors">
-                                    <i class="fas fa-volume-up text-green-600" id="sound-icon"></i>
-                                    <span id="sound-text">Sound On</span>
-                                </button>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                                <span class="text-sm text-gray-600" id="status-text">Ready</span>
-                            </div>
-                        </div>
+                                        <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <button id="sound-toggle" class="flex items-center gap-2 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors">
+                            <i class="fas fa-volume-up text-green-600" id="sound-icon"></i>
+                            <span id="sound-text">Sound On</span>
+                        </button>
+                        <button id="voice-toggle" class="flex items-center gap-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded-lg text-sm transition-colors">
+                            <i class="fas fa-microphone text-blue-600" id="voice-icon"></i>
+                            <span id="voice-text">Voice On</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-gray-600" id="status-text">Ready</span>
+                    </div>
+                </div>
                     </div>
 
                     <div class="scanner-container bg-gray-100 rounded-xl overflow-hidden shadow-inner border border-gray-200">
@@ -490,6 +494,51 @@
                 soundText.textContent = 'Sound Off';
             }
         });
+
+        // Voice functionality
+        let voiceEnabled = true;
+        const voiceToggle = document.getElementById('voice-toggle');
+        const voiceIcon = document.getElementById('voice-icon');
+        const voiceText = document.getElementById('voice-text');
+
+        // Function to speak welcome message
+        function speakWelcome(name) {
+            if (!voiceEnabled) return;
+            
+            const utterance = new SpeechSynthesisUtterance();
+            utterance.text = `Welcome ${name}!`;
+            utterance.rate = 0.9; // Slightly slower for clarity
+            utterance.pitch = 1.1; // Slightly higher pitch for friendliness
+            utterance.volume = 0.8;
+            
+            // Try to use a female voice if available
+            const voices = speechSynthesis.getVoices();
+            const femaleVoice = voices.find(voice => 
+                voice.name.includes('female') || 
+                voice.name.includes('Female') ||
+                voice.name.includes('Samantha') ||
+                voice.name.includes('Victoria')
+            );
+            
+            if (femaleVoice) {
+                utterance.voice = femaleVoice;
+            }
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // Voice toggle functionality
+        voiceToggle.addEventListener('click', function() {
+            voiceEnabled = !voiceEnabled;
+            
+            if (voiceEnabled) {
+                voiceIcon.className = 'fas fa-microphone text-blue-600';
+                voiceText.textContent = 'Voice On';
+            } else {
+                voiceIcon.className = 'fas fa-microphone-slash text-gray-500';
+                voiceText.textContent = 'Voice Off';
+            }
+        });
     </script>
     <script>
         const video = document.getElementById('qr-video');
@@ -599,19 +648,27 @@
                                         } else if (data.message) {
                                             // Display success message with user's full name
                                             let successMessage = data.message;
+                                            let guestName = '';
                                             
                                             // For registered users, show their full name
                                             if (data.user && data.user.first_name && data.user.last_name) {
                                                 const fullName = `${data.user.first_name} ${data.user.last_name}`;
                                                 successMessage = `✅ Check-in successful!\n👤 Guest: ${fullName}`;
+                                                guestName = data.user.first_name; // Use first name for voice
                                             }
                                             // For external guests, show their name
                                             else if (data.guest && data.guest.name) {
                                                 successMessage = `✅ Check-in successful!\n👤 Guest: ${data.guest.name}`;
+                                                guestName = data.guest.name; // Use full name for voice
                                             }
                                             
                                             playSuccessSound();
                                             updateResultCard('success', successMessage);
+                                            
+                                            // Speak welcome message
+                                            if (guestName) {
+                                                speakWelcome(guestName);
+                                            }
                                         } else {
                                             playErrorSound();
                                             updateResultCard('error', 'Unknown response from server.');
