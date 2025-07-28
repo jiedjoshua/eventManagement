@@ -898,15 +898,30 @@ function validateCurrentStep() {
             if (churchStep && churchStep.style.display !== 'none') {
                 // Require church selection
                 let hasChurch = false;
+                let selectedChurchCard = null;
                 if (selectedChurch) {
-                    const churchCard = churchGrid ? churchGrid.querySelector(`.venue-card[data-venue-id="${selectedChurch}"]`) : null;
-                    if (churchCard) hasChurch = true;
+                    selectedChurchCard = churchGrid ? churchGrid.querySelector(`.venue-card[data-venue-id="${selectedChurch}"]`) : null;
+                    if (selectedChurchCard) hasChurch = true;
                 }
                 if (!hasChurch) {
                     document.querySelectorAll('.venue-card', churchGrid).forEach(card => card.style.borderColor = '#dc3545');
                     showFormError('Please select a church before proceeding');
                     return false;
                 }
+                
+                // Check church capacity against guest count
+                if (selectedChurchCard) {
+                    const guestCountInput = document.getElementById('guestCount');
+                    const guestCount = parseInt(guestCountInput.value, 10);
+                    const churchCapacity = parseInt(selectedChurchCard.querySelector('.venue-info span:last-child').textContent.replace('Capacity: ', ''), 10);
+                    
+                    if (guestCount && churchCapacity && guestCount > churchCapacity) {
+                        document.querySelectorAll('.venue-card', churchGrid).forEach(card => card.style.borderColor = '#dc3545');
+                        showFormError(`The selected church has a capacity of ${churchCapacity} guests, but you have ${guestCount} expected guests. Please choose a larger church or reduce your guest count.`);
+                        return false;
+                    }
+                }
+                
                 // Church selected, move to venue type selection
                 churchStep.style.display = 'none';
                 venueStep1.style.display = 'block';
@@ -940,6 +955,19 @@ function validateCurrentStep() {
                     showFormError('Please select a reception venue before proceeding');
                     return false;
                 }
+                
+                // Check reception venue capacity against guest count
+                if (selectedReceptionCard) {
+                    const guestCountInput = document.getElementById('guestCount');
+                    const guestCount = parseInt(guestCountInput.value, 10);
+                    const receptionCapacity = parseInt(selectedReceptionCard.querySelector('.venue-info span:last-child').textContent.replace('Capacity: ', ''), 10);
+                    
+                    if (guestCount && receptionCapacity && guestCount > receptionCapacity) {
+                        document.querySelectorAll('.venue-card', document.querySelector('.venue-grid')).forEach(card => card.style.borderColor = '#dc3545');
+                        showFormError(`The selected reception venue has a capacity of ${receptionCapacity} guests, but you have ${guestCount} expected guests. Please choose a larger venue or reduce your guest count.`);
+                        return false;
+                    }
+                }
             }
         } else {
             // For non-church events, check venue type selection
@@ -959,6 +987,22 @@ function validateCurrentStep() {
                 });
                 showFormError('Please select a venue before proceeding');
                 return false;
+            }
+            
+            // Check venue capacity against guest count for non-church events
+            const selectedVenueCard = document.querySelector('.venue-card.selected');
+            if (selectedVenueCard) {
+                const guestCountInput = document.getElementById('guestCount');
+                const guestCount = parseInt(guestCountInput.value, 10);
+                const venueCapacity = parseInt(selectedVenueCard.querySelector('.venue-info span:last-child').textContent.replace('Capacity: ', ''), 10);
+                
+                if (guestCount && venueCapacity && guestCount > venueCapacity) {
+                    document.querySelectorAll('.venue-card').forEach(card => {
+                        card.style.borderColor = '#dc3545';
+                    });
+                    showFormError(`The selected venue has a capacity of ${venueCapacity} guests, but you have ${guestCount} expected guests. Please choose a larger venue or reduce your guest count.`);
+                    return false;
+                }
             }
         }
     }
