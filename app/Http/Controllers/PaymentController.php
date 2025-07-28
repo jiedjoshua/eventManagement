@@ -64,12 +64,18 @@ class PaymentController extends Controller
     }
 
     public function paymentHistory()
-{
-    $user = Auth::user();
-    $payments = Payment::where('user_id', $user->id)
-        ->orderByDesc('paid_at')
-        ->get();
+    {
+        $user = Auth::user();
+        $payments = Payment::where('user_id', $user->id)
+            ->with(['booking'])
+            ->orderByDesc('paid_at')
+            ->get();
 
-    return view('user.payment.payment-history', compact('payments'));
-}
+        // Calculate totals
+        $totalPaid = $payments->where('amount', '>', 0)->sum('amount');
+        $totalRefunded = abs($payments->where('amount', '<', 0)->sum('amount'));
+        $netAmount = $totalPaid - $totalRefunded;
+
+        return view('user.payment.payment-history', compact('payments', 'totalPaid', 'totalRefunded', 'netAmount'));
+    }
 }

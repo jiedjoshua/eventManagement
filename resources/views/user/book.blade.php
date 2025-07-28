@@ -17,12 +17,14 @@
       x-data="{ 
           showModal: false,
           showQRModal: false,
+          showCancelModal: false,
           currentBooking: null,
           inviteLink: '',
           copied: false,
           init() {
               this.showModal = false;
               this.showQRModal = false;
+              this.showCancelModal = false;
           },
           showCopiedMessage() {
               this.copied = true;
@@ -44,6 +46,52 @@
               return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
                   hour: 'numeric',
                   minute: '2-digit'
+              });
+          },
+          cancelBooking() {
+              const formData = new FormData();
+              formData.append('cancellation_reason', document.getElementById('cancel_reason').value);
+              formData.append('_token', document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'));
+              
+              fetch(`/user/bookings/${this.currentBooking.reference}/cancel`, {
+                  method: 'PATCH',
+                  body: formData,
+                  headers: {
+                      'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content')
+                  }
+              })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      let message = data.message || 'Booking cancelled successfully!';
+                      
+                      // Add refund information to the message
+                      if (data.refund) {
+                          const refund = data.refund;
+                          if (refund.amount > 0) {
+                              message += `\n\n💰 Refund Details:\n`;
+                              message += `• Original Amount: ₱${refund.original_amount.toLocaleString()}\n`;
+                              message += `• Refund Amount: ₱${refund.amount.toLocaleString()}\n`;
+                              message += `• Refund Type: ${refund.details.type.toUpperCase()}\n`;
+                              message += `• Reason: ${refund.details.reason}`;
+                          } else {
+                              message += `\n\n⚠️ No refund available\n`;
+                              message += `• Reason: ${refund.details.reason}`;
+                          }
+                      }
+                      
+                      alert(message);
+                      this.showCancelModal = false;
+                      setTimeout(() => {
+                          window.location.reload();
+                      }, 2000);
+                  } else {
+                      alert(data.message || 'Failed to cancel booking.');
+                  }
+              })
+              .catch(error => {
+                  console.error('Error cancelling booking:', error);
+                  alert('An error occurred while cancelling the booking.');
               });
           }
       }">
@@ -218,12 +266,22 @@
                   @click="showQRModal = true; inviteLink = '{{ route('invite.confirm', $booking->event->id) }}'"
                   class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm py-2 px-3 rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                   <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V6a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1zm12 0h2a1 1 0 001-1V6a1 1 0 00-1-1h-2a1 1 0 00-1 1v1a1 1 0 001 1zM5 20h2a1 1 0 001-1v-1a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V6a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1zm12 0h2a1 1 0 001-1V6a1 1 0 00-1-1h-2a1 1 0 00-1 1v1a1 1 0 001 1zm12 0h2a1 1 0 001-1v-1a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1z"></path>
                   </svg>
                   QR / Invite
                 </button>
                 @endif
               </div>
+              
+              <!-- Cancel Button -->
+              <button type="button"
+                @click="showCancelModal = true; currentBooking = {{ $booking->toJson() }}"
+                class="w-full mt-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm py-2 px-4 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Cancel Event
+              </button>
               @endif
             @endif
           </div>
@@ -469,6 +527,95 @@
                 </svg>
                 Link copied to clipboard!
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cancel Booking Modal -->
+      <div x-show="showCancelModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
+          @click.away="showCancelModal = false"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 transform scale-95"
+          x-transition:enter-end="opacity-100 transform scale-100"
+          x-transition:leave="transition ease-in duration-200"
+          x-transition:leave-start="opacity-100 transform scale-100"
+          x-transition:leave-end="opacity-0 transform scale-95">
+          
+          <!-- Modal Header -->
+          <div class="bg-gradient-to-r from-red-50 to-red-100 px-6 py-4 flex justify-between items-center border-b border-red-200">
+            <h3 class="text-xl font-bold text-red-900 flex items-center">
+              <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+              Cancel Event
+            </h3>
+            <button @click="showCancelModal = false" class="text-red-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-200">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-6">
+            <div class="mb-6">
+              <p class="text-gray-700 mb-4">Are you sure you want to cancel this event?</p>
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                  <svg class="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                  <div>
+                    <h4 class="text-sm font-medium text-red-800">Event to Cancel:</h4>
+                    <p class="text-sm text-red-700 mt-1" x-text="currentBooking?.event_name?.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')"></p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Refund Information -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                <div class="flex">
+                  <svg class="w-5 h-5 text-blue-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                  <div>
+                    <h4 class="text-sm font-medium text-blue-800">Refund Policy:</h4>
+                    <div class="text-sm text-blue-700 mt-1 space-y-1">
+                      <p>• <strong>30+ days before:</strong> 100% refund</p>
+                      <p>• <strong>15-30 days before:</strong> 75% refund</p>
+                      <p>• <strong>8-14 days before:</strong> 50% refund</p>
+                      <p>• <strong>Within 7 days:</strong> No refund</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <label for="cancel_reason" class="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason</label>
+              <textarea id="cancel_reason" rows="3"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                placeholder="Please provide a reason for cancellation..." required></textarea>
+            </div>
+
+            <div class="flex gap-3">
+              <button type="button" @click="showCancelModal = false"
+                class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                Keep Event
+              </button>
+              <button type="button" @click="cancelBooking()"
+                class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                Confirm Cancellation
+              </button>
             </div>
           </div>
         </div>
