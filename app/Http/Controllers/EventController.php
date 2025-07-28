@@ -278,8 +278,19 @@ class EventController extends Controller
         $totalInvited = $event->users()->count();
         $totalAccepted = $event->users()->wherePivot('rsvp_status', 'accepted')->count();
         $totalDeclined = $event->users()->wherePivot('rsvp_status', 'declined')->count();
-        $checkedInCount = $event->users()->wherePivot('checked_in_at', '!=', null)->count();   // If you track check-in
-        $notCheckedIn = $totalAccepted - $checkedInCount;
+        
+        // Count registered users who checked in
+        $registeredCheckedIn = $event->users()->wherePivot('checked_in_at', '!=', null)->count();
+        
+        // Count external guests who checked in
+        $externalCheckedIn = \App\Models\ExternalGuest::where('event_id', $event->id)
+            ->whereNotNull('checked_in_at')
+            ->count();
+        
+        // Total checked in (registered + external)
+        $checkedInCount = $registeredCheckedIn + $externalCheckedIn;
+        
+        $notCheckedIn = $totalAccepted - $registeredCheckedIn;
 
         return view('manager.manage-events.view.eventDashboard', [
             'event' => $event,
@@ -305,6 +316,8 @@ class EventController extends Controller
             return response()->json(['error' => 'No QR data found.'], 400);
         }
 
+        // URL decode the data first, then JSON decode
+        $dataJson = urldecode($dataJson);
         $data = json_decode($dataJson, true);
 
         if (!$data) {
@@ -391,7 +404,10 @@ class EventController extends Controller
                 ->where('user_id', $userId)
                 ->update(['checked_in_at' => $now]);
 
-            $user = DB::table('users')->where('id', $userId)->first();
+            $user = DB::table('users')
+                ->select('id', 'first_name', 'last_name', 'email')
+                ->where('id', $userId)
+                ->first();
 
             return response()->json([
                 'message' => 'Check-in successful',
@@ -419,12 +435,30 @@ class EventController extends Controller
 
     public function showCheckedInList($eventId)
     {
-        // Eager load only guests who have checked in (checked_in_at is not null)
-        $event = Event::with(['guests' => function ($query) {
-            $query->select('users.id', 'first_name', 'last_name', 'email')
-                ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
-                ->wherePivotNotNull('checked_in_at');
-        }])->findOrFail($eventId);
+        // Get the event and load only guests who have checked in
+        $event = Event::findOrFail($eventId);
+        
+        // Get checked-in registered guests
+        $checkedInGuests = $event->guests()
+            ->wherePivotNotNull('checked_in_at')
+            ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
+            ->get();
+        
+        // Get checked-in external guests directly
+        $checkedInExternalGuests = \App\Models\ExternalGuest::where('event_id', $eventId)
+            ->whereNotNull('checked_in_at')
+            ->get();
+        
+        // Replace the guests relationship with only checked-in guests
+        $event->setRelation('guests', $checkedInGuests);
+        
+        // Set the external guests relationship
+        $event->setRelation('checkedInExternalGuests', $checkedInExternalGuests);
+
+        // Debug: Let's check what we're getting
+        \Log::info('Event ID: ' . $eventId);
+        \Log::info('Checked in external guests count: ' . $checkedInExternalGuests->count());
+        \Log::info('External guests data: ' . $checkedInExternalGuests->toJson());
 
         return view('manager.manage-events.view.checkedIn', compact('event'));
     }
