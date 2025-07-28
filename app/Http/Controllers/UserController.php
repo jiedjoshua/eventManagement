@@ -216,6 +216,20 @@ class UserController extends Controller
             // Add debugging to check if we can access the booking
             \Log::info('Attempting to find booking with reference: ' . $reference);
             
+            // Test basic database connectivity
+            try {
+                $testBooking = Booking::first();
+                \Log::info('Database connectivity test passed', [
+                    'test_booking_id' => $testBooking ? $testBooking->id : null
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Database connectivity test failed: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Database connection error: ' . $e->getMessage()
+                ], 500);
+            }
+            
             $booking = Booking::where('reference', $reference)->first();
             
             \Log::info('Booking found', [
@@ -323,14 +337,26 @@ class UserController extends Controller
             'cancellation_reason' => $request->cancellation_reason
         ]);
         
-        $booking->update([
-            'status' => 'cancelled',
-            'cancellation_reason' => $request->cancellation_reason,
-            'cancelled_at' => now(),
-            'additional_notes' => $additionalNotes . $cancellationNote
-        ]);
-        
-        \Log::info('Booking updated successfully');
+        try {
+            $booking->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => $request->cancellation_reason,
+                'cancelled_at' => now(),
+                'additional_notes' => $additionalNotes . $cancellationNote
+            ]);
+            
+            \Log::info('Booking updated successfully');
+        } catch (\Exception $e) {
+            \Log::error('Failed to update booking: ' . $e->getMessage(), [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update booking: ' . $e->getMessage()
+            ], 500);
+        }
 
         // Update associated event if it exists
         if ($booking->event) {
@@ -352,6 +378,18 @@ class UserController extends Controller
                 'booking_id' => $booking->id,
                 'user_id' => $booking->user_id
             ]);
+            
+            // Test Payment model creation
+            try {
+                $testPayment = new \App\Models\Payment();
+                \Log::info('Payment model test passed');
+            } catch (\Exception $e) {
+                \Log::error('Payment model test failed: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment model error: ' . $e->getMessage()
+                ], 500);
+            }
             
             $paymentData = [
                 'reference' => 'REFUND-' . strtoupper(\Illuminate\Support\Str::random(8)),
