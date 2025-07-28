@@ -104,7 +104,7 @@
                         </div>
                         <div class="church-grid horizontal-grid">
                             @foreach($churches as $church)
-                                <div class="venue-card" data-venue-id="{{ $church->id }}" data-venue-price="{{ $church->price_range }}">
+                                <div class="venue-card" data-venue-id="{{ $church->id }}" data-venue-price="{{ $church->price_range }}" onclick="selectChurchCard('{{ $church->id }}', {{ $church->capacity }})">
                                     <img src="{{ $church->main_image }}" alt="{{ $church->name }}" class="venue-image">
                                     <span class="venue-tag">Church</span>
                                     <span class="availability-label" style="display: none; position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; z-index: 2;"></span>

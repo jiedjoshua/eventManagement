@@ -1081,6 +1081,14 @@ function validateCurrentStep() {
 
 
 function submitForm() {
+    // Check terms and conditions
+    const termsCheckbox = document.getElementById('terms');
+    if (!termsCheckbox || !termsCheckbox.checked) {
+        showFormError('Please accept the terms and conditions before submitting your booking.');
+        termsCheckbox?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+
     const eventType = document.getElementById('eventType').value;
     // Use the global selectedChurch variable instead of querying DOM
     const selectedChurch = window.selectedChurch || document.querySelector('.church-grid .venue-card.selected')?.dataset.venueId;
@@ -1748,6 +1756,17 @@ function createVenueCard(venue, type = null) {
                 showFormError('This venue is not available for the selected date and time. Please choose a different date/time or venue.');
                 return;
             }
+            
+            // Check venue capacity against guest count
+            const guestCountInput = document.getElementById('guestCount');
+            const guestCount = parseInt(guestCountInput.value, 10);
+            const venueCapacity = parseInt(venue.capacity, 10);
+            
+            if (guestCount && venueCapacity && guestCount > venueCapacity) {
+                showFormError(`This venue has a capacity of ${venueCapacity} guests, but you have ${guestCount} expected guests. Please choose a larger venue or reduce your guest count.`);
+                return;
+            }
+            
             if (churchStep && churchStep.style.display !== 'none' && churchGrid && churchGrid.contains(this)) {
                 document.querySelectorAll('.venue-card', churchGrid).forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
@@ -1764,6 +1783,43 @@ function createVenueCard(venue, type = null) {
 
     return card;
 }
+
+// Function to validate venue capacity
+function validateVenueCapacity(venueCapacity, guestCount) {
+    if (guestCount && venueCapacity && guestCount > venueCapacity) {
+        showFormError(`This venue has a capacity of ${venueCapacity} guests, but you have ${guestCount} expected guests. Please choose a larger venue or reduce your guest count.`);
+        return false;
+    }
+    return true;
+}
+
+// Function to handle church card selection with capacity validation
+function selectChurchCard(venueId, venueCapacity) {
+    const guestCountInput = document.getElementById('guestCount');
+    const guestCount = parseInt(guestCountInput.value, 10);
+    
+    if (!validateVenueCapacity(venueCapacity, guestCount)) {
+        return false;
+    }
+    
+    // Remove selection from other church cards
+    document.querySelectorAll('.church-grid .venue-card').forEach(c => c.classList.remove('selected'));
+    
+    // Select this church card
+    const selectedCard = document.querySelector(`.church-grid .venue-card[data-venue-id="${venueId}"]`);
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
+        selectedChurch = venueId;
+        window.selectedChurch = venueId;
+        nextChurchStep.disabled = false;
+        return true;
+    }
+    return false;
+}
+
+// Make functions globally available
+window.selectChurchCard = selectChurchCard;
+window.validateVenueCapacity = validateVenueCapacity;
 
 // Patch for static church cards (Blade): add loading overlay as direct child of card
 function setChurchCardsLoadingState(loading) {
