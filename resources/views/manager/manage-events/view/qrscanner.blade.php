@@ -67,18 +67,6 @@
                 </div>
             </div>
 
-            <!-- HTTPS Warning -->
-            <div id="https-warning" class="hidden mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
-                    <p class="text-sm text-yellow-800">
-                        <strong>Camera access requires HTTPS.</strong> If you're having trouble with the camera, please ensure you're accessing this page via HTTPS or contact your administrator to enable SSL.
-                    </p>
-                </div>
-            </div>
-
             <p class="text-sm text-gray-600 mb-4">Align the QR code within the box to scan guest check-ins.</p>
 
             <div class="flex flex-col md:flex-row gap-6">
@@ -86,15 +74,6 @@
                 <div class="flex-1">
                     <div class="aspect-video bg-gray-200 rounded-lg overflow-hidden shadow-inner border border-gray-300">
                         <video id="qr-video" class="w-full h-full object-cover" autoplay playsinline></video>
-                        <div id="camera-placeholder" class="hidden w-full h-full flex items-center justify-center bg-gray-100">
-                            <div class="text-center">
-                                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                                <p class="text-gray-600 font-medium">Camera not available</p>
-                                <p class="text-sm text-gray-500 mt-1">Click "Start Scanner" to try again</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -106,15 +85,6 @@
                     </div>
 
                     <button id="start-scan" class="w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition">Start Scanner</button>
-                    
-                    <!-- Manual Entry Option -->
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                        <p class="text-sm font-medium text-blue-800 mb-2">Alternative Check-in Method</p>
-                        <p class="text-xs text-blue-600 mb-3">If camera scanning doesn't work, you can manually check in guests.</p>
-                        <a href="{{ route('events.checkedIn', ['event' => $event->id]) }}" class="block w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition text-center">
-                            Manual Check-in
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -150,49 +120,19 @@
         const video = document.getElementById('qr-video');
         const result = document.getElementById('qr-result');
         const startButton = document.getElementById('start-scan');
-        const cameraPlaceholder = document.getElementById('camera-placeholder');
-        const httpsWarning = document.getElementById('https-warning');
 
         let scanning = false;
         let stream = null;
 
-        // Check if we're on HTTPS
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            httpsWarning.classList.remove('hidden');
-        }
-
-        function showCameraPlaceholder() {
-            video.style.display = 'none';
-            cameraPlaceholder.classList.remove('hidden');
-        }
-
-        function hideCameraPlaceholder() {
-            video.style.display = 'block';
-            cameraPlaceholder.classList.add('hidden');
-        }
-
         startButton.addEventListener('click', async () => {
             try {
                 if (!scanning) {
-                    // Stop any existing stream
-                    if (stream) {
-                        stream.getTracks().forEach(track => track.stop());
-                    }
-
-                    result.textContent = 'Requesting camera access...';
-                    result.classList.remove('text-green-600', 'text-red-600', 'text-gray-800');
-                    result.classList.add('text-gray-800');
-
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: {
-                            facingMode: "environment",
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
+                            facingMode: "environment"
                         }
                     });
-                    
                     video.srcObject = stream;
-                    hideCameraPlaceholder();
                     scanning = true;
                     result.textContent = 'Scanning...';
 
@@ -259,40 +199,17 @@
                     }, 500);
                 }
             } catch (err) {
-                console.error('Camera error:', err);
-                
-                if (err.name === 'NotAllowedError') {
-                    result.textContent = 'Camera access denied. Please allow camera permissions and try again.';
-                    result.classList.add('text-red-600');
-                    showCameraPlaceholder();
-                } else if (err.name === 'NotSupportedError') {
-                    result.textContent = 'Camera not supported on this device/browser.';
-                    result.classList.add('text-red-600');
-                    showCameraPlaceholder();
-                } else if (err.name === 'NotFoundError') {
-                    result.textContent = 'No camera found on this device.';
-                    result.classList.add('text-red-600');
-                    showCameraPlaceholder();
-                } else {
-                    result.textContent = 'Camera error: ' + err.message;
-                    result.classList.add('text-red-600');
-                    showCameraPlaceholder();
-                }
-                
-                scanning = false;
-            }
-        });
-
-        // Clean up on page unload
-        window.addEventListener('beforeunload', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
+                result.textContent = 'Camera access denied.';
+                console.error(err);
             }
         });
     </script>
 
     <!-- jsQR library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+
+
 
 </body>
 
