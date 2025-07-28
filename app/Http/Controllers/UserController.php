@@ -19,9 +19,7 @@ class UserController extends Controller
 
     public function index()
     {
-        if (Auth::user()->role !== 'regular_user') {
-            abort(403, 'Unauthorized');
-        }
+        // Allow any authenticated user to access their dashboard
 
         $user = Auth::user();
 
