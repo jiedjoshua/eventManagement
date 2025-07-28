@@ -216,6 +216,14 @@ class UserController extends Controller
                 ], 401);
             }
             
+            // Check if user has regular_user role
+            $user = Auth::user();
+            \Log::info('User attempting to cancel booking', [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'reference' => $reference
+            ]);
+            
             // Basic validation
             $request->validate([
                 'cancellation_reason' => 'required|string|max:500'
