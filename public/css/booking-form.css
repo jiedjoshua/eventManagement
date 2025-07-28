@@ -1264,7 +1264,18 @@
 
         /* Package card specific tag positioning */
         .package-card .venue-tag,
-        .venue-card.package-card .venue-tag {
+        .venue-card.package-card .venue-tag,
+        .venue-card.package-card span.venue-tag,
+        .package-card span.venue-tag,
+        .package-card [class*="venue-tag"],
+        .venue-card.package-card [class*="venue-tag"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        
+        /* Hide any venue-tag with "Package" text specifically */
+        .venue-tag:contains("Package") {
             display: none !important;
         }
 

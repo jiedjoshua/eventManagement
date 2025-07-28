@@ -2164,6 +2164,15 @@ async function loadPackagesForEventType(eventType) {
             const card = createPackageCard(package);
             packagesContainer.appendChild(card);
         });
+        
+        // Remove any "Package" labels from package cards
+        setTimeout(() => {
+            document.querySelectorAll('.package-card .venue-tag, .venue-card.package-card .venue-tag').forEach(tag => {
+                if (tag.textContent.trim() === 'Package') {
+                    tag.remove();
+                }
+            });
+        }, 100);
 
         // Add click and change handler for package selection
         document.querySelectorAll('.package-card').forEach(card => {
