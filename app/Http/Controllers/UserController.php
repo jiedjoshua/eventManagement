@@ -207,9 +207,21 @@ class UserController extends Controller
 
     public function cancelBooking(Request $request, $reference)
     {
+        // Simple test to see if method is called
+        \Log::info('=== CANCEL BOOKING METHOD CALLED ===');
+        \Log::info('cancelBooking method called', [
+            'reference' => $reference,
+            'method' => $request->method(),
+            'user_authenticated' => Auth::check(),
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'user_role' => Auth::check() ? Auth::user()->role : null,
+            'request_headers' => $request->headers->all()
+        ]);
+        
         try {
             // Check if user is authenticated
             if (!Auth::check()) {
+                \Log::warning('User not authenticated for booking cancellation');
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated.'

@@ -56,7 +56,7 @@
               
               console.log('Cancelling booking:', this.currentBooking.reference);
               
-              fetch(`/user/bookings/${this.currentBooking.reference}/cancel`, {
+              fetch(`/user/bookings/cancel/${this.currentBooking.reference}`, {
                   method: 'POST',
                   body: formData,
                   headers: {
