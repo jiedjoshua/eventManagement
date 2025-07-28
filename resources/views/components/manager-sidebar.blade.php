@@ -151,6 +151,13 @@
                     </svg>
                     <span>Payment History</span>
                 </a>
+                <a href="{{ route('manager.refundHistory') }}"
+                   class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 {{ (isset($activePage) && $activePage === 'refund-history') ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-700 font-semibold shadow-md' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' }}">
+                    <svg class="h-5 w-5 {{ (isset($activePage) && $activePage === 'refund-history') ? 'text-red-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    <span>Refund History</span>
+                </a>
                 <a href="{{ route('manager.endedEvents') }}"
                    class="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 {{ (isset($activePage) && $activePage === 'ended-events') ? 'bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-700 font-semibold shadow-md' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' }}">
                     <svg class="h-5 w-5 {{ (isset($activePage) && $activePage === 'ended-events') ? 'text-indigo-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">

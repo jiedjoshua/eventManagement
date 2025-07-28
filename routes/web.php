@@ -210,6 +210,7 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     
     // Payment History
     Route::get('/manager/payment-history', [EventManagerController::class, 'paymentHistory'])->name('manager.paymentHistory');
+    Route::get('/manager/refund-history', [EventManagerController::class, 'refundHistory'])->name('manager.refundHistory');
 
     // Ended Events & Feedbacks
     Route::get('/manager/ended-events', [EventManagerController::class, 'endedEventsWithFeedback'])->name('manager.endedEvents');

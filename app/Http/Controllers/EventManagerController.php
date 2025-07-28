@@ -356,6 +356,55 @@ class EventManagerController extends Controller
             'cancellation_reason' => 'required|string|max:500'
         ]);
 
+        // Calculate refund amount
+        $refundAmount = 0;
+        $refundDetails = [];
+        
+        if ($event->booking) {
+            $booking = $event->booking;
+            $amountPaid = $booking->amount_paid ?? 0;
+            
+            // Calculate refund based on cancellation policy
+            $daysUntilEvent = now()->diffInDays($booking->event_date, false);
+            
+            if ($daysUntilEvent > 30) {
+                // Full refund if cancelled more than 30 days before event
+                $refundAmount = $amountPaid;
+                $refundDetails = [
+                    'type' => 'full',
+                    'percentage' => 100,
+                    'reason' => 'Cancelled more than 30 days before event'
+                ];
+            } elseif ($daysUntilEvent > 14) {
+                // 75% refund if cancelled 15-30 days before event
+                $refundAmount = $amountPaid * 0.75;
+                $refundDetails = [
+                    'type' => 'partial',
+                    'percentage' => 75,
+                    'reason' => 'Cancelled 15-30 days before event'
+                ];
+            } elseif ($daysUntilEvent > 7) {
+                // 50% refund if cancelled 8-14 days before event
+                $refundAmount = $amountPaid * 0.50;
+                $refundDetails = [
+                    'type' => 'partial',
+                    'percentage' => 50,
+                    'reason' => 'Cancelled 8-14 days before event'
+                ];
+            } else {
+                // No refund if cancelled within 7 days
+                $refundAmount = 0;
+                $refundDetails = [
+                    'type' => 'none',
+                    'percentage' => 0,
+                    'reason' => 'Cancelled within 7 days of event'
+                ];
+            }
+            
+            // Round to 2 decimal places
+            $refundAmount = round($refundAmount, 2);
+        }
+
         $event->update([
             'status' => 'cancelled',
             'cancellation_reason' => $request->cancellation_reason,
@@ -371,7 +420,28 @@ class EventManagerController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('success', 'Event cancelled successfully');
+        // Create refund record (simulation)
+        if ($refundAmount > 0) {
+            \App\Models\Payment::create([
+                'reference' => 'REFUND-' . strtoupper(Str::random(8)),
+                'booking_id' => $event->booking->id,
+                'user_id' => $event->booking->user_id,
+                'amount' => -$refundAmount, // Negative amount for refund
+                'paid_at' => now(),
+                'payment_type' => 'refund',
+                'refund_reason' => $request->cancellation_reason
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Event cancelled successfully',
+            'refund' => [
+                'amount' => $refundAmount,
+                'details' => $refundDetails,
+                'original_amount' => $event->booking->amount_paid ?? 0
+            ]
+        ]);
     }
 
     public function accountSettings()
@@ -412,6 +482,42 @@ class EventManagerController extends Controller
         $payments = $query->paginate(20)->withQueryString();
         
         return view('manager.payment-history', compact('payments'));
+    }
+
+    public function refundHistory(Request $request)
+    {
+        $query = \App\Models\Payment::with(['booking.user', 'user'])
+            ->where('payment_type', 'refund')
+            ->orderBy('paid_at', 'desc');
+
+        // Search by refund reference, event name, or customer name
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('reference', 'like', "%{$search}%")
+                  ->orWhereHas('booking', function($bookingQuery) use ($search) {
+                      $bookingQuery->where('event_name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('first_name', 'like', "%{$search}%")
+                               ->orWhere('last_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by refund date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('paid_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('paid_at', '<=', $request->date_to);
+        }
+
+        $refunds = $query->paginate(20)->withQueryString();
+        $totalRefundAmount = $query->sum('amount');
+        
+        return view('manager.refund-history', compact('refunds', 'totalRefundAmount'));
     }
 
     public function endedEventsWithFeedback()

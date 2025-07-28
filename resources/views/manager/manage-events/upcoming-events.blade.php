@@ -345,6 +345,24 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Refund Information -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-blue-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-sm font-medium text-blue-800">Refund Policy:</h4>
+                            <div class="text-sm text-blue-700 mt-1 space-y-1">
+                                <p>• <strong>30+ days before:</strong> 100% refund</p>
+                                <p>• <strong>15-30 days before:</strong> 75% refund</p>
+                                <p>• <strong>8-14 days before:</strong> 50% refund</p>
+                                <p>• <strong>Within 7 days:</strong> No refund</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <form id="cancelEventForm" method="POST" class="space-y-4">
@@ -830,11 +848,28 @@ if (cancelForm) {
         .then(data => {
             console.log('Response data:', data);
             if (data.success) {
-                showNotification(data.message || 'Event cancelled successfully!');
+                let message = data.message || 'Event cancelled successfully!';
+                
+                // Add refund information to the message
+                if (data.refund) {
+                    const refund = data.refund;
+                    if (refund.amount > 0) {
+                        message += `\n\n💰 Refund Details:\n`;
+                        message += `• Original Amount: ₱${refund.original_amount.toLocaleString()}\n`;
+                        message += `• Refund Amount: ₱${refund.amount.toLocaleString()}\n`;
+                        message += `• Refund Type: ${refund.details.type.toUpperCase()}\n`;
+                        message += `• Reason: ${refund.details.reason}`;
+                    } else {
+                        message += `\n\n⚠️ No refund available\n`;
+                        message += `• Reason: ${refund.details.reason}`;
+                    }
+                }
+                
+                showNotification(message);
                 closeCancelModal();
                 setTimeout(() => {
                     window.location.reload();
-                }, 1500);
+                }, 2000);
             } else {
                 showErrorNotification(data.message || 'Failed to cancel event.');
             }

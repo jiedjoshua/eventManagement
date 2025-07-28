@@ -12,6 +12,8 @@ class Payment extends Model
         'user_id',
         'amount',
         'paid_at',
+        'payment_type',
+        'refund_reason',
     ];
 
     public function booking()
