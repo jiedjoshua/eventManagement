@@ -54,10 +54,9 @@
               formData.append('_token', document.querySelector('meta[name=csrf-token]').getAttribute('content'));
               
               console.log('Cancelling booking:', this.currentBooking.reference);
-              console.log('CSRF token:', document.querySelector('meta[name=csrf-token]').getAttribute('content'));
               
               fetch(`/user/bookings/${this.currentBooking.reference}/cancel`, {
-                  method: 'PATCH',
+                  method: 'POST',
                   body: formData,
                   headers: {
                       'Accept': 'application/json'
@@ -70,6 +69,9 @@
                       }
                       if (response.status === 404) {
                           throw new Error('Booking not found. Please refresh the page.');
+                      }
+                      if (response.status === 419) {
+                          throw new Error('Session expired. Please refresh the page and try again.');
                       }
                       if (response.status === 400) {
                           return response.json().then(data => {
