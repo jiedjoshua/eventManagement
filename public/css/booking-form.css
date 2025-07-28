@@ -270,6 +270,8 @@
             margin-bottom: 8px;
             line-height: 1.2;
             letter-spacing: -0.01em;
+            display: block !important;
+            visibility: visible !important;
         }
 
         .package-card .venue-description,

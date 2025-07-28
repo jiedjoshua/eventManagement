@@ -2199,6 +2199,7 @@ async function loadPackagesForEventType(eventType) {
 
         packagesContainer.innerHTML = '';
         packages.forEach(package => {
+            console.log('Processing package:', package);
             const card = createPackageCard(package);
             packagesContainer.appendChild(card);
         });
@@ -2245,6 +2246,7 @@ async function loadPackagesForEventType(eventType) {
 }
 
 function createPackageCard(package) {
+    console.log('Creating package card with data:', package);
     const card = document.createElement('div');
     card.className = 'venue-card package-card';
     card.dataset.package = package.id;
@@ -2254,7 +2256,7 @@ function createPackageCard(package) {
             <input type="radio" name="package" value="${package.id}" class="package-radio" style="position:absolute;opacity:0;width:0;height:0;">
             <span class="venue-tag">Package</span>
             <div class="venue-content">
-                <h3 class="package-title">${package.title || 'Untitled Package'}</h3>
+                <h3 class="package-title" style="color: red !important; font-size: 18px !important;">${package.name || package.title || 'Untitled Package'}</h3>
                 <p class="venue-description">${package.description || 'No description available'}</p>
                 <div class="venue-actions">
                     <div class="venue-info">
