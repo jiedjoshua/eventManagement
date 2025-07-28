@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>Booked Events</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -112,7 +113,21 @@
               })
               .catch(error => {
                   console.error('Error cancelling booking:', error);
-                  alert('An error occurred while cancelling the booking: ' + error.message);
+                  let errorMessage = 'An error occurred while cancelling the booking.';
+                  
+                  if (error.message.includes('500')) {
+                      errorMessage = 'Server error occurred. Please try again later or contact support.';
+                  } else if (error.message.includes('403')) {
+                      errorMessage = 'Access denied. Please refresh the page and try again.';
+                  } else if (error.message.includes('404')) {
+                      errorMessage = 'Booking not found. Please refresh the page.';
+                  } else if (error.message.includes('419')) {
+                      errorMessage = 'Session expired. Please refresh the page and try again.';
+                  } else {
+                      errorMessage = error.message;
+                  }
+                  
+                  alert(errorMessage);
               });
           }
       }">

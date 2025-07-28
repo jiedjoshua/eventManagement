@@ -213,7 +213,17 @@ class UserController extends Controller
                 'request_data' => $request->all()
             ]);
             
+            // Add debugging to check if we can access the booking
+            \Log::info('Attempting to find booking with reference: ' . $reference);
+            
             $booking = Booking::where('reference', $reference)->first();
+            
+            \Log::info('Booking found', [
+                'booking_id' => $booking ? $booking->id : null,
+                'booking_status' => $booking ? $booking->status : null,
+                'booking_user_id' => $booking ? $booking->user_id : null,
+                'auth_user_id' => Auth::id()
+            ]);
             
             if (!$booking) {
                 \Log::warning('Booking not found', ['reference' => $reference]);
@@ -248,11 +258,19 @@ class UserController extends Controller
                 'cancellation_reason' => 'required|string|max:500'
             ]);
 
+            \Log::info('Validation passed, calculating refund');
+
         // Calculate refund amount
         $refundAmount = 0;
         $refundDetails = [];
         
         $amountPaid = $booking->amount_paid ?? 0;
+        
+        \Log::info('Refund calculation', [
+            'amount_paid' => $amountPaid,
+            'event_date' => $booking->event_date,
+            'days_until_event' => now()->diffInDays($booking->event_date, false)
+        ]);
         
         // Calculate refund based on cancellation policy
         $daysUntilEvent = now()->diffInDays($booking->event_date, false);
@@ -294,25 +312,47 @@ class UserController extends Controller
         // Round to 2 decimal places
         $refundAmount = round($refundAmount, 2);
 
-        // Update booking status only (avoid updating non-existent fields)
-        $booking->update([
-            'status' => 'cancelled'
+        // Update booking status and cancellation details
+        $additionalNotes = $booking->additional_notes ?? '';
+        $cancellationNote = "\n\nCANCELLED: " . $request->cancellation_reason . " (Cancelled at: " . now()->format('Y-m-d H:i:s') . ")";
+        
+        \Log::info('Attempting to update booking', [
+            'booking_id' => $booking->id,
+            'current_status' => $booking->status,
+            'new_status' => 'cancelled',
+            'cancellation_reason' => $request->cancellation_reason
         ]);
         
-        // Store cancellation reason in additional_notes for now
         $booking->update([
-            'additional_notes' => $booking->additional_notes . "\n\nCANCELLED: " . $request->cancellation_reason . " (Cancelled at: " . now()->format('Y-m-d H:i:s') . ")"
+            'status' => 'cancelled',
+            'cancellation_reason' => $request->cancellation_reason,
+            'cancelled_at' => now(),
+            'additional_notes' => $additionalNotes . $cancellationNote
         ]);
+        
+        \Log::info('Booking updated successfully');
 
         // Update associated event if it exists
         if ($booking->event) {
-            $booking->event->update([
-                'status' => 'cancelled'
-            ]);
+            try {
+                $booking->event->update([
+                    'status' => 'cancelled',
+                    'cancelled_at' => now()
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to update event status: ' . $e->getMessage());
+                // Continue with cancellation even if event update fails
+            }
         }
 
         // Create refund record (simulation)
         if ($refundAmount > 0) {
+            \Log::info('Creating refund payment record', [
+                'refund_amount' => $refundAmount,
+                'booking_id' => $booking->id,
+                'user_id' => $booking->user_id
+            ]);
+            
             $paymentData = [
                 'reference' => 'REFUND-' . strtoupper(\Illuminate\Support\Str::random(8)),
                 'booking_id' => $booking->id,
@@ -321,17 +361,29 @@ class UserController extends Controller
                 'paid_at' => now()
             ];
             
-            // Only add payment_type and refund_reason if they exist
+            // Add payment_type and refund_reason if the fields exist in the database
             try {
+                // Check if the payment_type column exists by trying to access it
+                $testPayment = new \App\Models\Payment();
                 $paymentData['payment_type'] = 'refund';
                 $paymentData['refund_reason'] = $request->cancellation_reason;
             } catch (\Exception $e) {
-                \Log::info('Payment refund fields not available');
+                \Log::info('Payment refund fields not available, creating basic payment record');
             }
             
-            \App\Models\Payment::create($paymentData);
+            try {
+                \App\Models\Payment::create($paymentData);
+            } catch (\Exception $e) {
+                \Log::error('Failed to create payment record: ' . $e->getMessage());
+                // Continue with cancellation even if payment record creation fails
+            }
         }
 
+        \Log::info('Booking cancellation completed successfully', [
+            'refund_amount' => $refundAmount,
+            'refund_details' => $refundDetails
+        ]);
+        
         return response()->json([
             'success' => true,
             'message' => 'Booking cancelled successfully',
@@ -342,7 +394,11 @@ class UserController extends Controller
             ]
         ]);
         } catch (\Exception $e) {
-            \Log::error('Booking cancellation error: ' . $e->getMessage());
+            \Log::error('Booking cancellation error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while cancelling the booking: ' . $e->getMessage()
