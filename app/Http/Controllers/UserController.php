@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -11,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Booking;
 use App\Models\Venue;
 use App\Models\Package;
-use App\Models\Payment;
 use Carbon\Carbon;
 
 class UserController extends Controller
@@ -19,7 +19,9 @@ class UserController extends Controller
 
     public function index()
     {
-        // Allow any authenticated user to access their dashboard
+        if (Auth::user()->role !== 'regular_user') {
+            abort(403, 'Unauthorized');
+        }
 
         $user = Auth::user();
 
@@ -206,16 +208,6 @@ class UserController extends Controller
     public function cancelBooking(Request $request, $reference)
     {
         try {
-            // Debug logging
-            \Log::info('Cancel booking method called', [
-                'reference' => $reference,
-                'user_id' => Auth::id(),
-                'authenticated' => Auth::check(),
-                'request_method' => $request->method(),
-                'has_csrf_token' => $request->has('_token'),
-                'session_id' => session()->getId()
-            ]);
-            
             // Check if user is authenticated
             if (!Auth::check()) {
                 return response()->json([
@@ -320,7 +312,7 @@ class UserController extends Controller
             // Create refund record (simulation)
             if ($refundAmount > 0) {
                 \App\Models\Payment::create([
-                    'reference' => 'REFUND-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                    'reference' => 'REFUND-' . strtoupper(Str::random(8)),
                     'booking_id' => $booking->id,
                     'user_id' => $booking->user_id,
                     'amount' => -$refundAmount, // Negative amount for refund

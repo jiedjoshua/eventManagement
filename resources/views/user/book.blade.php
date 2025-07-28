@@ -638,7 +638,7 @@
 
             <div class="mb-6">
               <label for="cancel_reason" class="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason</label>
-              <textarea id="cancel_reason" name="cancellation_reason" rows="3"
+              <textarea id="cancel_reason" rows="3"
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 placeholder="Please provide a reason for cancellation..." required></textarea>
             </div>
