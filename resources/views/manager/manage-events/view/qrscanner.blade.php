@@ -521,32 +521,111 @@
         // Initialize audio when page loads
         document.addEventListener('DOMContentLoaded', function() {
             initAudio();
+            
+            // Initialize speech synthesis voices
+            if ('speechSynthesis' in window) {
+                // Load voices if they're not already loaded
+                if (speechSynthesis.getVoices().length === 0) {
+                    speechSynthesis.addEventListener('voiceschanged', function() {
+                        console.log('Voices loaded:', speechSynthesis.getVoices().length);
+                    });
+                }
+            }
         });
 
-        // Function to speak welcome message
-        function speakWelcome(name) {
+        // Function to speak welcome message with natural variations
+        function speakWelcome(name, isExternalGuest = false) {
             if (!voiceEnabled) return;
             
-            const utterance = new SpeechSynthesisUtterance();
-            utterance.text = `Welcome ${name}!`;
-            utterance.rate = 0.9; // Slightly slower for clarity
-            utterance.pitch = 1.1; // Slightly higher pitch for friendliness
-            utterance.volume = 0.8;
+            // Different message sets for registered vs external guests
+            let welcomeMessages;
             
-            // Try to use a female voice if available
-            const voices = speechSynthesis.getVoices();
-            const femaleVoice = voices.find(voice => 
-                voice.name.includes('female') || 
-                voice.name.includes('Female') ||
-                voice.name.includes('Samantha') ||
-                voice.name.includes('Victoria')
-            );
-            
-            if (femaleVoice) {
-                utterance.voice = femaleVoice;
+            if (isExternalGuest) {
+                // Messages for external guests (more formal)
+                if (name === 'Guest') {
+                    // Generic messages for unnamed external guests
+                    welcomeMessages = [
+                        `Welcome! We're delighted to have you join us!`,
+                        `Hello! Thank you for being our special guest!`,
+                        `Welcome! We're honored to have you here!`,
+                        `Hi there! We're so pleased you could make it!`,
+                        `Welcome! Enjoy your special time with us!`,
+                        `Hello! We're thrilled to have you as our guest!`
+                    ];
+                } else {
+                    // Personalized messages for named external guests
+                    welcomeMessages = [
+                        `Welcome ${name}! We're delighted to have you join us!`,
+                        `Hello ${name}! Thank you for being our special guest!`,
+                        `Welcome ${name}! We're honored to have you here!`,
+                        `Hi ${name}! We're so pleased you could make it!`,
+                        `Welcome ${name}! Enjoy your special time with us!`,
+                        `Hello ${name}! We're thrilled to have you as our guest!`
+                    ];
+                }
+            } else {
+                // Messages for registered guests (more casual)
+                welcomeMessages = [
+                    `Welcome ${name}! We're so glad you're here!`,
+                    `Hi ${name}! Great to see you!`,
+                    `Welcome ${name}! Enjoy your time with us!`,
+                    `Hello ${name}! We're excited to have you!`,
+                    `Welcome ${name}! Thank you for joining us!`,
+                    `Hi there ${name}! We're delighted you came!`,
+                    `Welcome ${name}! Have a wonderful time!`,
+                    `Hello ${name}! We're thrilled you're here!`
+                ];
             }
             
-            speechSynthesis.speak(utterance);
+            // Randomly select a welcome message
+            const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+            
+            const utterance = new SpeechSynthesisUtterance();
+            utterance.text = randomMessage;
+            utterance.rate = 0.85; // Natural speaking pace
+            utterance.pitch = 1.05; // Slightly warm pitch
+            utterance.volume = 0.9; // Clear volume
+            
+            // Get available voices and select the best one
+            const voices = speechSynthesis.getVoices();
+            
+            // Priority order for voice selection (more natural voices)
+            const preferredVoices = [
+                'Samantha', 'Victoria', 'Karen', 'Alex', 'Daniel', 'Tom',
+                'female', 'Female', 'woman', 'Woman', 'male', 'Male'
+            ];
+            
+            let selectedVoice = null;
+            
+            // Try to find a preferred voice
+            for (const preferred of preferredVoices) {
+                selectedVoice = voices.find(voice => 
+                    voice.name.includes(preferred) && 
+                    (voice.lang.includes('en') || voice.lang.includes('US'))
+                );
+                if (selectedVoice) break;
+            }
+            
+            // If no preferred voice found, use any English voice
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => 
+                    voice.lang.includes('en') || voice.lang.includes('US')
+                );
+            }
+            
+            // If still no voice found, use the first available
+            if (!selectedVoice && voices.length > 0) {
+                selectedVoice = voices[0];
+            }
+            
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+            
+            // Add slight pause before speaking for better timing
+            setTimeout(() => {
+                speechSynthesis.speak(utterance);
+            }, 100);
         }
 
         // Voice toggle functionality
@@ -655,11 +734,18 @@
                                                 const fullName = `${data.user.first_name} ${data.user.last_name}`;
                                                 successMessage = `✅ Check-in successful!\n👤 Guest: ${fullName}`;
                                                 guestName = data.user.first_name; // Use first name for voice
+                                                const isExternalGuest = false;
                                             }
                                             // For external guests, show their name
-                                            else if (data.guest && data.guest.name) {
-                                                successMessage = `✅ Check-in successful!\n👤 Guest: ${data.guest.name}`;
-                                                guestName = data.guest.name; // Use full name for voice
+                                            else if (data.guest) {
+                                                if (data.guest.name) {
+                                                    successMessage = `✅ Check-in successful!\n👤 Guest: ${data.guest.name}`;
+                                                    guestName = data.guest.name; // Use full name for voice
+                                                } else {
+                                                    successMessage = `✅ Check-in successful!\n👤 External Guest`;
+                                                    guestName = 'Guest'; // Use generic name for voice
+                                                }
+                                                const isExternalGuest = true;
                                             }
                                             
                                             playSuccessSound();
@@ -667,7 +753,8 @@
                                             
                                             // Speak welcome message
                                             if (guestName) {
-                                                speakWelcome(guestName);
+                                                const isExternal = data.guest ? true : false;
+                                                speakWelcome(guestName, isExternal);
                                             }
                                         } else {
                                             playErrorSound();
