@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\CSPMiddleware;
 use Illuminate\Auth\Middleware\Authenticate;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -21,11 +22,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'prevent-back-history' => PreventBackHistory::class,
             'security-headers' => SecurityHeaders::class,
+            'csp' => CSPMiddleware::class,
             // add other aliases as needed
         ]);
 
         $middleware->append(PreventBackHistory::class);
         $middleware->append(SecurityHeaders::class);
+        $middleware->append(CSPMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
