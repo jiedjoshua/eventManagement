@@ -108,6 +108,10 @@
             background-color: #f0fdf4;
         }
         
+        .result-card.success br {
+            margin-bottom: 0.5rem;
+        }
+        
         .result-card.error {
             border-color: #ef4444;
             background-color: #fef2f2;
@@ -303,7 +307,13 @@
 
         function updateResultCard(type, message) {
             resultCard.className = `result-card ${type} p-4 rounded-lg border-2 mb-4`;
-            result.textContent = message;
+            
+            // Handle multi-line messages (replace \n with <br>)
+            if (message.includes('\n')) {
+                result.innerHTML = message.replace(/\n/g, '<br>');
+            } else {
+                result.textContent = message;
+            }
             
             const icon = resultCard.querySelector('i');
             icon.className = type === 'success' ? 'fas fa-check-circle text-green-500 mt-1 mr-3' :
@@ -362,7 +372,8 @@
                                 fetch(checkInUrl + '?data=' + encodeURIComponent(code.data), {
                                         method: 'GET',
                                         headers: {
-                                            'Accept': 'application/json'
+                                            'Accept': 'application/json',
+                                            'Content-Type': 'application/json'
                                         }
                                     })
                                     .then(async response => {
@@ -374,7 +385,20 @@
                                                 result.textContent += `\nPreviously checked in at: ${data.checked_in_at}`;
                                             }
                                         } else if (data.message) {
-                                            updateResultCard('success', data.message);
+                                            // Display success message with user's full name
+                                            let successMessage = data.message;
+                                            
+                                            // For registered users, show their full name
+                                            if (data.user && data.user.first_name && data.user.last_name) {
+                                                const fullName = `${data.user.first_name} ${data.user.last_name}`;
+                                                successMessage = `✅ Check-in successful!\n👤 Guest: ${fullName}`;
+                                            }
+                                            // For external guests, show their name
+                                            else if (data.guest && data.guest.name) {
+                                                successMessage = `✅ Check-in successful!\n👤 Guest: ${data.guest.name}`;
+                                            }
+                                            
+                                            updateResultCard('success', successMessage);
                                         } else {
                                             updateResultCard('error', 'Unknown response from server.');
                                         }
