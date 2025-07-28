@@ -369,8 +369,8 @@
                 @csrf
                 @method('PATCH')
                 <div>
-                    <label for="cancel_reason" class="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason</label>
-                    <textarea id="cancel_reason" name="cancel_reason" rows="3"
+                    <label for="cancellation_reason" class="block text-sm font-medium text-gray-700 mb-2">Cancellation Reason</label>
+                    <textarea id="cancellation_reason" name="cancellation_reason" rows="3"
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                         placeholder="Please provide a reason for cancellation..." required></textarea>
                 </div>
@@ -807,7 +807,7 @@ if (cancelForm) {
         e.preventDefault(); // Prevent normal form submission
 
         const formData = new FormData(this);
-        const reason = formData.get('cancel_reason');
+        const reason = formData.get('cancellation_reason');
 
         if (!reason.trim()) {
             showErrorNotification('Please provide a cancellation reason.');

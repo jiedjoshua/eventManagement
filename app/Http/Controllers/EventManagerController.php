@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\Models\Event;
 use App\Models\Booking;
 use Carbon\Carbon;
@@ -407,7 +408,7 @@ class EventManagerController extends Controller
 
         $event->update([
             'status' => 'cancelled',
-            'cancellation_reason' => $request->cancellation_reason,
+            'cancel_reason' => $request->cancellation_reason,
             'cancelled_at' => now()
         ]);
 
