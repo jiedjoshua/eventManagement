@@ -207,21 +207,47 @@ class UserController extends Controller
     public function cancelBooking(Request $request, $reference)
     {
         try {
+            // Simple test to see if the method is being called
+            \Log::info('Cancel booking method called', [
+                'reference' => $reference,
+                'user_id' => Auth::id(),
+                'authenticated' => Auth::check(),
+                'request_method' => $request->method(),
+                'has_csrf_token' => $request->has('_token'),
+                'session_id' => session()->getId()
+            ]);
+            
             // Check if user is authenticated
             if (!Auth::check()) {
+                \Log::warning('User not authenticated');
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated.'
                 ], 401);
             }
             
-            // Validation
+            // Basic validation
             $request->validate([
                 'cancellation_reason' => 'required|string|max:500'
             ]);
             
             // Find the booking
             $booking = Booking::where('reference', $reference)->first();
+            
+            \Log::info('Booking lookup result', [
+                'booking_found' => $booking ? true : false,
+                'booking_user_id' => $booking ? $booking->user_id : null,
+                'auth_user_id' => Auth::id(),
+                'booking_status' => $booking ? $booking->status : null,
+                'reference_searched' => $reference
+            ]);
+            
+            // Debug: Let's also check if there are any bookings at all for this user
+            $userBookings = Booking::where('user_id', Auth::id())->get();
+            \Log::info('User bookings count', [
+                'total_user_bookings' => $userBookings->count(),
+                'user_booking_references' => $userBookings->pluck('reference')->toArray()
+            ]);
             
             if (!$booking) {
                 return response()->json([
@@ -232,6 +258,10 @@ class UserController extends Controller
             
             // Check authorization
             if ($booking->user_id !== Auth::id()) {
+                \Log::warning('Authorization failed', [
+                    'booking_user_id' => $booking->user_id,
+                    'auth_user_id' => Auth::id()
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized.'
@@ -246,88 +276,21 @@ class UserController extends Controller
                 ], 400);
             }
             
-            // Calculate refund amount
-            $refundAmount = 0;
-            $refundDetails = [];
-            
-            $amountPaid = $booking->amount_paid ?? 0;
-            
-            // Calculate refund based on cancellation policy
-            $daysUntilEvent = now()->diffInDays($booking->event_date, false);
-            
-            if ($daysUntilEvent > 30) {
-                // Full refund if cancelled more than 30 days before event
-                $refundAmount = $amountPaid;
-                $refundDetails = [
-                    'type' => 'full',
-                    'percentage' => 100,
-                    'reason' => 'Cancelled more than 30 days before event'
-                ];
-            } elseif ($daysUntilEvent > 14) {
-                // 75% refund if cancelled 15-30 days before event
-                $refundAmount = $amountPaid * 0.75;
-                $refundDetails = [
-                    'type' => 'partial',
-                    'percentage' => 75,
-                    'reason' => 'Cancelled 15-30 days before event'
-                ];
-            } elseif ($daysUntilEvent > 7) {
-                // 50% refund if cancelled 8-14 days before event
-                $refundAmount = $amountPaid * 0.50;
-                $refundDetails = [
-                    'type' => 'partial',
-                    'percentage' => 50,
-                    'reason' => 'Cancelled 8-14 days before event'
-                ];
-            } else {
-                // No refund if cancelled within 7 days
-                $refundAmount = 0;
-                $refundDetails = [
-                    'type' => 'none',
-                    'percentage' => 0,
-                    'reason' => 'Cancelled within 7 days of event'
-                ];
-            }
-            
-            // Round to 2 decimal places
-            $refundAmount = round($refundAmount, 2);
-            
-            // Update booking status
+            // Simple update - just change status
             $booking->update([
-                'status' => 'cancelled',
-                'cancellation_reason' => $request->cancellation_reason,
-                'cancelled_at' => now()
+                'status' => 'cancelled'
             ]);
-            
-            // Update associated event if it exists
-            if ($booking->event) {
-                $booking->event->update([
-                    'status' => 'cancelled',
-                    'cancel_reason' => $request->cancellation_reason,
-                    'cancelled_at' => now()
-                ]);
-            }
-            
-            // Create refund record if there's a refund
-            if ($refundAmount > 0) {
-                \App\Models\Payment::create([
-                    'reference' => 'REFUND-' . strtoupper(\Illuminate\Support\Str::random(8)),
-                    'booking_id' => $booking->id,
-                    'user_id' => $booking->user_id,
-                    'amount' => -$refundAmount, // Negative amount for refund
-                    'paid_at' => now(),
-                    'payment_type' => 'refund',
-                    'refund_reason' => $request->cancellation_reason
-                ]);
-            }
             
             return response()->json([
                 'success' => true,
                 'message' => 'Booking cancelled successfully',
                 'refund' => [
-                    'amount' => $refundAmount,
-                    'details' => $refundDetails,
-                    'original_amount' => $amountPaid
+                    'amount' => 0,
+                    'details' => [
+                        'type' => 'none',
+                        'reason' => 'Test cancellation'
+                    ],
+                    'original_amount' => 0
                 ]
             ]);
             
