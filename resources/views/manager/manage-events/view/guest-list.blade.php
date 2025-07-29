@@ -130,9 +130,13 @@
                     <h1 class="text-3xl font-bold text-gray-800">Guest List</h1>
                     <p class="text-gray-600 mt-1">{{ $event->event_name }}</p>
                 </div>
-                <div class="flex gap-4">
+                <div class="flex gap-4 items-center">
                     <div class="text-sm text-gray-600 bg-white px-4 py-2 rounded shadow font-medium">
                         Total Guests: <span class="font-semibold text-indigo-600">{{ $event->guests->count() }}</span>
+                    </div>
+                    <div id="realtime-status" class="flex items-center text-xs text-gray-500">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                        <span>Live updates enabled</span>
                     </div>
                 </div>
             </div>
@@ -200,5 +204,154 @@
             </div>
         </div>
     </main>
+
+    <script>
+        // Real-time updates for guest list
+        let lastUpdateTime = null;
+        let updateInterval;
+        let isUpdating = false;
+        
+        function updateStatusIndicator(status, message) {
+            const statusElement = document.getElementById('realtime-status');
+            const dotElement = statusElement.querySelector('.w-2');
+            const textElement = statusElement.querySelector('span');
+            
+            switch(status) {
+                case 'connected':
+                    dotElement.className = 'w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse';
+                    textElement.textContent = message || 'Live updates enabled';
+                    break;
+                case 'updating':
+                    dotElement.className = 'w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse';
+                    textElement.textContent = message || 'Updating...';
+                    break;
+                case 'error':
+                    dotElement.className = 'w-2 h-2 bg-red-500 rounded-full mr-2';
+                    textElement.textContent = message || 'Connection error';
+                    break;
+                case 'disconnected':
+                    dotElement.className = 'w-2 h-2 bg-gray-400 rounded-full mr-2';
+                    textElement.textContent = message || 'Updates paused';
+                    break;
+            }
+        }
+        
+        function updateGuestList() {
+            if (isUpdating) return;
+            
+            isUpdating = true;
+            updateStatusIndicator('updating', 'Updating...');
+            
+            fetch(`{{ route('api.events.guestsData', ['event' => $event->id]) }}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update total count
+                    const totalCountElement = document.querySelector('.text-indigo-600');
+                    if (totalCountElement) {
+                        totalCountElement.textContent = data.total_count;
+                    }
+                    
+                    // Update table body
+                    const tbody = document.querySelector('tbody');
+                    if (tbody && data.guests.length > 0) {
+                        tbody.innerHTML = data.guests.map((guest, index) => `
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    ${index + 1}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                            <span class="text-indigo-600 font-medium">
+                                                ${guest.initials}
+                                            </span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                ${guest.first_name} ${guest.last_name}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">${guest.email}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        ${guest.rsvp_status === 'accepted' ? 'bg-green-100 text-green-800' : 
+                                          (guest.rsvp_status === 'declined' ? 'bg-red-100 text-red-800' : 
+                                          'bg-yellow-100 text-yellow-800')}">
+                                        ${guest.rsvp_status.charAt(0).toUpperCase() + guest.rsvp_status.slice(1)}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else if (tbody) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                        </svg>
+                                        <p class="text-lg font-medium">No guests found</p>
+                                        <p class="text-sm text-gray-500 mt-1">Add guests to see them listed here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Update last update time
+                    lastUpdateTime = data.last_updated;
+                    updateStatusIndicator('connected', 'Live updates enabled');
+                })
+                .catch(error => {
+                    console.error('Error updating guest list:', error);
+                    updateStatusIndicator('error', 'Connection error');
+                })
+                .finally(() => {
+                    isUpdating = false;
+                });
+        }
+        
+        // Start real-time updates
+        function startRealTimeUpdates() {
+            // Initial update
+            updateGuestList();
+            
+            // Set up interval for updates (every 3 seconds)
+            updateInterval = setInterval(updateGuestList, 3000);
+            updateStatusIndicator('connected', 'Live updates enabled');
+        }
+        
+        // Stop real-time updates
+        function stopRealTimeUpdates() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            updateStatusIndicator('disconnected', 'Updates paused');
+        }
+        
+        // Start updates when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            startRealTimeUpdates();
+            
+            // Stop updates when page is hidden (to save resources)
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopRealTimeUpdates();
+                } else {
+                    startRealTimeUpdates();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

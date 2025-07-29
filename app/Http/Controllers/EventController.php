@@ -610,6 +610,86 @@ class EventController extends Controller
     }
 
     /**
+     * Get real-time guests data for the guest list page
+     */
+    public function getGuestsData(Event $event)
+    {
+        $guests = $event->guests()
+            ->select('users.id', 'first_name', 'last_name', 'email')
+            ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
+            ->get()
+            ->map(function ($guest) {
+                return [
+                    'id' => $guest->id,
+                    'first_name' => $guest->first_name,
+                    'last_name' => $guest->last_name,
+                    'email' => $guest->email,
+                    'rsvp_status' => $guest->pivot->rsvp_status,
+                    'checked_in_at' => $guest->pivot->checked_in_at,
+                    'initials' => strtoupper(substr($guest->first_name, 0, 1) . substr($guest->last_name, 0, 1))
+                ];
+            });
+
+        return response()->json([
+            'guests' => $guests,
+            'total_count' => $guests->count(),
+            'last_updated' => now()->toISOString()
+        ]);
+    }
+
+    /**
+     * Get real-time checked-in data for the checked-in page
+     */
+    public function getCheckedInData(Event $event)
+    {
+        // Get checked-in registered guests
+        $checkedInGuests = $event->guests()
+            ->wherePivotNotNull('checked_in_at')
+            ->select('users.id', 'first_name', 'last_name', 'email')
+            ->withPivot('rsvp_status', 'plus_one', 'checked_in_at')
+            ->get()
+            ->map(function ($guest) {
+                return [
+                    'id' => $guest->id,
+                    'first_name' => $guest->first_name,
+                    'last_name' => $guest->last_name,
+                    'email' => $guest->email,
+                    'checked_in_at' => $guest->pivot->checked_in_at,
+                    'formatted_checkin_time' => \Carbon\Carbon::parse($guest->pivot->checked_in_at)->format('F d, Y g:i A'),
+                    'initials' => strtoupper(substr($guest->first_name, 0, 1) . substr($guest->last_name, 0, 1)),
+                    'type' => 'registered'
+                ];
+            });
+
+        // Get checked-in external guests
+        $checkedInExternalGuests = \App\Models\ExternalGuest::where('event_id', $event->id)
+            ->whereNotNull('checked_in_at')
+            ->get()
+            ->map(function ($guest) {
+                return [
+                    'id' => $guest->id,
+                    'name' => $guest->name ?? 'External Guest',
+                    'unique_code' => $guest->unique_code ?? 'N/A',
+                    'checked_in_at' => $guest->checked_in_at,
+                    'formatted_checkin_time' => \Carbon\Carbon::parse($guest->checked_in_at)->format('F d, Y g:i A'),
+                    'initials' => strtoupper(substr($guest->name ?? 'E', 0, 1)),
+                    'type' => 'external'
+                ];
+            });
+
+        return response()->json([
+            'registered_guests' => $checkedInGuests,
+            'external_guests' => $checkedInExternalGuests,
+            'summary' => [
+                'registered_count' => $checkedInGuests->count(),
+                'external_count' => $checkedInExternalGuests->count(),
+                'total_count' => $checkedInGuests->count() + $checkedInExternalGuests->count()
+            ],
+            'last_updated' => now()->toISOString()
+        ]);
+    }
+
+    /**
      * Extract numeric price from price range string
      * Handles formats like "₱1,000 - ₱5,000" or "₱1,000" or "1000"
      */

@@ -137,6 +137,10 @@
                     <div class="text-sm text-gray-600 bg-white px-4 py-2 rounded shadow font-medium">
                         Total: <span class="font-semibold text-indigo-600">{{ $event->guests->count() + $event->checkedInExternalGuests->count() }}</span>
                     </div>
+                    <div id="realtime-status" class="flex items-center text-xs text-gray-500">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                        <span>Live updates enabled</span>
+                    </div>
                 </div>
             </div>
             <p class="text-gray-600">View all guests who have checked in to the event.</p>
@@ -304,5 +308,205 @@
             </div>
         </div>
     </main>
+
+    <script>
+        // Real-time updates for checked-in guests
+        let lastUpdateTime = null;
+        let updateInterval;
+        let isUpdating = false;
+        
+        function updateStatusIndicator(status, message) {
+            const statusElement = document.getElementById('realtime-status');
+            const dotElement = statusElement.querySelector('.w-2');
+            const textElement = statusElement.querySelector('span');
+            
+            switch(status) {
+                case 'connected':
+                    dotElement.className = 'w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse';
+                    textElement.textContent = message || 'Live updates enabled';
+                    break;
+                case 'updating':
+                    dotElement.className = 'w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse';
+                    textElement.textContent = message || 'Updating...';
+                    break;
+                case 'error':
+                    dotElement.className = 'w-2 h-2 bg-red-500 rounded-full mr-2';
+                    textElement.textContent = message || 'Connection error';
+                    break;
+                case 'disconnected':
+                    dotElement.className = 'w-2 h-2 bg-gray-400 rounded-full mr-2';
+                    textElement.textContent = message || 'Updates paused';
+                    break;
+            }
+        }
+        
+        function updateCheckedInList() {
+            if (isUpdating) return;
+            
+            isUpdating = true;
+            updateStatusIndicator('updating', 'Updating...');
+            
+            fetch(`{{ route('api.events.checkedInData', ['event' => $event->id]) }}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update summary counts
+                    const registeredCountElement = document.querySelector('.text-indigo-600');
+                    const externalCountElement = document.querySelector('.text-green-600');
+                    const totalCountElement = document.querySelector('.text-blue-600');
+                    
+                    if (registeredCountElement) {
+                        registeredCountElement.textContent = data.summary.registered_count;
+                    }
+                    if (externalCountElement) {
+                        externalCountElement.textContent = data.summary.external_count;
+                    }
+                    if (totalCountElement) {
+                        totalCountElement.textContent = data.summary.total_count;
+                    }
+                    
+                    // Update registered guests table
+                    const registeredTbody = document.querySelector('tbody');
+                    if (registeredTbody && data.registered_guests.length > 0) {
+                        registeredTbody.innerHTML = data.registered_guests.map(guest => `
+                            <tr class="hover:bg-indigo-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                            <span class="text-indigo-600 font-medium">
+                                                ${guest.initials}
+                                            </span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                ${guest.first_name} ${guest.last_name}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">${guest.email}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        ${guest.formatted_checkin_time}
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else if (registeredTbody) {
+                        registeredTbody.innerHTML = `
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                        </svg>
+                                        <p class="text-lg font-medium">No registered guests have checked in yet</p>
+                                        <p class="text-sm text-gray-500 mt-1">Registered guests will appear here once they check in</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Update external guests table
+                    const externalTbody = document.querySelectorAll('tbody')[1];
+                    if (externalTbody && data.external_guests.length > 0) {
+                        externalTbody.innerHTML = data.external_guests.map(guest => `
+                            <tr class="hover:bg-green-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                                            <span class="text-green-600 font-medium">
+                                                ${guest.initials}
+                                            </span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                ${guest.name}
+                                            </div>
+                                            <div class="text-xs text-green-600 font-medium">External Guest</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-600 font-mono bg-gray-100 px-2 py-1 rounded">
+                                        ${guest.unique_code}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        ${guest.formatted_checkin_time}
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else if (externalTbody) {
+                        externalTbody.innerHTML = `
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                        </svg>
+                                        <p class="text-lg font-medium">No external guests have checked in yet</p>
+                                        <p class="text-sm text-gray-500 mt-1">External guests will appear here once they check in via QR code</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Update last update time
+                    lastUpdateTime = data.last_updated;
+                    updateStatusIndicator('connected', 'Live updates enabled');
+                })
+                .catch(error => {
+                    console.error('Error updating checked-in list:', error);
+                    updateStatusIndicator('error', 'Connection error');
+                })
+                .finally(() => {
+                    isUpdating = false;
+                });
+        }
+        
+        // Start real-time updates
+        function startRealTimeUpdates() {
+            // Initial update
+            updateCheckedInList();
+            
+            // Set up interval for updates (every 3 seconds)
+            updateInterval = setInterval(updateCheckedInList, 3000);
+            updateStatusIndicator('connected', 'Live updates enabled');
+        }
+        
+        // Stop real-time updates
+        function stopRealTimeUpdates() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            updateStatusIndicator('disconnected', 'Updates paused');
+        }
+        
+        // Start updates when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            startRealTimeUpdates();
+            
+            // Stop updates when page is hidden (to save resources)
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopRealTimeUpdates();
+                } else {
+                    startRealTimeUpdates();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -177,6 +177,10 @@ Route::middleware(['auth', 'role:event_manager', 'prevent-back-history'])->group
     Route::get('/events/{event}/all-guests', [EventController::class, 'getAllGuests'])->name('events.getAllGuests');
     Route::post('/events/{event}/check-in/{guestId}', [EventController::class, 'manualCheckIn'])->name('events.manualCheckIn');
     
+    // Real-time update routes
+    Route::get('/api/events/{event}/guests-data', [EventController::class, 'getGuestsData'])->name('api.events.guestsData');
+    Route::get('/api/events/{event}/checked-in-data', [EventController::class, 'getCheckedInData'])->name('api.events.checkedInData');
+    
     Route::patch('/manager/events/{event}/cancel', [EventManagerController::class, 'cancelEvent'])->name('manager.events.cancel');
 
     Route::get('/manager/account-settings', [EventManagerController::class, 'accountSettings'])->name('manager.account-settings');
