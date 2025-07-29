@@ -284,12 +284,21 @@
                             <label for="venueMainImage" class="block text-sm font-semibold text-gray-800 mb-2">Main Image *</label>
                             <input type="file" id="venueMainImage" name="main_image" required accept="image/*"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                            <div id="mainImagePreview" class="mt-3 hidden">
+                                <img id="mainImagePreviewImg" src="" alt="Main Image Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-200">
+                            </div>
                         </div>
 
                         <div>
                             <label for="venueGalleryImages" class="block text-sm font-semibold text-gray-800 mb-2">Gallery Images</label>
                             <input type="file" id="venueGalleryImages" name="gallery_images[]" multiple accept="image/*"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                            <div id="galleryImagesPreview" class="mt-3 hidden">
+                                <p class="text-sm font-medium text-gray-700 mb-2">Selected Images:</p>
+                                <div id="galleryPreviewContainer" class="grid grid-cols-3 gap-2">
+                                    <!-- Gallery preview images will be added here -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -788,7 +797,133 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize for create form
             initializeLocationSearch('venueLocationSearch', 'locationSearchResults', 'venueAddress', 'venueLatitude', 'venueLongitude');
+            
+            // Initialize image preview functionality
+            initializeImagePreviews();
         });
+
+        // Image preview functions
+        function initializeImagePreviews() {
+            // Create form image previews
+            const createMainImageInput = document.getElementById('venueMainImage');
+            const createGalleryInput = document.getElementById('venueGalleryImages');
+            
+            if (createMainImageInput) {
+                createMainImageInput.addEventListener('change', function() {
+                    handleMainImagePreview(this, 'mainImagePreview', 'mainImagePreviewImg');
+                });
+            }
+            
+            if (createGalleryInput) {
+                createGalleryInput.addEventListener('change', function() {
+                    handleGalleryImagesPreview(this, 'galleryPreviewContainer');
+                });
+            }
+        }
+
+        function handleMainImagePreview(input, previewId, previewImgId) {
+            const preview = document.getElementById(previewId);
+            const previewImg = document.getElementById(previewImgId);
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.classList.remove('hidden');
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                preview.classList.add('hidden');
+            }
+        }
+
+        function handleGalleryImagesPreview(input, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (input.files && input.files.length > 0) {
+                const previewDiv = document.getElementById(containerId.replace('Container', ''));
+                previewDiv.classList.remove('hidden');
+                
+                Array.from(input.files).forEach((file, index) => {
+                    const reader = new FileReader();
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'relative';
+                    
+                    reader.onload = function(e) {
+                        previewItem.innerHTML = `
+                            <img src="${e.target.result}" alt="Gallery Preview ${index + 1}" 
+                                 class="w-full h-20 object-cover rounded-lg border border-gray-200">
+                            <button type="button" onclick="removeGalleryPreview(${index})" 
+                                    class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
+                                ×
+                            </button>
+                        `;
+                    };
+                    
+                    reader.readAsDataURL(file);
+                    container.appendChild(previewItem);
+                });
+            } else {
+                const previewDiv = document.getElementById(containerId.replace('Container', ''));
+                previewDiv.classList.add('hidden');
+            }
+        }
+
+        function removeGalleryPreview(index) {
+            const input = document.getElementById('venueGalleryImages');
+            const container = document.getElementById('galleryPreviewContainer');
+            
+            // Create a new FileList without the removed file
+            const dt = new DataTransfer();
+            Array.from(input.files).forEach((file, i) => {
+                if (i !== index) {
+                    dt.items.add(file);
+                }
+            });
+            input.files = dt.files;
+            
+            // Re-render the preview
+            handleGalleryImagesPreview(input, 'galleryPreviewContainer');
+        }
+
+        function initializeEditImagePreviews() {
+            // Edit form image previews
+            const editMainImageInput = document.getElementById('editVenueMainImage');
+            const editGalleryInput = document.getElementById('editVenueGalleryImages');
+            
+            if (editMainImageInput) {
+                editMainImageInput.addEventListener('change', function() {
+                    handleMainImagePreview(this, 'editMainImagePreview', 'editMainImagePreviewImg');
+                });
+            }
+            
+            if (editGalleryInput) {
+                editGalleryInput.addEventListener('change', function() {
+                    handleGalleryImagesPreview(this, 'editGalleryPreviewContainer');
+                });
+            }
+        }
+
+        function handleEditGalleryPreview(index) {
+            const input = document.getElementById('editVenueGalleryImages');
+            const container = document.getElementById('editGalleryPreviewContainer');
+            
+            // Create a new FileList without the removed file
+            const dt = new DataTransfer();
+            Array.from(input.files).forEach((file, i) => {
+                if (i !== index) {
+                    dt.items.add(file);
+                }
+            });
+            input.files = dt.files;
+            
+            // Re-render the preview
+            handleGalleryImagesPreview(input, 'editGalleryPreviewContainer');
+        }
 
         // Modal functions
         function createVenue() {
@@ -815,6 +950,11 @@
             document.getElementById('venueAddress').value = '';
             document.getElementById('venueLatitude').value = '';
             document.getElementById('venueLongitude').value = '';
+            
+            // Clear image previews
+            document.getElementById('mainImagePreview').classList.add('hidden');
+            document.getElementById('galleryImagesPreview').classList.add('hidden');
+            document.getElementById('galleryPreviewContainer').innerHTML = '';
         }
 
         function addVenueSpace() {
@@ -1049,7 +1189,10 @@
                     <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image</p>
-                    ${venue.main_image ? `<img src="/${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
+                    <div id="editMainImagePreview" class="mt-3 hidden">
+                        <img id="editMainImagePreviewImg" src="" alt="Main Image Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-200">
+                    </div>
+                    ${venue.main_image ? `<div class="mt-2"><p class="text-sm font-medium text-gray-700 mb-2">Current Image:</p><img src="/${venue.main_image}" alt="Current" class="w-32 h-24 object-cover rounded-lg border border-gray-200"></div>` : ''}
                 </div>
 
                 <!-- Gallery Images -->
@@ -1058,6 +1201,12 @@
                     <input type="file" id="editVenueGalleryImages" name="gallery_images[]" multiple accept="image/*"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <p class="mt-1 text-sm text-gray-500">Select new images to add to the gallery. Leave empty to keep current gallery.</p>
+                    <div id="editGalleryImagesPreview" class="mt-3 hidden">
+                        <p class="text-sm font-medium text-gray-700 mb-2">New Selected Images:</p>
+                        <div id="editGalleryPreviewContainer" class="grid grid-cols-3 gap-2">
+                            <!-- New gallery preview images will be added here -->
+                        </div>
+                    </div>
                     ${venue.gallery && venue.gallery.length > 0 ? `
                     <div class="mt-3">
                         <p class="text-sm font-medium text-gray-700 mb-2">Current Gallery Images:</p>
@@ -1138,12 +1287,22 @@
             // Initialize location search for edit form
             setTimeout(() => {
                 initializeLocationSearch('editVenueLocationSearch', 'editLocationSearchResults', 'editVenueAddress', 'editVenueLatitude', 'editVenueLongitude');
+                initializeEditImagePreviews();
             }, 100);
         }
 
         function closeEditModal() {
             document.getElementById('editVenueModal').classList.add('hidden');
             currentVenueId = null;
+            
+            // Clear edit image previews
+            const editMainImagePreview = document.getElementById('editMainImagePreview');
+            const editGalleryImagesPreview = document.getElementById('editGalleryImagesPreview');
+            const editGalleryPreviewContainer = document.getElementById('editGalleryPreviewContainer');
+            
+            if (editMainImagePreview) editMainImagePreview.classList.add('hidden');
+            if (editGalleryImagesPreview) editGalleryImagesPreview.classList.add('hidden');
+            if (editGalleryPreviewContainer) editGalleryPreviewContainer.innerHTML = '';
         }
 
         function deleteVenue(venueId, venueName) {
@@ -1165,7 +1324,7 @@
                     removedImages = document.createElement('input');
                     removedImages.type = 'hidden';
                     removedImages.id = 'removedGalleryImages';
-                    removedImages.name = 'removed_gallery_images';
+                    removedImages.name = 'removed_gallery_images[]';
                     document.getElementById('editVenueForm').appendChild(removedImages);
                 }
                 
@@ -1236,7 +1395,7 @@
                         removedSpaces = document.createElement('input');
                         removedSpaces.type = 'hidden';
                         removedSpaces.id = 'removedVenueSpaces';
-                        removedSpaces.name = 'removed_venue_spaces';
+                        removedSpaces.name = 'removed_venue_spaces[]';
                         document.getElementById('editVenueForm').appendChild(removedSpaces);
                     }
                     
@@ -1285,51 +1444,18 @@
         document.getElementById('editVenueForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            console.log('Edit venue form submitted');
-            console.log('Current venue ID:', currentVenueId);
-
             const formData = new FormData(this);
-            
-            // Log form data for debugging
-            console.log('Form data entries:');
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}:`, value);
-            }
-            
-            // Check if main_image is present
-            const mainImageFile = formData.get('main_image');
-            console.log('Main image file:', mainImageFile);
-            
-            // Check if gallery_images are present
-            const galleryImages = formData.getAll('gallery_images[]');
-            console.log('Gallery images:', galleryImages);
 
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            console.log('CSRF Token:', csrfToken);
-            
             fetch(`/admin/venues/${currentVenueId}`, {
-                    method: 'PUT',
+                    method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    console.log('Response headers:', response.headers);
-                    
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            console.log('Error response text:', text);
-                            throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
-                        });
-                    }
-                    
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Response data:', data);
                     if (data.success) {
                         showSuccess(data.message);
                         closeEditModal();
@@ -1343,7 +1469,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showError('Failed to update venue: ' + error.message);
+                    showError('Failed to update venue');
                 });
         });
 

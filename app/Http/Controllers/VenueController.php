@@ -420,13 +420,6 @@ class VenueController extends Controller
 
     public function update(Request $request, Venue $venue)
     {
-        Log::info('Venue update request received', [
-            'venue_id' => $venue->id,
-            'request_data' => $request->all(),
-            'files' => $request->hasFile('main_image') ? 'main_image present' : 'no main_image',
-            'gallery_files' => $request->hasFile('gallery_images') ? 'gallery_images present' : 'no gallery_images'
-        ]);
-
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string|max:100',
@@ -438,7 +431,7 @@ class VenueController extends Controller
             'longitude' => 'nullable|numeric',
             'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'removed_gallery_images' => 'nullable|string',
+            'removed_gallery_images' => 'nullable|array',
             'edit_spaces' => 'nullable|array',
             'edit_spaces.*.name' => 'required|string|max:255',
             'edit_spaces.*.type' => 'required|string|max:100',
@@ -447,15 +440,12 @@ class VenueController extends Controller
             'new_spaces.*.name' => 'required|string|max:255',
             'new_spaces.*.type' => 'required|string|max:100',
             'new_spaces.*.capacity' => 'required|integer|min:1',
-            'removed_venue_spaces' => 'nullable|string',
-            'is_active' => 'nullable|in:1',
+            'removed_venue_spaces' => 'nullable|array',
+            'is_active' => 'boolean',
         ]);
 
         try {
             $data = $request->except(['main_image', 'gallery_images', 'removed_gallery_images', 'edit_spaces', 'new_spaces', 'removed_venue_spaces']);
-            
-            // Handle is_active field - convert checkbox value to boolean
-            $data['is_active'] = $request->has('is_active') ? 1 : 0;
 
             // Handle main image update
             if ($request->hasFile('main_image')) {
@@ -579,31 +569,13 @@ class VenueController extends Controller
                 }
             }
 
-            Log::info('Venue update completed successfully', [
-                'venue_id' => $venue->id,
-                'updated_data' => $data
-            ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Venue updated successfully.'
             ]);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Venue update validation failed', [
-                'venue_id' => $venue->id,
-                'errors' => $e->errors()
-            ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
         } catch (\Exception $e) {
-            Log::error('Venue update failed: ' . $e->getMessage(), [
-                'venue_id' => $venue->id,
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Venue update failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update venue. Please try again.'
