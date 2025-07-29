@@ -436,7 +436,10 @@ class VenueController extends Controller
             'venue_id' => $venue->id,
             'request_data' => $request->all(),
             'files' => $request->hasFile('main_image') ? 'main_image present' : 'no main_image',
-            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0
+            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0,
+            'all_files' => $request->allFiles(),
+            'has_files' => $request->hasFile('gallery_images'),
+            'file_names' => $request->file('gallery_images') ? array_map(function($file) { return $file->getClientOriginalName(); }, $request->file('gallery_images')) : []
         ]);
         
         $request->validate([
@@ -448,8 +451,8 @@ class VenueController extends Controller
             'address' => 'required|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'removed_gallery_images' => 'nullable|array',
             'edit_spaces' => 'nullable|array',
             'edit_spaces.*.name' => 'required|string|max:255',
@@ -544,6 +547,13 @@ class VenueController extends Controller
                         ];
                     }, $request->file('gallery_images'))
                 ]);
+            } else {
+                Log::info('No gallery images in request', [
+                    'has_file_gallery_images' => $request->hasFile('gallery_images'),
+                    'all_files' => array_keys($request->allFiles()),
+                    'gallery_images_files' => $request->file('gallery_images')
+                ]);
+            }
                 
                 $existingGalleryCount = $venue->gallery()->count();
                 
@@ -650,7 +660,9 @@ class VenueController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Venue update validation failed', [
                 'venue_id' => $venue->id,
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
+                'request_data' => $request->all(),
+                'files' => $request->allFiles()
             ]);
             return response()->json([
                 'success' => false,

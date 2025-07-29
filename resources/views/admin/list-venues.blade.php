@@ -1306,8 +1306,11 @@
                     size: mainImageFile.size,
                     type: mainImageFile.type
                 });
+            } else {
+                console.log('Main image file is not a File object:', mainImageFile);
             }
             
+            console.log('Gallery files array:', galleryFiles);
             galleryFiles.forEach((file, index) => {
                 if (file instanceof File) {
                     console.log(`Gallery file ${index} details:`, {
@@ -1315,6 +1318,8 @@
                         size: file.size,
                         type: file.type
                     });
+                } else {
+                    console.log(`Gallery file ${index} is not a File object:`, file);
                 }
             });
             
