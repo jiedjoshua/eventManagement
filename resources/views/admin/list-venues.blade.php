@@ -1299,30 +1299,6 @@
             console.log('Main image file:', mainImageFile);
             console.log('Gallery files count:', galleryFiles.length);
             
-            // Debug file information
-            if (mainImageFile && mainImageFile instanceof File) {
-                console.log('Main image file details:', {
-                    name: mainImageFile.name,
-                    size: mainImageFile.size,
-                    type: mainImageFile.type
-                });
-            } else {
-                console.log('Main image file is not a File object:', mainImageFile);
-            }
-            
-            console.log('Gallery files array:', galleryFiles);
-            galleryFiles.forEach((file, index) => {
-                if (file instanceof File) {
-                    console.log(`Gallery file ${index} details:`, {
-                        name: file.name,
-                        size: file.size,
-                        type: file.type
-                    });
-                } else {
-                    console.log(`Gallery file ${index} is not a File object:`, file);
-                }
-            });
-            
             // Check if required fields are present
             const requiredFields = ['name', 'type', 'capacity', 'price_range', 'description', 'address'];
             const missingFields = [];
@@ -1337,9 +1313,6 @@
                 return;
             }
 
-            // Add the _method field for Laravel method spoofing
-            formData.append('_method', 'PUT');
-            
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
