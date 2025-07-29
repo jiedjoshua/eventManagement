@@ -284,7 +284,7 @@
                             <label for="venueMainImage" class="block text-sm font-semibold text-gray-800 mb-2">Main Image *</label>
                             <input type="file" id="venueMainImage" name="main_image" required accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                            <p class="mt-1 text-sm text-gray-600">Accepted formats: JPEG, PNG, GIF, WebP (max 2MB)</p>
+                            <p class="mt-1 text-sm text-gray-600">Accepted formats: JPEG, PNG, GIF, WebP (max 10MB) - Large files are supported for high-quality images</p>
                             <div id="createMainImagePreview" class="mt-2 hidden">
                                 <p class="text-sm font-medium text-gray-700 mb-1">Image Preview:</p>
                                 <img id="createMainImagePreviewImg" src="" alt="Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-300">
@@ -295,7 +295,7 @@
                             <label for="venueGalleryImages" class="block text-sm font-semibold text-gray-800 mb-2">Gallery Images</label>
                             <input type="file" id="venueGalleryImages" name="gallery_images[]" multiple accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                            <p class="mt-1 text-sm text-gray-600">Accepted formats: JPEG, PNG, GIF, WebP (max 2MB each)</p>
+                            <p class="mt-1 text-sm text-gray-600">Accepted formats: JPEG, PNG, GIF, WebP (max 10MB each)</p>
                         </div>
                     </div>
                 </div>
@@ -832,11 +832,11 @@
             const file = input.files[0];
             if (!file) return;
             
-            const maxSize = 2 * 1024 * 1024; // 2MB
+            const maxSize = 10 * 1024 * 1024; // 10MB
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
             
             if (file.size > maxSize) {
-                showError(`${fieldName} is too large. Maximum size is 2MB.`);
+                showError(`${fieldName} is too large. Maximum size is 10MB.`);
                 input.value = '';
                 return;
             }
@@ -852,14 +852,14 @@
 
         function validateMultipleImageFiles(input, fieldName) {
             const files = Array.from(input.files);
-            const maxSize = 2 * 1024 * 1024; // 2MB
+            const maxSize = 10 * 1024 * 1024; // 10MB
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
             
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 
                 if (file.size > maxSize) {
-                    showError(`${fieldName} file "${file.name}" is too large. Maximum size is 2MB.`);
+                    showError(`${fieldName} file "${file.name}" is too large. Maximum size is 10MB.`);
                     input.value = '';
                     return;
                 }
@@ -1138,7 +1138,7 @@
                     <label for="editVenueMainImage" class="block text-sm font-medium text-gray-700">Main Image</label>
                     <input type="file" id="editVenueMainImage" name="main_image" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image. Accepted formats: JPEG, PNG, GIF, WebP (max 2MB)</p>
+                    <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image. Accepted formats: JPEG, PNG, GIF, WebP (max 10MB) - Large files are supported for high-quality images</p>
                     ${venue.main_image ? `<img src="/${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
                     <div id="editMainImagePreview" class="mt-2 hidden">
                         <p class="text-sm font-medium text-gray-700 mb-1">New Image Preview:</p>
@@ -1151,7 +1151,7 @@
                     <label for="editVenueGalleryImages" class="block text-sm font-medium text-gray-700">Gallery Images</label>
                     <input type="file" id="editVenueGalleryImages" name="gallery_images[]" multiple accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <p class="mt-1 text-sm text-gray-500">Select new images to add to the gallery. Leave empty to keep current gallery. Accepted formats: JPEG, PNG, GIF, WebP (max 2MB each)</p>
+                    <p class="mt-1 text-sm text-gray-500">Select new images to add to the gallery. Leave empty to keep current gallery. Accepted formats: JPEG, PNG, GIF, WebP (max 10MB each)</p>
                     ${venue.gallery && venue.gallery.length > 0 ? `
                     <div class="mt-3">
                         <p class="text-sm font-medium text-gray-700 mb-2">Current Gallery Images:</p>
