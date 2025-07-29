@@ -388,12 +388,19 @@
                             </svg>
                             Cancel
                         </button>
-                        <button type="submit"
+                        <button type="submit" id="updateVenueBtn"
                             class="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-8 py-4 rounded-2xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg transform hover:scale-105">
                             <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            Update Venue
+                            <span id="updateVenueText">Update Venue</span>
+                            <div id="updateVenueLoader" class="hidden">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Updating...</span>
+                            </div>
                         </button>
                     </div>
                 </form>
@@ -1408,6 +1415,9 @@
             
             // Clear image previews
             document.getElementById('editMainImagePreview').classList.add('hidden');
+            
+            // Reset loading state
+            hideUpdateLoading();
         }
 
         function deleteVenue(venueId, venueName) {
@@ -1549,6 +1559,9 @@
         document.getElementById('editVenueForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
+            // Show loading state
+            showUpdateLoading();
+
             const formData = new FormData(this);
 
             console.log('Submitting edit venue form for venue ID:', currentVenueId);
@@ -1615,6 +1628,7 @@
                 .then(data => {
                     console.log('Response data:', data);
                     if (data.success) {
+                        hideUpdateLoading();
                         showSuccess(data.message);
                         closeEditModal();
                         // Reload the page to show the updated venue
@@ -1622,6 +1636,7 @@
                             window.location.reload();
                         }, 1500);
                     } else {
+                        hideUpdateLoading();
                         let errorMessage = data.message || 'Failed to update venue';
                         if (data.errors) {
                             errorMessage += '\n' + Object.values(data.errors).flat().join('\n');
@@ -1631,6 +1646,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    hideUpdateLoading();
                     showError('Failed to update venue');
                 });
         });
@@ -1776,6 +1792,43 @@
                 setTimeout(() => {
                     progressContainer.classList.add('hidden');
                 }, 300);
+            }
+        }
+
+        // Update venue loading state functions
+        function showUpdateLoading() {
+            const updateBtn = document.getElementById('updateVenueBtn');
+            const updateText = document.getElementById('updateVenueText');
+            const updateLoader = document.getElementById('updateVenueLoader');
+            
+            if (updateBtn && updateText && updateLoader) {
+                // Disable the button
+                updateBtn.disabled = true;
+                updateBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                updateBtn.classList.remove('hover:scale-105');
+                
+                // Hide text and show loader
+                updateText.classList.add('hidden');
+                updateLoader.classList.remove('hidden');
+                updateLoader.classList.add('flex', 'items-center', 'justify-center');
+            }
+        }
+
+        function hideUpdateLoading() {
+            const updateBtn = document.getElementById('updateVenueBtn');
+            const updateText = document.getElementById('updateVenueText');
+            const updateLoader = document.getElementById('updateVenueLoader');
+            
+            if (updateBtn && updateText && updateLoader) {
+                // Re-enable the button
+                updateBtn.disabled = false;
+                updateBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                updateBtn.classList.add('hover:scale-105');
+                
+                // Show text and hide loader
+                updateText.classList.remove('hidden');
+                updateLoader.classList.add('hidden');
+                updateLoader.classList.remove('flex', 'items-center', 'justify-center');
             }
         }
 
