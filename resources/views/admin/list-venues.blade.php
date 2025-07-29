@@ -379,7 +379,7 @@
                         class="flex-1 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 px-6 py-3 rounded-xl hover:from-gray-200 hover:to-slate-200 transition-all duration-300 font-semibold shadow-sm">
                         Cancel
                     </button>
-                    <button type="submit" id="updateVenueBtn"
+                    <button type="submit" id="editVenueSubmitBtn"
                         class="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg">
                         Update Venue
                     </button>
@@ -897,17 +897,12 @@
             
             if (editMainImageInput) {
                 editMainImageInput.addEventListener('change', function() {
-                    console.log('Main image selected:', this.files[0]);
                     handleMainImagePreview(this, 'editMainImagePreview', 'editMainImagePreviewImg');
                 });
             }
             
             if (editGalleryInput) {
                 editGalleryInput.addEventListener('change', function() {
-                    console.log('Gallery images selected:', this.files.length, 'files');
-                    for (let i = 0; i < this.files.length; i++) {
-                        console.log('File', i, ':', this.files[i].name, 'Size:', this.files[i].size);
-                    }
                     handleGalleryImagesPreview(this, 'editGalleryPreviewContainer');
                 });
             }
@@ -1110,6 +1105,16 @@
                         const venue = data.venue;
                         populateEditForm(venue);
                         document.getElementById('editVenueModal').classList.remove('hidden');
+                        
+                        // Ensure form event listener is attached
+                        setTimeout(() => {
+                            const editForm = document.getElementById('editVenueForm');
+                            if (editForm) {
+                                editForm.removeEventListener('submit', editFormSubmitHandler);
+                                editForm.addEventListener('submit', editFormSubmitHandler);
+                                console.log('Edit form event listener attached in editVenue');
+                            }
+                        }, 200);
                     } else {
                         showError('Failed to load venue details');
                     }
@@ -1127,32 +1132,32 @@
                 <!-- Enhanced Basic Information -->
                 <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
                     <h4 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
                             <label for="editVenueName" class="block text-sm font-semibold text-gray-800 mb-2">Venue Name *</label>
-                            <input type="text" id="editVenueName" name="name" value="${venue.name}" required
+                        <input type="text" id="editVenueName" name="name" value="${venue.name}" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                        </div>
+                    </div>
 
-                        <div>
+                    <div>
                             <label for="editVenueType" class="block text-sm font-semibold text-gray-800 mb-2">Venue Type *</label>
-                            <select id="editVenueType" name="type" required
+                        <select id="editVenueType" name="type" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                                <option value="">Select Type</option>
-                                <option value="indoor" ${venue.type === 'indoor' ? 'selected' : ''}>Indoor</option>
-                                <option value="outdoor" ${venue.type === 'outdoor' ? 'selected' : ''}>Outdoor</option>
-                                <option value="both" ${venue.type === 'both' ? 'selected' : ''}>Both (Indoor & Outdoor)</option>
-                                <option value="church" ${venue.type === 'church' ? 'selected' : ''}>Church</option>
-                            </select>
-                        </div>
+                            <option value="">Select Type</option>
+                            <option value="indoor" ${venue.type === 'indoor' ? 'selected' : ''}>Indoor</option>
+                            <option value="outdoor" ${venue.type === 'outdoor' ? 'selected' : ''}>Outdoor</option>
+                            <option value="both" ${venue.type === 'both' ? 'selected' : ''}>Both (Indoor & Outdoor)</option>
+                            <option value="church" ${venue.type === 'church' ? 'selected' : ''}>Church</option>
+                        </select>
+                    </div>
 
-                        <div>
+                    <div>
                             <label for="editVenueCapacity" class="block text-sm font-semibold text-gray-800 mb-2">Capacity *</label>
-                            <input type="number" id="editVenueCapacity" name="capacity" value="${venue.capacity}" required min="1"
+                        <input type="number" id="editVenueCapacity" name="capacity" value="${venue.capacity}" required min="1"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                        </div>
+                    </div>
 
-                        <div>
+                    <div>
                             <label for="editVenuePriceRange" class="block text-sm font-semibold text-gray-800 mb-2">Price *</label>
                             <input type="text" id="editVenuePriceRange" name="price_range" value="${venue.price_range}" required placeholder="e.g. 1000"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
@@ -1172,27 +1177,27 @@
                 <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
                     <h4 class="text-lg font-semibold text-gray-900 mb-4">Location Information</h4>
                     <div class="space-y-4">
-                        <div>
+                <div>
                             <label for="editVenueLocationSearch" class="block text-sm font-semibold text-gray-800 mb-2">Search Location *</label>
-                            <div class="relative">
-                                <input type="text" id="editVenueLocationSearch" placeholder="Search for a location..." value="${venue.address}"
+                    <div class="relative">
+                        <input type="text" id="editVenueLocationSearch" placeholder="Search for a location..." value="${venue.address}"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
                                 <div id="editLocationSearchResults" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg hidden max-h-60 overflow-y-auto">
-                                    <!-- Search results will appear here -->
-                                </div>
-                            </div>
+                            <!-- Search results will appear here -->
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Address (auto-filled) -->
-                        <div>
+                <!-- Address (auto-filled) -->
+                <div>
                             <label for="editVenueAddress" class="block text-sm font-semibold text-gray-800 mb-2">Address *</label>
-                            <input type="text" id="editVenueAddress" name="address" value="${venue.address}" required readonly
+                    <input type="text" id="editVenueAddress" name="address" value="${venue.address}" required readonly
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                        </div>
+                </div>
 
-                        <!-- Hidden coordinates for form submission -->
-                        <input type="hidden" id="editVenueLatitude" name="latitude" value="${venue.latitude || ''}">
-                        <input type="hidden" id="editVenueLongitude" name="longitude" value="${venue.longitude || ''}">
+                <!-- Hidden coordinates for form submission -->
+                <input type="hidden" id="editVenueLatitude" name="latitude" value="${venue.latitude || ''}">
+                <input type="hidden" id="editVenueLongitude" name="longitude" value="${venue.longitude || ''}">
                     </div>
                 </div>
 
@@ -1200,20 +1205,20 @@
                 <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
                     <h4 class="text-lg font-semibold text-gray-900 mb-4">Images</h4>
                     <div class="space-y-4">
-                        <div>
+                <div>
                             <label for="editVenueMainImage" class="block text-sm font-semibold text-gray-800 mb-2">Main Image</label>
-                            <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
+                    <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
                             <p class="mt-1 text-sm text-gray-600">Leave empty to keep current image</p>
                             <div id="editMainImagePreview" class="mt-3 hidden">
                                 <img id="editMainImagePreviewImg" src="" alt="Main Image Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-200">
                             </div>
                             ${venue.main_image ? `<div class="mt-3"><p class="text-sm font-semibold text-gray-800 mb-2">Current Image:</p><img src="/${venue.main_image}" alt="Current" class="w-32 h-24 object-cover rounded-lg border border-gray-200"></div>` : ''}
-                        </div>
+                </div>
 
-                        <div>
+                <div>
                             <label for="editVenueGalleryImages" class="block text-sm font-semibold text-gray-800 mb-2">Gallery Images</label>
-                            <input type="file" id="editVenueGalleryImages" name="gallery_images[]" multiple accept="image/*"
+                    <input type="file" id="editVenueGalleryImages" name="gallery_images[]" multiple accept="image/*"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
                             <p class="mt-1 text-sm text-gray-600">Select new images to add to the gallery. Leave empty to keep current gallery.</p>
                             <div id="editGalleryImagesPreview" class="mt-3 hidden">
@@ -1222,22 +1227,22 @@
                                     <!-- New gallery preview images will be added here -->
                                 </div>
                             </div>
-                            ${venue.gallery && venue.gallery.length > 0 ? `
-                            <div class="mt-3">
+                    ${venue.gallery && venue.gallery.length > 0 ? `
+                    <div class="mt-3">
                                 <p class="text-sm font-semibold text-gray-800 mb-2">Current Gallery Images:</p>
-                                <div class="grid grid-cols-3 gap-2">
-                                    ${venue.gallery.map(image => `
-                                        <div class="relative">
+                        <div class="grid grid-cols-3 gap-2">
+                            ${venue.gallery.map(image => `
+                                <div class="relative">
                                             <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg border border-gray-200">
-                                            <button type="button" onclick="removeGalleryImage('${image.id}')" 
-                                                class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
-                                                ×
-                                            </button>
-                                        </div>
-                                    `).join('')}
+                                    <button type="button" onclick="removeGalleryImage('${image.id}')" 
+                                        class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
+                                        ×
+                                    </button>
                                 </div>
-                            </div>
-                            ` : ''}
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
                         </div>
                     </div>
                 </div>
@@ -1308,6 +1313,16 @@
             setTimeout(() => {
                 initializeLocationSearch('editVenueLocationSearch', 'editLocationSearchResults', 'editVenueAddress', 'editVenueLatitude', 'editVenueLongitude');
                 initializeEditImagePreviews();
+                
+                // Re-attach form submit event listener
+                const editForm = document.getElementById('editVenueForm');
+                if (editForm) {
+                    // Remove existing event listeners
+                    editForm.removeEventListener('submit', editFormSubmitHandler);
+                    // Add new event listener
+                    editForm.addEventListener('submit', editFormSubmitHandler);
+                    console.log('Edit form event listener attached');
+                }
             }, 100);
         }
 
@@ -1323,13 +1338,6 @@
             if (editMainImagePreview) editMainImagePreview.classList.add('hidden');
             if (editGalleryImagesPreview) editGalleryImagesPreview.classList.add('hidden');
             if (editGalleryPreviewContainer) editGalleryPreviewContainer.innerHTML = '';
-            
-            // Reset file inputs
-            const editMainImageInput = document.getElementById('editVenueMainImage');
-            const editGalleryInput = document.getElementById('editVenueGalleryImages');
-            
-            if (editMainImageInput) editMainImageInput.value = '';
-            if (editGalleryInput) editGalleryInput.value = '';
         }
 
         function deleteVenue(venueId, venueName) {
@@ -1468,109 +1476,29 @@
                 });
         });
 
-        document.getElementById('editVenueForm').addEventListener('submit', function(e) {
+        // Edit form submit handler function
+        function editFormSubmitHandler(e) {
+            console.log('Edit form submit handler called');
             e.preventDefault();
-            handleEditFormSubmission();
-        });
-
-        // Backup click handler for the submit button
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'updateVenueBtn') {
-                e.preventDefault();
-                handleEditFormSubmission();
-            }
-        });
-
-        function handleEditFormSubmission() {
             console.log('Edit form submitted');
-            console.log('Current venue ID:', currentVenueId);
 
-            if (!currentVenueId) {
-                showError('No venue selected for update');
-                return;
-            }
-
-            const form = document.getElementById('editVenueForm');
-            if (!form) {
-                console.error('Edit form not found');
-                showError('Form not found');
-                return;
-            }
-
-            const formData = new FormData(form);
-            
-            // Clean up empty files
-            const mainImageInput = document.getElementById('editVenueMainImage');
-            const galleryInput = document.getElementById('editVenueGalleryImages');
-            
-            // Handle main image
-            if (mainImageInput && mainImageInput.files.length > 0) {
-                const mainFile = mainImageInput.files[0];
-                if (mainFile && mainFile.size > 0 && mainFile.name) {
-                    formData.set('main_image', mainFile);
-                } else {
-                    formData.delete('main_image');
-                }
-            }
-            
-            // Handle gallery images
-            if (galleryInput && galleryInput.files.length > 0) {
-                // Remove any empty files from FormData
-                formData.delete('gallery_images[]');
-                
-                // Add only valid files
-                for (let i = 0; i < galleryInput.files.length; i++) {
-                    const file = galleryInput.files[i];
-                    if (file && file.size > 0 && file.name) {
-                        formData.append('gallery_images[]', file);
-                    }
-                }
-            }
-            
-            // Log form data for debugging
-            console.log('Form data entries:');
-            let hasValidFiles = false;
-            for (let [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                    console.log(key, 'File:', value.name, 'Size:', value.size, 'Type:', value.type);
-                    if (value.size > 0 && value.name) {
-                        hasValidFiles = true;
-                    }
-                } else {
-                    console.log(key, value);
-                }
-            }
-            
-            // Check if we have any valid files
-            if (!hasValidFiles) {
-                console.log('No valid files found in form data');
-            }
-
-            // Show loading state
-            const submitBtn = document.getElementById('updateVenueBtn');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Updating...';
-            submitBtn.disabled = true;
+            const formData = new FormData(this);
+            console.log('Form data created');
 
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-HTTP-Method-Override': 'PUT'
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(response => {
-                    console.log('Response status:', response.status);
+                    console.log('Response received:', response);
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Response data:', data);
-                    // Restore button state
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                    
+                    console.log('Data received:', data);
                     if (data.success) {
                         showSuccess(data.message);
                         closeEditModal();
@@ -1584,12 +1512,30 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    // Restore button state
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
                     showError('Failed to update venue');
                 });
         }
+
+        // Initial form event listener attachment
+        document.addEventListener('DOMContentLoaded', function() {
+            const editForm = document.getElementById('editVenueForm');
+            if (editForm) {
+                editForm.addEventListener('submit', editFormSubmitHandler);
+                console.log('Initial edit form event listener attached');
+            }
+            
+            // Add click handler for submit button as backup
+            const submitBtn = document.getElementById('editVenueSubmitBtn');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function(e) {
+                    console.log('Submit button clicked');
+                    const form = document.getElementById('editVenueForm');
+                    if (form) {
+                        form.dispatchEvent(new Event('submit', { bubbles: true }));
+                    }
+                });
+            }
+        });
 
         document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
             fetch(`/admin/venues/${currentVenueId}`, {
