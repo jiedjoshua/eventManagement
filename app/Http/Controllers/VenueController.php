@@ -333,6 +333,12 @@ class VenueController extends Controller
         ]);
 
         try {
+            // Create img directory if it doesn't exist
+            $imgPath = public_path('img');
+            if (!file_exists($imgPath)) {
+                mkdir($imgPath, 0755, true);
+            }
+            
             // Handle main image upload to public/img directory
             $mainImage = $request->file('main_image');
             $mainImageName = time() . '_' . $mainImage->getClientOriginalName();
@@ -355,6 +361,12 @@ class VenueController extends Controller
 
             // Handle gallery images
             if ($request->hasFile('gallery_images')) {
+                // Create gallery directory if it doesn't exist
+                $galleryPath = public_path('img/gallery');
+                if (!file_exists($galleryPath)) {
+                    mkdir($galleryPath, 0755, true);
+                }
+                
                 foreach ($request->file('gallery_images') as $index => $image) {
                     $galleryImageName = time() . '_' . $index . '_' . $image->getClientOriginalName();
                     $galleryImagePath = 'public/img/gallery/' . $galleryImageName;
@@ -390,7 +402,7 @@ class VenueController extends Controller
             Log::error('Venue creation failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create venue. Please try again.'
+                'message' => 'Failed to create venue: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -464,6 +476,12 @@ class VenueController extends Controller
                     unlink(public_path(str_replace('public/', '', $venue->main_image)));
                 }
                 
+                // Create img directory if it doesn't exist
+                $imgPath = public_path('img');
+                if (!file_exists($imgPath)) {
+                    mkdir($imgPath, 0755, true);
+                }
+                
                 // Upload new image
                 $mainImage = $request->file('main_image');
                 $mainImageName = time() . '_' . $mainImage->getClientOriginalName();
@@ -502,6 +520,12 @@ class VenueController extends Controller
             // Handle new gallery images
             if ($request->hasFile('gallery_images')) {
                 $existingGalleryCount = $venue->gallery()->count();
+                
+                // Create gallery directory if it doesn't exist
+                $galleryPath = public_path('img/gallery');
+                if (!file_exists($galleryPath)) {
+                    mkdir($galleryPath, 0755, true);
+                }
                 
                 foreach ($request->file('gallery_images') as $index => $image) {
                     $galleryImageName = time() . '_' . ($existingGalleryCount + $index) . '_' . $image->getClientOriginalName();
@@ -606,7 +630,7 @@ class VenueController extends Controller
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update venue. Please try again.'
+                'message' => 'Failed to update venue: ' . $e->getMessage()
             ], 500);
         }
     }
