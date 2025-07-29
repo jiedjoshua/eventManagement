@@ -440,6 +440,7 @@
         let currentVenueId = null;
         let spaceCounter = 0;
         let locationSearchTimeout = null;
+        let isSubmitting = false; // Flag to prevent multiple submissions
         const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiamllZGpvc2h1YSIsImEiOiJjbWM3OTljd3UwdmVnMmtwd2hhdXVqcng4In0.g77PfgWIOdlCt0sBijQgLg';
 
         // Search and filter functionality
@@ -1284,6 +1285,14 @@
         document.getElementById('editVenueForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
+            // Prevent multiple submissions
+            if (isSubmitting) {
+                console.log('Form submission already in progress, ignoring');
+                return;
+            }
+            isSubmitting = true;
+            console.log('Starting form submission');
+
             const formData = new FormData(this);
 
             console.log('Submitting edit venue form for venue ID:', currentVenueId);
@@ -1323,6 +1332,7 @@
 
             // Add the _method field for PUT request
             formData.append('_method', 'PUT');
+            console.log('Added _method field:', formData.get('_method'));
 
             // Get CSRF token
             const csrfToken = document.querySelector('meta[name="csrf-token"]');
@@ -1334,15 +1344,34 @@
             const csrfTokenValue = csrfToken.getAttribute('content');
             console.log('CSRF token found:', csrfTokenValue ? 'Yes' : 'No');
 
+            console.log('Sending fetch request to:', `/admin/venues/${currentVenueId}`);
+            console.log('Request method: POST');
+            console.log('Request headers:', {
+                'X-CSRF-TOKEN': csrfTokenValue ? 'Present' : 'Missing',
+                'X-Requested-With': 'XMLHttpRequest'
+            });
+
+            // Try both with and without Content-Type header for FormData
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                console.log('Request timeout after 30 seconds');
+                controller.abort();
+            }, 30000);
+
+            console.log('About to send fetch request...');
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
+                    signal: controller.signal,
                     headers: {
                         'X-CSRF-TOKEN': csrfTokenValue,
                         'X-Requested-With': 'XMLHttpRequest'
+                        // Don't set Content-Type for FormData, let browser set it with boundary
                     }
-                })
+
                 .then(response => {
+                    clearTimeout(timeoutId); // Clear timeout
+                    console.log('Response received');
                     console.log('Response status:', response.status);
                     console.log('Response headers:', response.headers);
                     if (!response.ok) {
@@ -1352,6 +1381,7 @@
                 })
                 .then(data => {
                     console.log('Response data:', data);
+                    isSubmitting = false; // Reset submission flag
                     if (data.success) {
                         console.log('Update successful, showing success message');
                         showSuccess(data.message);
@@ -1372,7 +1402,9 @@
                     }
                 })
                 .catch(error => {
+                    clearTimeout(timeoutId); // Clear timeout
                     console.error('Fetch error:', error);
+                    isSubmitting = false; // Reset submission flag
                     showError('Failed to update venue: ' + error.message);
                 });
         });
