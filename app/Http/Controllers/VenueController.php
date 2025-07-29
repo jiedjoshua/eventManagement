@@ -436,10 +436,7 @@ class VenueController extends Controller
             'venue_id' => $venue->id,
             'request_data' => $request->all(),
             'files' => $request->hasFile('main_image') ? 'main_image present' : 'no main_image',
-            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0,
-            'method' => $request->method(),
-            'url' => $request->url(),
-            'headers' => $request->headers->all()
+            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0
         ]);
         
         $request->validate([
@@ -474,15 +471,23 @@ class VenueController extends Controller
 
             // Handle main image update
             if ($request->hasFile('main_image')) {
+                Log::info('Main image file detected', [
+                    'file_name' => $request->file('main_image')->getClientOriginalName(),
+                    'file_size' => $request->file('main_image')->getSize(),
+                    'file_type' => $request->file('main_image')->getMimeType()
+                ]);
+                
                 // Delete old image if it exists in public directory
                 if ($venue->main_image && file_exists(public_path(str_replace('public/', '', $venue->main_image)))) {
                     unlink(public_path(str_replace('public/', '', $venue->main_image)));
+                    Log::info('Old main image deleted', ['old_path' => $venue->main_image]);
                 }
                 
                 // Create img directory if it doesn't exist
                 $imgPath = public_path('img');
                 if (!file_exists($imgPath)) {
                     mkdir($imgPath, 0755, true);
+                    Log::info('Created img directory', ['path' => $imgPath]);
                 }
                 
                 // Upload new image
@@ -491,6 +496,13 @@ class VenueController extends Controller
                 $mainImagePath = 'public/img/' . $mainImageName;
                 $mainImage->move(public_path('img'), $mainImageName);
                 $data['main_image'] = $mainImagePath;
+                
+                Log::info('Main image uploaded successfully', [
+                    'new_path' => $mainImagePath,
+                    'full_path' => public_path('img') . '/' . $mainImageName
+                ]);
+            } else {
+                Log::info('No main image file in request');
             }
 
             // Handle gallery image removals
@@ -522,12 +534,24 @@ class VenueController extends Controller
 
             // Handle new gallery images
             if ($request->hasFile('gallery_images')) {
+                Log::info('Gallery images detected', [
+                    'count' => count($request->file('gallery_images')),
+                    'files' => array_map(function($file) {
+                        return [
+                            'name' => $file->getClientOriginalName(),
+                            'size' => $file->getSize(),
+                            'type' => $file->getMimeType()
+                        ];
+                    }, $request->file('gallery_images'))
+                ]);
+                
                 $existingGalleryCount = $venue->gallery()->count();
                 
                 // Create gallery directory if it doesn't exist
                 $galleryPath = public_path('img/gallery');
                 if (!file_exists($galleryPath)) {
                     mkdir($galleryPath, 0755, true);
+                    Log::info('Created gallery directory', ['path' => $galleryPath]);
                 }
                 
                 foreach ($request->file('gallery_images') as $index => $image) {
@@ -535,12 +559,19 @@ class VenueController extends Controller
                     $galleryImagePath = 'public/img/gallery/' . $galleryImageName;
                     $image->move(public_path('img/gallery'), $galleryImageName);
                     
-                    VenueGallery::create([
+                    $galleryImage = VenueGallery::create([
                         'venue_id' => $venue->id,
                         'image_path' => $galleryImagePath,
                         'sort_order' => $existingGalleryCount + $index + 1,
                     ]);
+                    
+                    Log::info('Gallery image uploaded', [
+                        'image_id' => $galleryImage->id,
+                        'path' => $galleryImagePath
+                    ]);
                 }
+            } else {
+                Log::info('No gallery images in request');
             }
 
             // Handle venue spaces updates
@@ -611,17 +642,10 @@ class VenueController extends Controller
                 'updated_data' => $data
             ]);
             
-            $response = response()->json([
+            return response()->json([
                 'success' => true,
                 'message' => 'Venue updated successfully.'
             ]);
-            
-            Log::info('Sending response', [
-                'response_status' => $response->getStatusCode(),
-                'response_content' => $response->getContent()
-            ]);
-            
-            return $response;
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Venue update validation failed', [

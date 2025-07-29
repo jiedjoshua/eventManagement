@@ -1142,15 +1142,8 @@
         }
 
         function closeEditModal() {
-            console.log('Closing edit modal');
-            const modal = document.getElementById('editVenueModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                currentVenueId = null;
-                console.log('Edit modal closed successfully');
-            } else {
-                console.error('Edit modal element not found');
-            }
+            document.getElementById('editVenueModal').classList.add('hidden');
+            currentVenueId = null;
         }
 
         function deleteVenue(venueId, venueName) {
@@ -1300,26 +1293,36 @@
                 console.log(key + ': ' + value);
             }
             
-            // Debug form validation
-            console.log('Form validation check:');
-            const form = this;
-            console.log('Form action:', form.action);
-            console.log('Form method:', form.method);
-            console.log('Form enctype:', form.enctype);
-            
             // Check if files are present
             const mainImageFile = formData.get('main_image');
             const galleryFiles = formData.getAll('gallery_images[]');
             console.log('Main image file:', mainImageFile);
             console.log('Gallery files count:', galleryFiles.length);
             
+            // Debug file information
+            if (mainImageFile && mainImageFile instanceof File) {
+                console.log('Main image file details:', {
+                    name: mainImageFile.name,
+                    size: mainImageFile.size,
+                    type: mainImageFile.type
+                });
+            }
+            
+            galleryFiles.forEach((file, index) => {
+                if (file instanceof File) {
+                    console.log(`Gallery file ${index} details:`, {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type
+                    });
+                }
+            });
+            
             // Check if required fields are present
             const requiredFields = ['name', 'type', 'capacity', 'price_range', 'description', 'address'];
             const missingFields = [];
             for (let field of requiredFields) {
-                const value = formData.get(field);
-                console.log(`Field ${field}:`, value);
-                if (!value || value.trim() === '') {
+                if (!formData.get(field)) {
                     missingFields.push(field);
                 }
             }
@@ -1328,54 +1331,25 @@
                 showError('Please fill in all required fields: ' + missingFields.join(', '));
                 return;
             }
-            
-            // Check if venue ID is set
-            if (!currentVenueId) {
-                console.error('No venue ID set');
-                showError('Venue ID is missing. Please try again.');
-                return;
-            }
 
-            // Get CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (!csrfToken) {
-                console.error('CSRF token not found');
-                showError('Security token missing. Please refresh the page and try again.');
-                return;
-            }
-            
-            console.log('Making request to:', `/admin/venues/${currentVenueId}`);
-            console.log('Request method:', 'PUT');
-            console.log('CSRF token:', csrfToken);
+            // Add the _method field for Laravel method spoofing
+            formData.append('_method', 'PUT');
             
             fetch(`/admin/venues/${currentVenueId}`, {
-                    method: 'PUT',
+                    method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(response => {
                     console.log('Response status:', response.status);
-                    console.log('Response headers:', response.headers);
-                    console.log('Response URL:', response.url);
-                    
-                    // Log response text for debugging
-                    return response.text().then(text => {
-                        console.log('Raw response text:', text);
-                        try {
-                            return JSON.parse(text);
-                        } catch (e) {
-                            console.error('Failed to parse JSON response:', e);
-                            throw new Error('Invalid JSON response from server');
-                        }
-                    });
+                    return response.json();
                 })
                 .then(data => {
                     console.log('Response data:', data);
                     if (data.success) {
-                        console.log('Venue updated successfully');
                         showSuccess(data.message);
                         closeEditModal();
                         // Reload the page to show the updated venue
@@ -1383,7 +1357,6 @@
                             window.location.reload();
                         }, 1500);
                     } else {
-                        console.error('Update failed:', data);
                         let errorMessage = data.message || 'Failed to update venue';
                         if (data.errors) {
                             errorMessage += '\n' + Object.values(data.errors).flat().join('\n');
@@ -1392,8 +1365,8 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Fetch error:', error);
-                    showError('Failed to update venue: ' + error.message);
+                    console.error('Error:', error);
+                    showError('Failed to update venue');
                 });
         });
 
@@ -1426,16 +1399,10 @@
 
         // Notification functions
         function showSuccess(message) {
-            console.log('Showing success notification:', message);
             const notification = document.getElementById('successNotification');
             const messageElement = document.getElementById('notificationMessage');
-            
-            if (!notification || !messageElement) {
-                console.error('Notification elements not found');
-                return;
-            }
-            
             messageElement.textContent = message;
+
             notification.classList.remove('hidden');
             notification.classList.add('transform', 'translate-x-0');
 
@@ -1446,16 +1413,10 @@
         }
 
         function showError(message) {
-            console.log('Showing error notification:', message);
             const notification = document.getElementById('errorNotification');
             const messageElement = document.getElementById('errorMessage');
-            
-            if (!notification || !messageElement) {
-                console.error('Error notification elements not found');
-                return;
-            }
-            
             messageElement.textContent = message;
+
             notification.classList.remove('hidden');
             notification.classList.add('transform', 'translate-x-0');
 
