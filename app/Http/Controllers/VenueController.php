@@ -436,7 +436,10 @@ class VenueController extends Controller
             'venue_id' => $venue->id,
             'request_data' => $request->all(),
             'files' => $request->hasFile('main_image') ? 'main_image present' : 'no main_image',
-            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0
+            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0,
+            'method' => $request->method(),
+            'url' => $request->url(),
+            'headers' => $request->headers->all()
         ]);
         
         $request->validate([
@@ -608,10 +611,17 @@ class VenueController extends Controller
                 'updated_data' => $data
             ]);
             
-            return response()->json([
+            $response = response()->json([
                 'success' => true,
                 'message' => 'Venue updated successfully.'
             ]);
+            
+            Log::info('Sending response', [
+                'response_status' => $response->getStatusCode(),
+                'response_content' => $response->getContent()
+            ]);
+            
+            return $response;
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Venue update validation failed', [

@@ -1359,10 +1359,18 @@
                 .then(response => {
                     console.log('Response status:', response.status);
                     console.log('Response headers:', response.headers);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
+                    console.log('Response URL:', response.url);
+                    
+                    // Log response text for debugging
+                    return response.text().then(text => {
+                        console.log('Raw response text:', text);
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            console.error('Failed to parse JSON response:', e);
+                            throw new Error('Invalid JSON response from server');
+                        }
+                    });
                 })
                 .then(data => {
                     console.log('Response data:', data);
