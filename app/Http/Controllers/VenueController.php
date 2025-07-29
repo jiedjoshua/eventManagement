@@ -610,7 +610,7 @@ class VenueController extends Controller
             
             return response()->json([
                 'success' => true,
-                'message' => 'Venue updated successfully! The page will refresh to show your changes.'
+                'message' => 'Venue updated successfully.'
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {

@@ -1142,8 +1142,33 @@
         }
 
         function closeEditModal() {
+            // Hide the modal
             document.getElementById('editVenueModal').classList.add('hidden');
+            
+            // Reset the form
+            const form = document.getElementById('editVenueForm');
+            if (form) {
+                form.reset();
+            }
+            
+            // Clear the form fields
+            const editVenueFields = document.getElementById('editVenueFields');
+            if (editVenueFields) {
+                editVenueFields.innerHTML = '';
+            }
+            
+            // Reset the submit button
+            const submitButton = form?.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Update Venue';
+            }
+            
+            // Reset global variables
             currentVenueId = null;
+            editSpaceCounter = 0;
+            
+            console.log('Edit modal closed and form reset');
         }
 
         function deleteVenue(venueId, venueName) {
@@ -1286,6 +1311,18 @@
             e.preventDefault();
 
             const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+
+            // Disable submit button and show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Updating...
+            `;
 
             console.log('Submitting edit venue form for venue ID:', currentVenueId);
             console.log('Form data entries:');
@@ -1310,14 +1347,11 @@
             if (missingFields.length > 0) {
                 console.error('Missing required fields:', missingFields);
                 showError('Please fill in all required fields: ' + missingFields.join(', '));
+                // Re-enable button
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
                 return;
             }
-
-            // Show loading state
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton.innerHTML;
-            submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Updating...';
-            submitButton.disabled = true;
 
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
@@ -1336,25 +1370,25 @@
                     if (data.success) {
                         showSuccess(data.message);
                         closeEditModal();
-                        // Reload the page immediately to show the updated venue
-                        window.location.reload();
+                        // Update the venue card in place instead of reloading
+                        updateVenueCard(currentVenueId, formData);
                     } else {
                         let errorMessage = data.message || 'Failed to update venue';
                         if (data.errors) {
                             errorMessage += '\n' + Object.values(data.errors).flat().join('\n');
                         }
                         showError(errorMessage);
-                        // Restore button state on error
-                        submitButton.innerHTML = originalButtonText;
+                        // Re-enable button on error
                         submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     showError('Failed to update venue');
-                    // Restore button state on error
-                    submitButton.innerHTML = originalButtonText;
+                    // Re-enable button on error
                     submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
                 });
         });
 
@@ -1385,20 +1419,91 @@
                 });
         });
 
+        // Update venue card in place
+        function updateVenueCard(venueId, formData) {
+            // Find the venue card
+            const venueCards = document.querySelectorAll('.grid > div');
+            let venueCard = null;
+            
+            for (let card of venueCards) {
+                const editButton = card.querySelector(`[onclick="editVenue('${venueId}')"]`);
+                if (editButton) {
+                    venueCard = card;
+                    break;
+                }
+            }
+            
+            if (venueCard) {
+                // Update venue name
+                const venueName = formData.get('name');
+                const nameElement = venueCard.querySelector('h3');
+                if (nameElement && venueName) {
+                    nameElement.textContent = venueName;
+                }
+                
+                // Update venue description
+                const description = formData.get('description');
+                const descElement = venueCard.querySelector('p');
+                if (descElement && description) {
+                    descElement.textContent = description;
+                }
+                
+                // Update venue type badge
+                const type = formData.get('type');
+                const typeBadge = venueCard.querySelector('.bg-violet-100');
+                if (typeBadge && type) {
+                    typeBadge.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+                }
+                
+                // Update capacity
+                const capacity = formData.get('capacity');
+                const capacityElement = venueCard.querySelector('.text-gray-700');
+                if (capacityElement && capacity) {
+                    capacityElement.textContent = `Capacity: ${Number(capacity).toLocaleString()}`;
+                }
+                
+                // Update price range
+                const priceRange = formData.get('price_range');
+                const priceElement = venueCard.querySelector('.text-gray-700:last-child');
+                if (priceElement && priceRange) {
+                    priceElement.textContent = priceRange;
+                }
+                
+                // Update status if changed
+                const isActive = formData.get('is_active');
+                const statusBadge = venueCard.querySelector('.bg-green-100, .bg-red-100');
+                if (statusBadge && isActive !== null) {
+                    if (isActive) {
+                        statusBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm';
+                        statusBadge.innerHTML = '<div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>Active';
+                    } else {
+                        statusBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200 shadow-sm';
+                        statusBadge.innerHTML = '<div class="w-2 h-2 bg-red-500 rounded-full mr-2"></div>Inactive';
+                    }
+                }
+                
+                console.log('Venue card updated in place');
+            }
+        }
+
         // Notification functions
         function showSuccess(message) {
             const notification = document.getElementById('successNotification');
             const messageElement = document.getElementById('notificationMessage');
             messageElement.textContent = message;
 
+            // Ensure notification is visible
+            notification.style.zIndex = '9999';
             notification.classList.remove('hidden');
             notification.classList.add('transform', 'translate-x-0');
 
-            // Show notification for a shorter time since we're reloading immediately
+            // Scroll to top to show notification
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             setTimeout(() => {
                 notification.classList.add('hidden');
                 notification.classList.remove('transform', 'translate-x-0');
-            }, 2000);
+            }, 5000);
         }
 
         function showError(message) {
@@ -1406,8 +1511,13 @@
             const messageElement = document.getElementById('errorMessage');
             messageElement.textContent = message;
 
+            // Ensure notification is visible
+            notification.style.zIndex = '9999';
             notification.classList.remove('hidden');
             notification.classList.add('transform', 'translate-x-0');
+
+            // Scroll to top to show notification
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             setTimeout(() => {
                 notification.classList.add('hidden');
