@@ -356,6 +356,7 @@
             </div>
             <form id="editVenueForm" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
+                @method('PUT')
                 <input type="hidden" id="editVenueId" name="venue_id">
 
                 <!-- Form fields will be populated dynamically -->
@@ -410,7 +411,7 @@
 
     @push('notifications')
     <!-- Enhanced Success Notification -->
-    <div id="successNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-[9999]">
+    <div id="successNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-50">
         <div class="flex items-center space-x-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -420,7 +421,7 @@
     </div>
 
     <!-- Enhanced Error Notification -->
-    <div id="errorNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-[9999]">
+    <div id="errorNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-50">
         <div class="flex items-center space-x-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -440,7 +441,6 @@
         let currentVenueId = null;
         let spaceCounter = 0;
         let locationSearchTimeout = null;
-        let isSubmitting = false; // Flag to prevent multiple submissions
         const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiamllZGpvc2h1YSIsImEiOiJjbWM3OTljd3UwdmVnMmtwd2hhdXVqcng4In0.g77PfgWIOdlCt0sBijQgLg';
 
         // Search and filter functionality
@@ -868,7 +868,7 @@
                         const detailsHtml = `
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <img src="/${venue.main_image}" alt="${venue.name}" class="w-full h-64 object-cover rounded-lg">
+                                    <img src="${venue.main_image}" alt="${venue.name}" class="w-full h-64 object-cover rounded-lg">
                                 </div>
                                 <div class="space-y-4">
                                     <div>
@@ -927,7 +927,7 @@
                                         <div class="mt-2 grid grid-cols-3 gap-2">
                                             ${venue.gallery.map(image => `
                                                 <div class="relative">
-                                                    <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                                    <img src="${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
                                                     <button type="button" onclick="removeGalleryImage('${image.id}')" 
                                                         class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
                                                         ×
@@ -1049,7 +1049,7 @@
                     <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image</p>
-                    ${venue.main_image ? `<img src="/${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
+                    ${venue.main_image ? `<img src="${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
                 </div>
 
                 <!-- Gallery Images -->
@@ -1064,7 +1064,7 @@
                         <div class="grid grid-cols-3 gap-2">
                             ${venue.gallery.map(image => `
                                 <div class="relative">
-                                    <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
+                                    <img src="${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
                                     <button type="button" onclick="removeGalleryImage('${image.id}')" 
                                         class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
                                         ×
@@ -1142,8 +1142,10 @@
         }
 
         function closeEditModal() {
+            console.log('Closing edit modal');
             document.getElementById('editVenueModal').classList.add('hidden');
             currentVenueId = null;
+            console.log('Edit modal closed');
         }
 
         function deleteVenue(venueId, venueName) {
@@ -1285,34 +1287,44 @@
         document.getElementById('editVenueForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Prevent multiple submissions
-            if (isSubmitting) {
-                console.log('Form submission already in progress, ignoring');
-                return;
-            }
-            isSubmitting = true;
-            console.log('Starting form submission');
-
             const formData = new FormData(this);
 
             console.log('Submitting edit venue form for venue ID:', currentVenueId);
             console.log('Form data entries:');
             for (let [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                    console.log(key + ': [File] ' + value.name + ' (' + value.size + ' bytes)');
-                } else {
-                    console.log(key + ': ' + value);
-                }
+                console.log(key + ': ' + value);
+            }
+            
+            // Debug form validation
+            const form = this;
+            if (!form.checkValidity()) {
+                console.error('Form validation failed');
+                form.reportValidity();
+                return;
             }
             
             // Check if files are present
             const mainImageFile = formData.get('main_image');
             const galleryFiles = formData.getAll('gallery_images[]');
-            console.log('Main image file:', mainImageFile instanceof File ? mainImageFile.name : mainImageFile);
+            console.log('Main image file:', mainImageFile);
             console.log('Gallery files count:', galleryFiles.length);
+            
+            // Debug file information
+            if (mainImageFile && mainImageFile instanceof File) {
+                console.log('Main image file details:', {
+                    name: mainImageFile.name,
+                    size: mainImageFile.size,
+                    type: mainImageFile.type
+                });
+            }
+            
             galleryFiles.forEach((file, index) => {
                 if (file instanceof File) {
-                    console.log(`Gallery file ${index}: ${file.name} (${file.size} bytes)`);
+                    console.log(`Gallery file ${index} details:`, {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type
+                    });
                 }
             });
             
@@ -1330,70 +1342,47 @@
                 return;
             }
 
-            // Add the _method field for PUT request
-            formData.append('_method', 'PUT');
-            console.log('Added _method field:', formData.get('_method'));
+            // Show loading state
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Updating...';
+            submitButton.disabled = true;
 
-            // Get CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (!csrfToken) {
-                console.error('CSRF token meta tag not found');
-                showError('CSRF token not found. Please refresh the page.');
-                return;
-            }
-            const csrfTokenValue = csrfToken.getAttribute('content');
-            console.log('CSRF token found:', csrfTokenValue ? 'Yes' : 'No');
-
-            console.log('Sending fetch request to:', `/admin/venues/${currentVenueId}`);
-            console.log('Request method: POST');
-            console.log('Request headers:', {
-                'X-CSRF-TOKEN': csrfTokenValue ? 'Present' : 'Missing',
-                'X-Requested-With': 'XMLHttpRequest'
-            });
-
-            // Try both with and without Content-Type header for FormData
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => {
-                console.log('Request timeout after 30 seconds');
-                controller.abort();
-            }, 30000);
-
-            console.log('About to send fetch request...');
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
-                    signal: controller.signal,
                     headers: {
-                        'X-CSRF-TOKEN': csrfTokenValue,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'X-Requested-With': 'XMLHttpRequest'
-                        // Don't set Content-Type for FormData, let browser set it with boundary
                     }
-
+                })
                 .then(response => {
-                    clearTimeout(timeoutId); // Clear timeout
-                    console.log('Response received');
                     console.log('Response status:', response.status);
                     console.log('Response headers:', response.headers);
+                    
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.text().then(text => {
+                            console.log('Error response text:', text);
+                            throw new Error(`HTTP error! status: ${response.status}, response: ${text}`);
+                        });
                     }
                     return response.json();
                 })
                 .then(data => {
                     console.log('Response data:', data);
-                    isSubmitting = false; // Reset submission flag
+                    
+                    // Reset button state
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                    
                     if (data.success) {
-                        console.log('Update successful, showing success message');
                         showSuccess(data.message);
-                        console.log('Closing modal');
                         closeEditModal();
                         // Reload the page to show the updated venue
                         setTimeout(() => {
-                            console.log('Reloading page');
                             window.location.reload();
                         }, 1500);
                     } else {
-                        console.log('Update failed, showing error message');
                         let errorMessage = data.message || 'Failed to update venue';
                         if (data.errors) {
                             errorMessage += '\n' + Object.values(data.errors).flat().join('\n');
@@ -1402,9 +1391,12 @@
                     }
                 })
                 .catch(error => {
-                    clearTimeout(timeoutId); // Clear timeout
-                    console.error('Fetch error:', error);
-                    isSubmitting = false; // Reset submission flag
+                    console.error('Error:', error);
+                    
+                    // Reset button state
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                    
                     showError('Failed to update venue: ' + error.message);
                 });
         });
@@ -1442,19 +1434,23 @@
             const notification = document.getElementById('successNotification');
             const messageElement = document.getElementById('notificationMessage');
             
-            if (!notification || !messageElement) {
-                console.error('Notification elements not found');
-                return;
+            if (notification && messageElement) {
+                messageElement.textContent = message;
+                notification.classList.remove('hidden');
+                
+                // Force a reflow to ensure the transition works
+                notification.offsetHeight;
+                
+                console.log('Success notification displayed');
+                
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                    console.log('Success notification hidden');
+                }, 5000);
+            } else {
+                console.error('Success notification elements not found');
+                alert('Success: ' + message);
             }
-            
-            messageElement.textContent = message;
-            notification.classList.remove('hidden');
-            notification.classList.add('transform', 'translate-x-0');
-
-            setTimeout(() => {
-                notification.classList.add('hidden');
-                notification.classList.remove('transform', 'translate-x-0');
-            }, 5000);
         }
 
         function showError(message) {
@@ -1462,39 +1458,22 @@
             const notification = document.getElementById('errorNotification');
             const messageElement = document.getElementById('errorMessage');
             
-            if (!notification || !messageElement) {
+            if (notification && messageElement) {
+                messageElement.textContent = message;
+                notification.classList.remove('hidden');
+                
+                // Force a reflow to ensure the transition works
+                notification.offsetHeight;
+                
+                console.log('Error notification displayed');
+                
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                    console.log('Error notification hidden');
+                }, 5000);
+            } else {
                 console.error('Error notification elements not found');
-                return;
-            }
-            
-            messageElement.textContent = message;
-            notification.classList.remove('hidden');
-            notification.classList.add('transform', 'translate-x-0');
-
-            setTimeout(() => {
-                notification.classList.add('hidden');
-                notification.classList.remove('transform', 'translate-x-0');
-            }, 5000);
-        }
-
-        // Close modal function
-        function closeEditModal() {
-            console.log('Closing edit modal');
-            const modal = document.getElementById('editVenueModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                console.log('Modal hidden');
-            } else {
-                console.error('Edit modal element not found');
-            }
-            currentVenueId = null;
-            // Reset form
-            const form = document.getElementById('editVenueForm');
-            if (form) {
-                form.reset();
-                console.log('Form reset');
-            } else {
-                console.error('Edit form element not found');
+                alert('Error: ' + message);
             }
         }
 
