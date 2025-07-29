@@ -363,7 +363,7 @@
                     </svg>
                 </button>
             </div>
-            <form id="editVenueForm" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <form id="editVenueForm" method="POST" enctype="multipart/form-data" class="space-y-6" action="javascript:void(0);">
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="editVenueId" name="venue_id">
@@ -379,7 +379,7 @@
                         class="flex-1 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 px-6 py-3 rounded-xl hover:from-gray-200 hover:to-slate-200 transition-all duration-300 font-semibold shadow-sm">
                         Cancel
                     </button>
-                    <button type="submit"
+                    <button type="submit" id="updateVenueBtn"
                         class="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg">
                         Update Venue
                     </button>
@@ -1458,19 +1458,65 @@
 
         document.getElementById('editVenueForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            handleEditFormSubmission();
+        });
 
-            const formData = new FormData(this);
+        // Backup click handler for the submit button
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'updateVenueBtn') {
+                e.preventDefault();
+                handleEditFormSubmission();
+            }
+        });
+
+        function handleEditFormSubmission() {
+            console.log('Edit form submitted');
+            console.log('Current venue ID:', currentVenueId);
+
+            if (!currentVenueId) {
+                showError('No venue selected for update');
+                return;
+            }
+
+            const form = document.getElementById('editVenueForm');
+            if (!form) {
+                console.error('Edit form not found');
+                showError('Form not found');
+                return;
+            }
+
+            const formData = new FormData(form);
+            
+            // Log form data for debugging
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+
+            // Show loading state
+            const submitBtn = document.getElementById('updateVenueBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Updating...';
+            submitBtn.disabled = true;
 
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-HTTP-Method-Override': 'PUT'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Response data:', data);
+                    // Restore button state
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    
                     if (data.success) {
                         showSuccess(data.message);
                         closeEditModal();
@@ -1484,9 +1530,12 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    // Restore button state
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
                     showError('Failed to update venue');
                 });
-        });
+        }
 
         document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
             fetch(`/admin/venues/${currentVenueId}`, {
