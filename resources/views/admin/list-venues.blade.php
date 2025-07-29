@@ -349,39 +349,55 @@
         </div>
     </div>
 
-    <!-- Enhanced Edit Venue Modal -->
-    <div id="editVenueModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-2xl bg-white max-h-screen overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-900">Edit Venue</h3>
-                <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+    <!-- Modern Edit Venue Modal -->
+    <div id="editVenueModal" class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-0 border-0 w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 shadow-2xl rounded-3xl bg-white max-h-screen overflow-hidden">
+            <!-- Modern Header -->
+            <div class="bg-gradient-to-r from-violet-500 to-purple-600 px-8 py-6 rounded-t-3xl">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Edit Venue</h3>
+                        <p class="text-violet-100 mt-1">Update venue information and settings</p>
+                    </div>
+                    <button onclick="closeEditModal()" class="text-white hover:text-violet-200 transition-colors p-2 rounded-full hover:bg-white hover:bg-opacity-20">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
-            <form id="editVenueForm" method="POST" enctype="multipart/form-data" class="space-y-6">
-                @csrf
-                @method('PUT')
-                <input type="hidden" id="editVenueId" name="venue_id">
 
-                <!-- Form fields will be populated dynamically -->
-                <div id="editVenueFields">
-                    <!-- Dynamic fields will be added here -->
-                </div>
+            <!-- Modern Form Container -->
+            <div class="p-8 max-h-[70vh] overflow-y-auto">
+                <form id="editVenueForm" method="POST" enctype="multipart/form-data" class="space-y-8">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editVenueId" name="venue_id">
 
-                <!-- Enhanced Form Actions -->
-                <div class="flex gap-4 pt-4 border-t border-gray-200">
-                    <button type="button" onclick="closeEditModal()"
-                        class="flex-1 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 px-6 py-3 rounded-xl hover:from-gray-200 hover:to-slate-200 transition-all duration-300 font-semibold">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg">
-                        Update Venue
-                    </button>
-                </div>
-            </form>
+                    <!-- Form fields will be populated dynamically -->
+                    <div id="editVenueFields">
+                        <!-- Dynamic fields will be added here -->
+                    </div>
+
+                    <!-- Modern Form Actions -->
+                    <div class="flex gap-4 pt-6 border-t border-gray-100">
+                        <button type="button" onclick="closeEditModal()"
+                            class="flex-1 bg-gradient-to-r from-gray-50 to-slate-50 text-gray-700 px-8 py-4 rounded-2xl hover:from-gray-100 hover:to-slate-100 transition-all duration-300 font-semibold border border-gray-200 hover:border-gray-300 shadow-sm">
+                            <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-8 py-4 rounded-2xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg transform hover:scale-105">
+                            <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Update Venue
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -441,6 +457,38 @@
     <!-- Mapbox API -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    
+    <style>
+        /* Upload progress animations */
+        @keyframes progressPulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes successBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .progress-animate {
+            animation: progressPulse 1.5s ease-in-out infinite;
+        }
+        
+        .success-animate {
+            animation: successBounce 0.6s ease-in-out;
+        }
+        
+        .upload-progress-container {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .upload-progress-container.show {
+            transform: translateX(0);
+        }
+    </style>
 
     <script>
         // Global variables
@@ -848,6 +896,9 @@
             }
             
             console.log(`${fieldName} validated:`, file.name, file.type, file.size);
+            
+            // Show upload progress animation
+            showUploadProgress(input, fieldName);
         }
 
         function validateMultipleImageFiles(input, fieldName) {
@@ -872,6 +923,9 @@
             }
             
             console.log(`${fieldName} validated:`, files.length, 'files');
+            
+            // Show upload progress animation for multiple files
+            showUploadProgress(input, fieldName, files.length);
         }
 
         // Modal functions
@@ -1525,6 +1579,123 @@
                     showError('Failed to delete venue');
                 });
         });
+
+        // Upload progress animation functions
+        function showUploadProgress(input, fieldName, fileCount = 1) {
+            // Create or get progress container
+            let progressContainer = document.getElementById('uploadProgressContainer');
+            if (!progressContainer) {
+                progressContainer = document.createElement('div');
+                progressContainer.id = 'uploadProgressContainer';
+                progressContainer.className = 'fixed top-4 left-4 bg-white border border-gray-200 rounded-xl shadow-lg p-4 z-50 min-w-80 upload-progress-container';
+                document.body.appendChild(progressContainer);
+            }
+
+            const fileName = fileCount > 1 ? `${fileCount} files` : input.files[0]?.name || 'File';
+            const progressHtml = `
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">${fieldName}</p>
+                        <p class="text-xs text-gray-500">${fileName}</p>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="uploadProgressBar" class="bg-gradient-to-r from-violet-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out progress-animate" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                    <span id="uploadProgressText" class="text-xs text-gray-600">0%</span>
+                    <button onclick="hideUploadProgress()" class="text-xs text-gray-400 hover:text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            progressContainer.innerHTML = progressHtml;
+            progressContainer.classList.remove('hidden');
+            
+            // Add show class for slide-in animation
+            setTimeout(() => {
+                progressContainer.classList.add('show');
+            }, 10);
+            
+            // Simulate upload progress
+            simulateUploadProgress();
+        }
+
+        function simulateUploadProgress() {
+            const progressBar = document.getElementById('uploadProgressBar');
+            const progressText = document.getElementById('uploadProgressText');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 15 + 5; // Random increment between 5-20%
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Show completion animation
+                    setTimeout(() => {
+                        showUploadComplete();
+                    }, 500);
+                }
+                
+                progressBar.style.width = progress + '%';
+                progressText.textContent = Math.round(progress) + '%';
+            }, 200);
+        }
+
+        function showUploadComplete() {
+            const progressContainer = document.getElementById('uploadProgressContainer');
+            if (!progressContainer) return;
+            
+            const progressHtml = `
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center success-animate">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">Upload Complete!</p>
+                        <p class="text-xs text-gray-500">Files uploaded successfully</p>
+                    </div>
+                    <button onclick="hideUploadProgress()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            progressContainer.innerHTML = progressHtml;
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                hideUploadProgress();
+            }, 3000);
+        }
+
+        function hideUploadProgress() {
+            const progressContainer = document.getElementById('uploadProgressContainer');
+            if (progressContainer) {
+                progressContainer.classList.remove('show');
+                setTimeout(() => {
+                    progressContainer.classList.add('hidden');
+                }, 300);
+            }
+        }
 
         // Notification functions
         function showSuccess(message) {
