@@ -703,10 +703,6 @@
                                 
                                 updateResultCard('waiting', 'Checking in...');
 
-                                clearInterval(interval);
-                                stream.getTracks().forEach(track => track.stop());
-                                scanning = false;
-
                                 // Send QR code data to backend
                                 fetch(checkInUrl + '?data=' + encodeURIComponent(code.data), {
                                         method: 'GET',
@@ -724,6 +720,10 @@
                                             if (data.checked_in_at) {
                                                 result.textContent += `\nPreviously checked in at: ${data.checked_in_at}`;
                                             }
+                                            // Reset to scanning state after error
+                                            setTimeout(() => {
+                                                updateResultCard('waiting', 'Scanning for QR codes...');
+                                            }, 3000);
                                         } else if (data.message) {
                                             // Display success message with user's full name
                                             let successMessage = data.message;
@@ -756,14 +756,27 @@
                                                 const isExternal = data.guest ? true : false;
                                                 speakWelcome(guestName, isExternal);
                                             }
+                                            
+                                            // Reset to scanning state after success (3 seconds)
+                                            setTimeout(() => {
+                                                updateResultCard('waiting', 'Scanning for QR codes...');
+                                            }, 3000);
                                         } else {
                                             playErrorSound();
                                             updateResultCard('error', 'Unknown response from server.');
+                                            // Reset to scanning state after error
+                                            setTimeout(() => {
+                                                updateResultCard('waiting', 'Scanning for QR codes...');
+                                            }, 3000);
                                         }
                                     })
                                     .catch(err => {
                                         playErrorSound();
                                         updateResultCard('error', 'Failed to check in: ' + err.message);
+                                        // Reset to scanning state after error
+                                        setTimeout(() => {
+                                            updateResultCard('waiting', 'Scanning for QR codes...');
+                                        }, 3000);
                                     });
                             }
                         } catch (error) {
