@@ -356,7 +356,6 @@
             </div>
             <form id="editVenueForm" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
-                @method('PUT')
                 <input type="hidden" id="editVenueId" name="venue_id">
 
                 <!-- Form fields will be populated dynamically -->
@@ -411,7 +410,7 @@
 
     @push('notifications')
     <!-- Enhanced Success Notification -->
-    <div id="successNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-50">
+    <div id="successNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-[9999]">
         <div class="flex items-center space-x-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -421,7 +420,7 @@
     </div>
 
     <!-- Enhanced Error Notification -->
-    <div id="errorNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-50">
+    <div id="errorNotification" class="hidden fixed top-4 right-4 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-lg transform transition-transform duration-300 ease-in-out z-[9999]">
         <div class="flex items-center space-x-3">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1290,14 +1289,23 @@
             console.log('Submitting edit venue form for venue ID:', currentVenueId);
             console.log('Form data entries:');
             for (let [key, value] of formData.entries()) {
-                console.log(key + ': ' + value);
+                if (value instanceof File) {
+                    console.log(key + ': [File] ' + value.name + ' (' + value.size + ' bytes)');
+                } else {
+                    console.log(key + ': ' + value);
+                }
             }
             
             // Check if files are present
             const mainImageFile = formData.get('main_image');
             const galleryFiles = formData.getAll('gallery_images[]');
-            console.log('Main image file:', mainImageFile);
+            console.log('Main image file:', mainImageFile instanceof File ? mainImageFile.name : mainImageFile);
             console.log('Gallery files count:', galleryFiles.length);
+            galleryFiles.forEach((file, index) => {
+                if (file instanceof File) {
+                    console.log(`Gallery file ${index}: ${file.name} (${file.size} bytes)`);
+                }
+            });
             
             // Check if required fields are present
             const requiredFields = ['name', 'type', 'capacity', 'price_range', 'description', 'address'];
@@ -1313,28 +1321,49 @@
                 return;
             }
 
+            // Add the _method field for PUT request
+            formData.append('_method', 'PUT');
+
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                console.error('CSRF token meta tag not found');
+                showError('CSRF token not found. Please refresh the page.');
+                return;
+            }
+            const csrfTokenValue = csrfToken.getAttribute('content');
+            console.log('CSRF token found:', csrfTokenValue ? 'Yes' : 'No');
+
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': csrfTokenValue,
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(response => {
                     console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     return response.json();
                 })
                 .then(data => {
                     console.log('Response data:', data);
                     if (data.success) {
+                        console.log('Update successful, showing success message');
                         showSuccess(data.message);
+                        console.log('Closing modal');
                         closeEditModal();
                         // Reload the page to show the updated venue
                         setTimeout(() => {
+                            console.log('Reloading page');
                             window.location.reload();
                         }, 1500);
                     } else {
+                        console.log('Update failed, showing error message');
                         let errorMessage = data.message || 'Failed to update venue';
                         if (data.errors) {
                             errorMessage += '\n' + Object.values(data.errors).flat().join('\n');
@@ -1343,8 +1372,8 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    showError('Failed to update venue');
+                    console.error('Fetch error:', error);
+                    showError('Failed to update venue: ' + error.message);
                 });
         });
 
@@ -1377,10 +1406,16 @@
 
         // Notification functions
         function showSuccess(message) {
+            console.log('Showing success notification:', message);
             const notification = document.getElementById('successNotification');
             const messageElement = document.getElementById('notificationMessage');
+            
+            if (!notification || !messageElement) {
+                console.error('Notification elements not found');
+                return;
+            }
+            
             messageElement.textContent = message;
-
             notification.classList.remove('hidden');
             notification.classList.add('transform', 'translate-x-0');
 
@@ -1391,10 +1426,16 @@
         }
 
         function showError(message) {
+            console.log('Showing error notification:', message);
             const notification = document.getElementById('errorNotification');
             const messageElement = document.getElementById('errorMessage');
+            
+            if (!notification || !messageElement) {
+                console.error('Error notification elements not found');
+                return;
+            }
+            
             messageElement.textContent = message;
-
             notification.classList.remove('hidden');
             notification.classList.add('transform', 'translate-x-0');
 
@@ -1402,6 +1443,27 @@
                 notification.classList.add('hidden');
                 notification.classList.remove('transform', 'translate-x-0');
             }, 5000);
+        }
+
+        // Close modal function
+        function closeEditModal() {
+            console.log('Closing edit modal');
+            const modal = document.getElementById('editVenueModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                console.log('Modal hidden');
+            } else {
+                console.error('Edit modal element not found');
+            }
+            currentVenueId = null;
+            // Reset form
+            const form = document.getElementById('editVenueForm');
+            if (form) {
+                form.reset();
+                console.log('Form reset');
+            } else {
+                console.error('Edit form element not found');
+            }
         }
 
         // Close modals when clicking outside
