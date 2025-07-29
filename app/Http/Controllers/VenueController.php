@@ -333,6 +333,12 @@ class VenueController extends Controller
         ]);
 
         try {
+            // Create img directory if it doesn't exist
+            $imgPath = public_path('img');
+            if (!file_exists($imgPath)) {
+                mkdir($imgPath, 0755, true);
+            }
+            
             // Handle main image upload to public/img directory
             $mainImage = $request->file('main_image');
             $mainImageName = time() . '_' . $mainImage->getClientOriginalName();
@@ -355,6 +361,12 @@ class VenueController extends Controller
 
             // Handle gallery images
             if ($request->hasFile('gallery_images')) {
+                // Create gallery directory if it doesn't exist
+                $galleryPath = public_path('img/gallery');
+                if (!file_exists($galleryPath)) {
+                    mkdir($galleryPath, 0755, true);
+                }
+                
                 foreach ($request->file('gallery_images') as $index => $image) {
                     $galleryImageName = time() . '_' . $index . '_' . $image->getClientOriginalName();
                     $galleryImagePath = 'public/img/gallery/' . $galleryImageName;
@@ -390,7 +402,7 @@ class VenueController extends Controller
             Log::error('Venue creation failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create venue. Please try again.'
+                'message' => 'Failed to create venue: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -424,12 +436,7 @@ class VenueController extends Controller
             'venue_id' => $venue->id,
             'request_data' => $request->all(),
             'files' => $request->hasFile('main_image') ? 'main_image present' : 'no main_image',
-            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0,
-            'all_files' => $request->allFiles(),
-            'content_type' => $request->header('Content-Type'),
-            'request_method' => $request->method(),
-            'is_ajax' => $request->ajax(),
-            'user_agent' => $request->userAgent()
+            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0
         ]);
         
         $request->validate([
@@ -441,8 +448,8 @@ class VenueController extends Controller
             'address' => 'required|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'removed_gallery_images' => 'nullable|array',
             'edit_spaces' => 'nullable|array',
             'edit_spaces.*.name' => 'required|string|max:255',
@@ -457,19 +464,6 @@ class VenueController extends Controller
         ]);
 
         try {
-            // Check upload directories
-            $imgDir = public_path('img');
-            $galleryDir = public_path('img/gallery');
-            
-            Log::info('Upload directory check', [
-                'img_dir_exists' => file_exists($imgDir),
-                'img_dir_writable' => is_writable($imgDir),
-                'gallery_dir_exists' => file_exists($galleryDir),
-                'gallery_dir_writable' => file_exists($galleryDir) ? is_writable($galleryDir) : 'N/A',
-                'img_dir_perms' => file_exists($imgDir) ? substr(sprintf('%o', fileperms($imgDir)), -4) : 'N/A',
-                'gallery_dir_perms' => file_exists($galleryDir) ? substr(sprintf('%o', fileperms($galleryDir)), -4) : 'N/A'
-            ]);
-            
             $data = $request->except(['main_image', 'gallery_images', 'removed_gallery_images', 'edit_spaces', 'new_spaces', 'removed_venue_spaces']);
             
             // Handle is_active field properly
@@ -477,68 +471,23 @@ class VenueController extends Controller
 
             // Handle main image update
             if ($request->hasFile('main_image')) {
-                $mainImage = $request->file('main_image');
-                Log::info('Processing main image upload', [
-                    'original_name' => $mainImage->getClientOriginalName(),
-                    'size' => $mainImage->getSize(),
-                    'mime_type' => $mainImage->getMimeType(),
-                    'is_valid' => $mainImage->isValid(),
-                    'error' => $mainImage->getError()
-                ]);
-                
                 // Delete old image if it exists in public directory
                 if ($venue->main_image && file_exists(public_path(str_replace('public/', '', $venue->main_image)))) {
                     unlink(public_path(str_replace('public/', '', $venue->main_image)));
                 }
                 
-                            // Ensure the upload directory exists
-            $uploadDir = public_path('img');
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-                Log::info('Created upload directory', ['path' => $uploadDir]);
-            }
-            
-            // Ensure the gallery directory exists
-            $galleryDir = public_path('img/gallery');
-            if (!file_exists($galleryDir)) {
-                mkdir($galleryDir, 0755, true);
-                Log::info('Created gallery directory', ['path' => $galleryDir]);
-            }
-            
-            // Test write permissions
-            $testFile = $uploadDir . '/test_write.tmp';
-            if (file_put_contents($testFile, 'test') !== false) {
-                unlink($testFile);
-                Log::info('Upload directory is writable', ['path' => $uploadDir]);
-            } else {
-                Log::error('Upload directory is not writable', ['path' => $uploadDir]);
-            }
+                // Create img directory if it doesn't exist
+                $imgPath = public_path('img');
+                if (!file_exists($imgPath)) {
+                    mkdir($imgPath, 0755, true);
+                }
                 
                 // Upload new image
                 $mainImage = $request->file('main_image');
                 $mainImageName = time() . '_' . $mainImage->getClientOriginalName();
                 $mainImagePath = 'public/img/' . $mainImageName;
-                
-                try {
-                    $mainImage->move(public_path('img'), $mainImageName);
-                    $data['main_image'] = $mainImagePath;
-                    
-                    // Verify the file was actually uploaded
-                    $uploadedPath = public_path('img/' . $mainImageName);
-                    if (file_exists($uploadedPath)) {
-                        Log::info('Main image uploaded successfully', [
-                            'path' => $mainImagePath,
-                            'size' => filesize($uploadedPath),
-                            'permissions' => substr(sprintf('%o', fileperms($uploadedPath)), -4)
-                        ]);
-                    } else {
-                        Log::error('Main image file not found after upload', ['path' => $uploadedPath]);
-                        throw new \Exception('Main image file not found after upload');
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Failed to upload main image: ' . $e->getMessage());
-                    throw new \Exception('Failed to upload main image: ' . $e->getMessage());
-                }
+                $mainImage->move(public_path('img'), $mainImageName);
+                $data['main_image'] = $mainImagePath;
             }
 
             // Handle gallery image removals
@@ -570,64 +519,24 @@ class VenueController extends Controller
 
             // Handle new gallery images
             if ($request->hasFile('gallery_images')) {
-                $galleryFiles = $request->file('gallery_images');
-                Log::info('Processing gallery images upload', [
-                    'count' => count($galleryFiles),
-                    'files' => array_map(function($file) {
-                        return [
-                            'original_name' => $file->getClientOriginalName(),
-                            'size' => $file->getSize(),
-                            'mime_type' => $file->getMimeType(),
-                            'is_valid' => $file->isValid(),
-                            'error' => $file->getError()
-                        ];
-                    }, $galleryFiles)
-                ]);
-                
                 $existingGalleryCount = $venue->gallery()->count();
                 
-                // Ensure the gallery upload directory exists
-                $galleryDir = public_path('img/gallery');
-                if (!file_exists($galleryDir)) {
-                    mkdir($galleryDir, 0755, true);
+                // Create gallery directory if it doesn't exist
+                $galleryPath = public_path('img/gallery');
+                if (!file_exists($galleryPath)) {
+                    mkdir($galleryPath, 0755, true);
                 }
                 
                 foreach ($request->file('gallery_images') as $index => $image) {
-                    Log::info('Processing gallery image', [
-                        'index' => $index,
-                        'original_name' => $image->getClientOriginalName(),
-                        'size' => $image->getSize(),
-                        'mime_type' => $image->getMimeType()
-                    ]);
-                    
                     $galleryImageName = time() . '_' . ($existingGalleryCount + $index) . '_' . $image->getClientOriginalName();
                     $galleryImagePath = 'public/img/gallery/' . $galleryImageName;
+                    $image->move(public_path('img/gallery'), $galleryImageName);
                     
-                    try {
-                        $image->move(public_path('img/gallery'), $galleryImageName);
-                        
-                        VenueGallery::create([
-                            'venue_id' => $venue->id,
-                            'image_path' => $galleryImagePath,
-                            'sort_order' => $existingGalleryCount + $index + 1,
-                        ]);
-                        
-                        // Verify the file was actually uploaded
-                        $uploadedPath = public_path('img/gallery/' . $galleryImageName);
-                        if (file_exists($uploadedPath)) {
-                            Log::info('Gallery image uploaded successfully', [
-                                'path' => $galleryImagePath,
-                                'size' => filesize($uploadedPath),
-                                'permissions' => substr(sprintf('%o', fileperms($uploadedPath)), -4)
-                            ]);
-                        } else {
-                            Log::error('Gallery image file not found after upload', ['path' => $uploadedPath]);
-                            throw new \Exception('Gallery image file not found after upload');
-                        }
-                    } catch (\Exception $e) {
-                        Log::error('Failed to upload gallery image: ' . $e->getMessage());
-                        throw new \Exception('Failed to upload gallery image: ' . $e->getMessage());
-                    }
+                    VenueGallery::create([
+                        'venue_id' => $venue->id,
+                        'image_path' => $galleryImagePath,
+                        'sort_order' => $existingGalleryCount + $index + 1,
+                    ]);
                 }
             }
 
@@ -707,8 +616,7 @@ class VenueController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Venue update validation failed', [
                 'venue_id' => $venue->id,
-                'errors' => $e->errors(),
-                'request_data' => $request->all()
+                'errors' => $e->errors()
             ]);
             return response()->json([
                 'success' => false,
@@ -718,9 +626,7 @@ class VenueController extends Controller
         } catch (\Exception $e) {
             Log::error('Venue update failed: ' . $e->getMessage(), [
                 'venue_id' => $venue->id,
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all(),
-                'files' => $request->allFiles()
+                'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
