@@ -1123,161 +1123,243 @@
             document.getElementById('editVenueId').value = venue.id;
             
             const fieldsHtml = `
-                <!-- Basic Information -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="editVenueName" class="block text-sm font-medium text-gray-700">Venue Name *</label>
-                        <input type="text" id="editVenueName" name="name" value="${venue.name}" required
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                <!-- Modern Basic Information Section -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Basic Information</h4>
                     </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="editVenueName" class="block text-sm font-semibold text-gray-800">Venue Name *</label>
+                            <input type="text" id="editVenueName" name="name" value="${venue.name}" required
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
+                        </div>
 
-                    <div>
-                        <label for="editVenueType" class="block text-sm font-medium text-gray-700">Venue Type *</label>
-                        <select id="editVenueType" name="type" required
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Select Type</option>
-                            <option value="indoor" ${venue.type === 'indoor' ? 'selected' : ''}>Indoor</option>
-                            <option value="outdoor" ${venue.type === 'outdoor' ? 'selected' : ''}>Outdoor</option>
-                            <option value="both" ${venue.type === 'both' ? 'selected' : ''}>Both (Indoor & Outdoor)</option>
-                            <option value="church" ${venue.type === 'church' ? 'selected' : ''}>Church</option>
-                        </select>
-                    </div>
+                        <div class="space-y-2">
+                            <label for="editVenueType" class="block text-sm font-semibold text-gray-800">Venue Type *</label>
+                            <select id="editVenueType" name="type" required
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
+                                <option value="">Select Type</option>
+                                <option value="indoor" ${venue.type === 'indoor' ? 'selected' : ''}>Indoor</option>
+                                <option value="outdoor" ${venue.type === 'outdoor' ? 'selected' : ''}>Outdoor</option>
+                                <option value="both" ${venue.type === 'both' ? 'selected' : ''}>Both (Indoor & Outdoor)</option>
+                                <option value="church" ${venue.type === 'church' ? 'selected' : ''}>Church</option>
+                            </select>
+                        </div>
 
-                    <div>
-                        <label for="editVenueCapacity" class="block text-sm font-medium text-gray-700">Capacity *</label>
-                        <input type="number" id="editVenueCapacity" name="capacity" value="${venue.capacity}" required min="1"
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
+                        <div class="space-y-2">
+                            <label for="editVenueCapacity" class="block text-sm font-semibold text-gray-800">Capacity *</label>
+                            <input type="number" id="editVenueCapacity" name="capacity" value="${venue.capacity}" required min="1"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
+                        </div>
 
-                    <div>
-                        <label for="editVenuePriceRange" class="block text-sm font-medium text-gray-700">Price Range *</label>
-                        <input type="text" id="editVenuePriceRange" name="price_range" value="${venue.price_range}" required placeholder="e.g., ₱1,000 - ₱5,000"
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <p class="mt-1 text-sm text-gray-500">Enter price range in Philippine Pesos (₱)</p>
-                    </div>
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label for="editVenueDescription" class="block text-sm font-medium text-gray-700">Description *</label>
-                    <textarea id="editVenueDescription" name="description" rows="4" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">${venue.description}</textarea>
-                </div>
-
-                <!-- Address and Location Search -->
-                <div>
-                    <label for="editVenueLocationSearch" class="block text-sm font-medium text-gray-700">Search Location *</label>
-                    <div class="relative">
-                        <input type="text" id="editVenueLocationSearch" placeholder="Search for a location..." value="${venue.address}"
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <div id="editLocationSearchResults" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
-                            <!-- Search results will appear here -->
+                        <div class="space-y-2">
+                            <label for="editVenuePriceRange" class="block text-sm font-semibold text-gray-800">Price Range *</label>
+                            <input type="text" id="editVenuePriceRange" name="price_range" value="${venue.price_range}" required placeholder="e.g., ₱1,000 - ₱5,000"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
+                            <p class="text-xs text-gray-600">Enter price range in Philippine Pesos (₱)</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Address (auto-filled) -->
-                <div>
-                    <label for="editVenueAddress" class="block text-sm font-medium text-gray-700">Address *</label>
-                    <input type="text" id="editVenueAddress" name="address" value="${venue.address}" required readonly
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-
-                <!-- Hidden coordinates for form submission -->
-                <input type="hidden" id="editVenueLatitude" name="latitude" value="${venue.latitude || ''}">
-                <input type="hidden" id="editVenueLongitude" name="longitude" value="${venue.longitude || ''}">
-
-                <!-- Main Image -->
-                <div>
-                    <label for="editVenueMainImage" class="block text-sm font-medium text-gray-700">Main Image</label>
-                    <input type="file" id="editVenueMainImage" name="main_image" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image. Accepted formats: JPEG, PNG, GIF, WebP (max 2MB)</p>
-                    ${venue.main_image ? `<img src="/${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
-                    <div id="editMainImagePreview" class="mt-2 hidden">
-                        <p class="text-sm font-medium text-gray-700 mb-1">New Image Preview:</p>
-                        <img id="editMainImagePreviewImg" src="" alt="Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-300">
+                <!-- Modern Description Section -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Description</h4>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label for="editVenueDescription" class="block text-sm font-semibold text-gray-800">Description *</label>
+                        <textarea id="editVenueDescription" name="description" rows="4" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300 resize-none">${venue.description}</textarea>
                     </div>
                 </div>
 
-                <!-- Gallery Images -->
-                <div>
-                    <label for="editVenueGalleryImages" class="block text-sm font-medium text-gray-700">Gallery Images</label>
-                    <input type="file" id="editVenueGalleryImages" name="gallery_images[]" multiple accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <p class="mt-1 text-sm text-gray-500">Select new images to add to the gallery. Leave empty to keep current gallery. Accepted formats: JPEG, PNG, GIF, WebP (max 2MB each)</p>
-                    ${venue.gallery && venue.gallery.length > 0 ? `
-                    <div class="mt-3">
-                        <p class="text-sm font-medium text-gray-700 mb-2">Current Gallery Images:</p>
-                        <div class="grid grid-cols-3 gap-2">
-                            ${venue.gallery.map(image => `
-                                <div class="relative">
-                                    <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg">
-                                    <button type="button" onclick="removeGalleryImage('${image.id}')" 
-                                        class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
-                                        ×
-                                    </button>
+                <!-- Modern Location Section -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-emerald-500 to-green-600 rounded-full flex items-center justify-center mr-3">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Location Information</h4>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label for="editVenueLocationSearch" class="block text-sm font-semibold text-gray-800">Search Location *</label>
+                            <div class="relative">
+                                <input type="text" id="editVenueLocationSearch" placeholder="Search for a location..." value="${venue.address}"
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
+                                <div id="editLocationSearchResults" class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg hidden max-h-60 overflow-y-auto">
+                                    <!-- Search results will appear here -->
                                 </div>
-                            `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="editVenueAddress" class="block text-sm font-semibold text-gray-800">Address *</label>
+                            <input type="text" id="editVenueAddress" name="address" value="${venue.address}" required readonly
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 transition-all duration-300">
+                        </div>
+
+                        <!-- Hidden coordinates for form submission -->
+                        <input type="hidden" id="editVenueLatitude" name="latitude" value="${venue.latitude || ''}">
+                        <input type="hidden" id="editVenueLongitude" name="longitude" value="${venue.longitude || ''}">
+                    </div>
+                </div>
+
+                <!-- Modern Images Section -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center mr-3">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Images & Media</h4>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Main Image -->
+                        <div class="space-y-3">
+                            <label for="editVenueMainImage" class="block text-sm font-semibold text-gray-800">Main Image</label>
+                            <div class="relative">
+                                <input type="file" id="editVenueMainImage" name="main_image" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
+                            </div>
+                            <p class="text-xs text-gray-600">Leave empty to keep current image. Accepted formats: JPEG, PNG, GIF, WebP (max 2MB)</p>
+                            
+                            ${venue.main_image ? `
+                            <div class="mt-3 p-4 bg-white rounded-xl border border-gray-200">
+                                <p class="text-sm font-medium text-gray-700 mb-2">Current Main Image:</p>
+                                <img src="/${venue.main_image}" alt="Current" class="w-32 h-24 object-cover rounded-lg border border-gray-200">
+                            </div>
+                            ` : ''}
+                            
+                            <div id="editMainImagePreview" class="mt-3 p-4 bg-white rounded-xl border border-gray-200 hidden">
+                                <p class="text-sm font-medium text-gray-700 mb-2">New Image Preview:</p>
+                                <img id="editMainImagePreviewImg" src="" alt="Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-200">
+                            </div>
+                        </div>
+
+                        <!-- Gallery Images -->
+                        <div class="space-y-3">
+                            <label for="editVenueGalleryImages" class="block text-sm font-semibold text-gray-800">Gallery Images</label>
+                            <div class="relative">
+                                <input type="file" id="editVenueGalleryImages" name="gallery_images[]" multiple accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
+                            </div>
+                            <p class="text-xs text-gray-600">Select new images to add to the gallery. Leave empty to keep current gallery. Accepted formats: JPEG, PNG, GIF, WebP (max 2MB each)</p>
+                            
+                            ${venue.gallery && venue.gallery.length > 0 ? `
+                            <div class="mt-3 p-4 bg-white rounded-xl border border-gray-200">
+                                <p class="text-sm font-medium text-gray-700 mb-3">Current Gallery Images:</p>
+                                <div class="grid grid-cols-3 gap-3">
+                                    ${venue.gallery.map(image => `
+                                        <div class="relative group">
+                                            <img src="/${image.image_path}" alt="Gallery" class="w-full h-20 object-cover rounded-lg border border-gray-200">
+                                            <button type="button" onclick="removeGalleryImage('${image.id}')" 
+                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-all duration-300 opacity-0 group-hover:opacity-100">
+                                                ×
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
-                    ` : ''}
                 </div>
 
-                <!-- Status -->
-                <div>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="is_active" value="1" ${venue.is_active ? 'checked' : ''}
-                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        <span class="ml-2 text-sm text-gray-700">Active</span>
-                    </label>
+                <!-- Modern Status Section -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mr-3">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900">Status & Settings</h4>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_active" value="1" ${venue.is_active ? 'checked' : ''}
+                                class="w-5 h-5 text-violet-600 bg-gray-100 border-gray-300 rounded focus:ring-violet-500 focus:ring-2">
+                            <span class="ml-3 text-sm font-medium text-gray-800">Active Venue</span>
+                        </label>
+                    </div>
                 </div>
 
-                <!-- Venue Spaces -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Venue Spaces</label>
-                    <div id="editVenueSpaces" class="space-y-3">
+                <!-- Modern Venue Spaces Section -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-violet-600 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-900">Venue Spaces</h4>
+                        </div>
+                        <button type="button" onclick="addEditVenueSpace()"
+                            class="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 text-sm flex items-center space-x-2 shadow-lg">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            <span>Add Space</span>
+                        </button>
+                    </div>
+                    
+                    <div id="editVenueSpaces" class="space-y-4">
                         ${venue.spaces && venue.spaces.length > 0 ? venue.spaces.map((space, index) => `
-                            <div class="border border-gray-300 rounded-lg p-4 space-y-3" id="edit-space-${space.id}">
+                            <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-4" id="edit-space-${space.id}">
                                 <div class="flex justify-between items-center">
-                                    <h4 class="text-sm font-medium text-gray-700">Space ${index + 1}</h4>
-                                    <button type="button" onclick="removeEditVenueSpace(${space.id})" class="text-red-500 hover:text-red-700">
+                                    <h5 class="text-sm font-semibold text-gray-800">Space ${index + 1}</h5>
+                                    <button type="button" onclick="removeEditVenueSpace(${space.id})" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
                                     </button>
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="space-y-2">
                                         <label class="block text-sm font-medium text-gray-700">Name</label>
                                         <input type="text" name="edit_spaces[${space.id}][name]" value="${space.name}" required
-                                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
                                     </div>
-                                    <div>
+                                    <div class="space-y-2">
                                         <label class="block text-sm font-medium text-gray-700">Type</label>
                                         <select name="edit_spaces[${space.id}][type]" required
-                                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
                                             <option value="">Select Type</option>
                                             <option value="indoor" ${space.type === 'indoor' ? 'selected' : ''}>Indoor</option>
                                             <option value="outdoor" ${space.type === 'outdoor' ? 'selected' : ''}>Outdoor</option>
                                         </select>
                                     </div>
-                                    <div>
+                                    <div class="space-y-2">
                                         <label class="block text-sm font-medium text-gray-700">Capacity</label>
                                         <input type="number" name="edit_spaces[${space.id}][capacity]" value="${space.capacity}" required min="1"
-                                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
                                     </div>
                                 </div>
                             </div>
                         `).join('') : ''}
                     </div>
-                    <button type="button" onclick="addEditVenueSpace()"
-                        class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <svg class="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        Add Space
-                    </button>
                 </div>
             `;
             
@@ -1369,34 +1451,34 @@
         function addEditVenueSpace() {
             editSpaceCounter++;
             const spaceHtml = `
-                <div class="border border-gray-300 rounded-lg p-4 space-y-3" id="edit-new-space-${editSpaceCounter}">
+                <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-4" id="edit-new-space-${editSpaceCounter}">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-sm font-medium text-gray-700">New Space ${editSpaceCounter}</h4>
-                        <button type="button" onclick="removeEditVenueSpace('new-${editSpaceCounter}')" class="text-red-500 hover:text-red-700">
+                        <h5 class="text-sm font-semibold text-gray-800">New Space ${editSpaceCounter}</h5>
+                        <button type="button" onclick="removeEditVenueSpace('new-${editSpaceCounter}')" class="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700">Name</label>
                             <input type="text" name="new_spaces[${editSpaceCounter}][name]" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
                         </div>
-                        <div>
+                        <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700">Type</label>
                             <select name="new_spaces[${editSpaceCounter}][type]" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
                                 <option value="">Select Type</option>
                                 <option value="indoor">Indoor</option>
                                 <option value="outdoor">Outdoor</option>
                             </select>
                         </div>
-                        <div>
+                        <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700">Capacity</label>
                             <input type="number" name="new_spaces[${editSpaceCounter}][capacity]" required min="1"
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800 bg-white transition-all duration-300">
                         </div>
                     </div>
                 </div>
