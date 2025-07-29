@@ -420,6 +420,13 @@ class VenueController extends Controller
 
     public function update(Request $request, Venue $venue)
     {
+        Log::info('Venue update request received', [
+            'venue_id' => $venue->id,
+            'request_data' => $request->all(),
+            'files' => $request->hasFile('main_image') ? 'main_image present' : 'no main_image',
+            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0
+        ]);
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string|max:100',
@@ -446,6 +453,9 @@ class VenueController extends Controller
 
         try {
             $data = $request->except(['main_image', 'gallery_images', 'removed_gallery_images', 'edit_spaces', 'new_spaces', 'removed_venue_spaces']);
+            
+            // Handle is_active field properly
+            $data['is_active'] = $request->has('is_active') ? true : false;
 
             // Handle main image update
             if ($request->hasFile('main_image')) {
@@ -569,13 +579,31 @@ class VenueController extends Controller
                 }
             }
 
+            Log::info('Venue update completed successfully', [
+                'venue_id' => $venue->id,
+                'updated_data' => $data
+            ]);
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Venue updated successfully.'
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Venue update validation failed', [
+                'venue_id' => $venue->id,
+                'errors' => $e->errors()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed. Please check your input.',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
-            Log::error('Venue update failed: ' . $e->getMessage());
+            Log::error('Venue update failed: ' . $e->getMessage(), [
+                'venue_id' => $venue->id,
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update venue. Please try again.'
