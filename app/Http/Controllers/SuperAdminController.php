@@ -76,8 +76,9 @@ class SuperAdminController extends Controller
         $eventsWithDate = \App\Models\Event::whereNotNull('event_date')->count();
         \Log::info('Events with event_date: ' . $eventsWithDate);
         
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
+        // Show current month and next 5 months
+        for ($i = 0; $i <= 5; $i++) {
+            $date = now()->addMonths($i);
             $months[] = $date->format('M Y');
             
             $count = \App\Models\Event::whereYear('event_date', $date->year)
@@ -100,8 +101,8 @@ class SuperAdminController extends Controller
             \Log::info('No events found, checking bookings instead');
             
             $bookingData = [];
-            for ($i = 5; $i >= 0; $i--) {
-                $date = now()->subMonths($i);
+            for ($i = 0; $i <= 5; $i++) {
+                $date = now()->addMonths($i);
                 $count = \App\Models\Booking::whereYear('event_date', $date->year)
                     ->whereMonth('event_date', $date->month)
                     ->count();
