@@ -133,6 +133,9 @@
             </div>
             <div class="h-80">
                 <canvas id="eventsChart" width="400" height="300"></canvas>
+                <div id="eventsChartError" class="hidden text-center py-8 text-gray-500">
+                    <p>Unable to load events chart. Please refresh the page.</p>
+                </div>
             </div>
         </div>
 
@@ -151,6 +154,9 @@
             </div>
             <div class="h-80">
                 <canvas id="revenueChart" width="400" height="300"></canvas>
+                <div id="revenueChartError" class="hidden text-center py-8 text-gray-500">
+                    <p>Unable to load revenue chart. Please refresh the page.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -263,8 +269,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
-        // Update Philippine Time
-        function updatePhilippineTime() {
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update Philippine Time
+            function updatePhilippineTime() {
             const now = new Date();
             const options = {
                 timeZone: 'Asia/Manila',
@@ -284,14 +292,26 @@
         setInterval(updatePhilippineTime, 1000);
 
         // Enhanced Events by Month Chart
-        const eventsCtx = document.getElementById('eventsChart').getContext('2d');
-        new Chart(eventsCtx, {
+        try {
+            const eventsCtx = document.getElementById('eventsChart').getContext('2d');
+            
+            // Debug: Log chart data
+            console.log('Events Chart Data:', {!! json_encode($eventsChartData) !!});
+            
+            // Check if chart data exists
+            const eventsChartData = {!! json_encode($eventsChartData) !!};
+            if (!eventsChartData || !eventsChartData.labels || !eventsChartData.data) {
+                console.error('Events chart data is missing or invalid:', eventsChartData);
+                return;
+            }
+            
+            new Chart(eventsCtx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($eventsChartData['labels']) !!},
+                labels: eventsChartData.labels,
                 datasets: [{
                     label: 'Events',
-                    data: {!! json_encode($eventsChartData['data']) !!},
+                    data: eventsChartData.data,
                     backgroundColor: 'rgba(59, 130, 246, 0.8)',
                     borderColor: 'rgba(59, 130, 246, 1)',
                     borderWidth: 2,
@@ -338,16 +358,33 @@
                 }
             }
         });
+        } catch (error) {
+            console.error('Error creating Events Chart:', error);
+            document.getElementById('eventsChartError').classList.remove('hidden');
+            document.getElementById('eventsChart').classList.add('hidden');
+        }
 
-        // Enhanced Revenue Chart
-        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(revenueCtx, {
+                // Enhanced Revenue Chart
+        try {
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            
+            // Debug: Log chart data
+            console.log('Revenue Chart Data:', {!! json_encode($revenueChartData) !!});
+            
+            // Check if chart data exists
+            const revenueChartData = {!! json_encode($revenueChartData) !!};
+            if (!revenueChartData || !revenueChartData.labels || !revenueChartData.data) {
+                console.error('Revenue chart data is missing or invalid:', revenueChartData);
+                return;
+            }
+            
+            new Chart(revenueCtx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($revenueChartData['labels']) !!},
+                labels: revenueChartData.labels,
                 datasets: [{
                     label: 'Revenue (₱)',
-                    data: {!! json_encode($revenueChartData['data']) !!},
+                    data: revenueChartData.data,
                     borderColor: 'rgba(34, 197, 94, 1)',
                     backgroundColor: 'rgba(34, 197, 94, 0.1)',
                     borderWidth: 3,
@@ -406,6 +443,12 @@
                     }
                 }
             }
+        });
+        } catch (error) {
+            console.error('Error creating Revenue Chart:', error);
+            document.getElementById('revenueChartError').classList.remove('hidden');
+            document.getElementById('revenueChart').classList.add('hidden');
+        }
         });
     </script>
 </x-admin-layout>
