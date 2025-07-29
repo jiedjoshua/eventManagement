@@ -394,9 +394,16 @@
                         class="flex-1 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 px-6 py-3 rounded-xl hover:from-gray-200 hover:to-slate-200 transition-all duration-300 font-semibold">
                         Cancel
                     </button>
-                    <button type="submit"
+                    <button type="submit" id="updateVenueBtn"
                         class="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all duration-300 font-semibold shadow-lg">
-                        Update Venue
+                        <span id="updateVenueText">Update Venue</span>
+                        <span id="updateVenueLoading" class="hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Updating...
+                        </span>
                     </button>
                 </div>
             </form>
@@ -1547,21 +1554,64 @@
                 });
         });
 
-        document.getElementById('editVenueForm').addEventListener('submit', function(e) {
+        const editForm = document.getElementById('editVenueForm');
+        if (!editForm) {
+            console.error('Edit form not found');
+            return;
+        }
+        
+        editForm.addEventListener('submit', function(e) {
+            console.log('Form submit event triggered');
             e.preventDefault();
+            
+            console.log('Edit form submitted');
+            console.log('Current venue ID:', currentVenueId);
+
+            // Show loading state
+            const updateBtn = document.getElementById('updateVenueBtn');
+            const updateText = document.getElementById('updateVenueText');
+            const updateLoading = document.getElementById('updateVenueLoading');
+            
+            updateBtn.disabled = true;
+            updateText.classList.add('hidden');
+            updateLoading.classList.remove('hidden');
 
             const formData = new FormData(this);
+            
+            // Log form data for debugging
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
+            }
+
+            // Check if CSRF token exists
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                showError('Security token not found. Please refresh the page and try again.');
+                // Reset button state
+                updateBtn.disabled = false;
+                updateText.classList.remove('hidden');
+                updateLoading.classList.add('hidden');
+                return;
+            }
 
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Response data:', data);
                     if (data.success) {
                         showSuccess('Venue updated successfully! The new image has been uploaded and saved.');
                         closeEditModal();
@@ -1571,11 +1621,19 @@
                         }, 2000);
                     } else {
                         showError(data.message || 'Failed to update venue');
+                        // Reset button state on error
+                        updateBtn.disabled = false;
+                        updateText.classList.remove('hidden');
+                        updateLoading.classList.add('hidden');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showError('Failed to update venue');
+                    showError('Failed to update venue: ' + error.message);
+                    // Reset button state on error
+                    updateBtn.disabled = false;
+                    updateText.classList.remove('hidden');
+                    updateLoading.classList.add('hidden');
                 });
         });
 
