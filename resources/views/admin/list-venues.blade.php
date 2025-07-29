@@ -282,20 +282,14 @@
                     <div class="space-y-4">
                         <div>
                             <label for="venueMainImage" class="block text-sm font-semibold text-gray-800 mb-2">Main Image *</label>
-                            <input type="file" id="venueMainImage" name="main_image" required accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                            <input type="file" id="venueMainImage" name="main_image" required accept="image/*"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                            <p class="mt-1 text-sm text-gray-600">Accepted formats: JPEG, PNG, GIF, WebP (max 10MB)</p>
-                            <div id="createMainImagePreview" class="mt-2 hidden">
-                                <p class="text-sm font-medium text-gray-700 mb-1">Image Preview:</p>
-                                <img id="createMainImagePreviewImg" src="" alt="Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-300">
-                            </div>
                         </div>
 
                         <div>
                             <label for="venueGalleryImages" class="block text-sm font-semibold text-gray-800 mb-2">Gallery Images</label>
-                            <input type="file" id="venueGalleryImages" name="gallery_images[]" multiple accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                            <input type="file" id="venueGalleryImages" name="gallery_images[]" multiple accept="image/*"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                            <p class="mt-1 text-sm text-gray-600">Accepted formats: JPEG, PNG, GIF, WebP (max 10MB each)</p>
                         </div>
                     </div>
                 </div>
@@ -794,85 +788,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize for create form
             initializeLocationSearch('venueLocationSearch', 'locationSearchResults', 'venueAddress', 'venueLatitude', 'venueLongitude');
-            
-            // Add file validation for create form
-            const createMainImage = document.getElementById('venueMainImage');
-            const createGalleryImages = document.getElementById('venueGalleryImages');
-            
-            if (createMainImage) {
-                createMainImage.addEventListener('change', function() {
-                    validateImageFile(this, 'Main image');
-                    
-                    // Show preview
-                    const file = this.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const preview = document.getElementById('createMainImagePreview');
-                            const previewImg = document.getElementById('createMainImagePreviewImg');
-                            previewImg.src = e.target.result;
-                            preview.classList.remove('hidden');
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        document.getElementById('createMainImagePreview').classList.add('hidden');
-                    }
-                });
-            }
-            
-            if (createGalleryImages) {
-                createGalleryImages.addEventListener('change', function() {
-                    validateMultipleImageFiles(this, 'Gallery images');
-                });
-            }
         });
-
-        // File validation functions
-        function validateImageFile(input, fieldName) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            
-            if (file.size > maxSize) {
-                showError(`${fieldName} is too large. Maximum size is 10MB.`);
-                input.value = '';
-                return;
-            }
-            
-            if (!allowedTypes.includes(file.type)) {
-                showError(`${fieldName} must be a valid image file (JPEG, PNG, GIF, WebP).`);
-                input.value = '';
-                return;
-            }
-            
-            console.log(`${fieldName} validated:`, file.name, file.type, file.size);
-        }
-
-        function validateMultipleImageFiles(input, fieldName) {
-            const files = Array.from(input.files);
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                
-                if (file.size > maxSize) {
-                    showError(`${fieldName} file "${file.name}" is too large. Maximum size is 10MB.`);
-                    input.value = '';
-                    return;
-                }
-                
-                if (!allowedTypes.includes(file.type)) {
-                    showError(`${fieldName} file "${file.name}" must be a valid image file (JPEG, PNG, GIF, WebP).`);
-                    input.value = '';
-                    return;
-                }
-            }
-            
-            console.log(`${fieldName} validated:`, files.length, 'files');
-        }
 
         // Modal functions
         function createVenue() {
@@ -888,9 +804,6 @@
         function closeCreateModal() {
             document.getElementById('createVenueModal').classList.add('hidden');
             resetCreateForm();
-            
-            // Clear image previews
-            document.getElementById('createMainImagePreview').classList.add('hidden');
         }
 
         function resetCreateForm() {
@@ -902,9 +815,6 @@
             document.getElementById('venueAddress').value = '';
             document.getElementById('venueLatitude').value = '';
             document.getElementById('venueLongitude').value = '';
-            
-            // Clear image previews
-            document.getElementById('createMainImagePreview').classList.add('hidden');
         }
 
         function addVenueSpace() {
@@ -1136,22 +1046,18 @@
                 <!-- Main Image -->
                 <div>
                     <label for="editVenueMainImage" class="block text-sm font-medium text-gray-700">Main Image</label>
-                    <input type="file" id="editVenueMainImage" name="main_image" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image. Accepted formats: JPEG, PNG, GIF, WebP (max 10MB)</p>
+                    <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image</p>
                     ${venue.main_image ? `<img src="/${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
-                    <div id="editMainImagePreview" class="mt-2 hidden">
-                        <p class="text-sm font-medium text-gray-700 mb-1">New Image Preview:</p>
-                        <img id="editMainImagePreviewImg" src="" alt="Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-300">
-                    </div>
                 </div>
 
                 <!-- Gallery Images -->
                 <div>
                     <label for="editVenueGalleryImages" class="block text-sm font-medium text-gray-700">Gallery Images</label>
-                    <input type="file" id="editVenueGalleryImages" name="gallery_images[]" multiple accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    <input type="file" id="editVenueGalleryImages" name="gallery_images[]" multiple accept="image/*"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <p class="mt-1 text-sm text-gray-500">Select new images to add to the gallery. Leave empty to keep current gallery. Accepted formats: JPEG, PNG, GIF, WebP (max 10MB each)</p>
+                    <p class="mt-1 text-sm text-gray-500">Select new images to add to the gallery. Leave empty to keep current gallery.</p>
                     ${venue.gallery && venue.gallery.length > 0 ? `
                     <div class="mt-3">
                         <p class="text-sm font-medium text-gray-700 mb-2">Current Gallery Images:</p>
@@ -1232,46 +1138,12 @@
             // Initialize location search for edit form
             setTimeout(() => {
                 initializeLocationSearch('editVenueLocationSearch', 'editLocationSearchResults', 'editVenueAddress', 'editVenueLatitude', 'editVenueLongitude');
-                
-                // Add file validation for edit form
-                const editMainImage = document.getElementById('editVenueMainImage');
-                const editGalleryImages = document.getElementById('editVenueGalleryImages');
-                
-                if (editMainImage) {
-                    editMainImage.addEventListener('change', function() {
-                        validateImageFile(this, 'Main image');
-                        
-                        // Show preview
-                        const file = this.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                const preview = document.getElementById('editMainImagePreview');
-                                const previewImg = document.getElementById('editMainImagePreviewImg');
-                                previewImg.src = e.target.result;
-                                preview.classList.remove('hidden');
-                            };
-                            reader.readAsDataURL(file);
-                        } else {
-                            document.getElementById('editMainImagePreview').classList.add('hidden');
-                        }
-                    });
-                }
-                
-                if (editGalleryImages) {
-                    editGalleryImages.addEventListener('change', function() {
-                        validateMultipleImageFiles(this, 'Gallery images');
-                    });
-                }
             }, 100);
         }
 
         function closeEditModal() {
             document.getElementById('editVenueModal').classList.add('hidden');
             currentVenueId = null;
-            
-            // Clear image previews
-            document.getElementById('editMainImagePreview').classList.add('hidden');
         }
 
         function deleteVenue(venueId, venueName) {
@@ -1421,18 +1293,11 @@
                 console.log(key + ': ' + value);
             }
             
-            // Check if files are present and log their details
+            // Check if files are present
             const mainImageFile = formData.get('main_image');
             const galleryFiles = formData.getAll('gallery_images[]');
             console.log('Main image file:', mainImageFile);
-            console.log('Main image file type:', mainImageFile ? mainImageFile.type : 'No file');
-            console.log('Main image file size:', mainImageFile ? mainImageFile.size : 'No file');
             console.log('Gallery files count:', galleryFiles.length);
-            
-            // Log gallery files details
-            galleryFiles.forEach((file, index) => {
-                console.log(`Gallery file ${index}:`, file.name, file.type, file.size);
-            });
             
             // Check if required fields are present
             const requiredFields = ['name', 'type', 'capacity', 'price_range', 'description', 'address'];
@@ -1448,21 +1313,6 @@
                 return;
             }
 
-            // Add venue_id to form data if not present
-            if (!formData.get('venue_id')) {
-                formData.append('venue_id', currentVenueId);
-            }
-            
-            // Log the complete form data for debugging
-            console.log('Complete form data:');
-            for (let [key, value] of formData.entries()) {
-                if (value instanceof File) {
-                    console.log(`${key}: File - ${value.name} (${value.type}, ${value.size} bytes)`);
-                } else {
-                    console.log(`${key}: ${value}`);
-                }
-            }
-
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
@@ -1473,7 +1323,6 @@
                 })
                 .then(response => {
                     console.log('Response status:', response.status);
-                    console.log('Response headers:', response.headers);
                     return response.json();
                 })
                 .then(data => {
