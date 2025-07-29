@@ -897,12 +897,17 @@
             
             if (editMainImageInput) {
                 editMainImageInput.addEventListener('change', function() {
+                    console.log('Main image selected:', this.files[0]);
                     handleMainImagePreview(this, 'editMainImagePreview', 'editMainImagePreviewImg');
                 });
             }
             
             if (editGalleryInput) {
                 editGalleryInput.addEventListener('change', function() {
+                    console.log('Gallery images selected:', this.files.length, 'files');
+                    for (let i = 0; i < this.files.length; i++) {
+                        console.log('File', i, ':', this.files[i].name, 'Size:', this.files[i].size);
+                    }
                     handleGalleryImagesPreview(this, 'editGalleryPreviewContainer');
                 });
             }
@@ -1318,6 +1323,13 @@
             if (editMainImagePreview) editMainImagePreview.classList.add('hidden');
             if (editGalleryImagesPreview) editGalleryImagesPreview.classList.add('hidden');
             if (editGalleryPreviewContainer) editGalleryPreviewContainer.innerHTML = '';
+            
+            // Reset file inputs
+            const editMainImageInput = document.getElementById('editVenueMainImage');
+            const editGalleryInput = document.getElementById('editVenueGalleryImages');
+            
+            if (editMainImageInput) editMainImageInput.value = '';
+            if (editGalleryInput) editGalleryInput.value = '';
         }
 
         function deleteVenue(venueId, venueName) {
@@ -1487,9 +1499,51 @@
 
             const formData = new FormData(form);
             
+            // Clean up empty files
+            const mainImageInput = document.getElementById('editVenueMainImage');
+            const galleryInput = document.getElementById('editVenueGalleryImages');
+            
+            // Handle main image
+            if (mainImageInput && mainImageInput.files.length > 0) {
+                const mainFile = mainImageInput.files[0];
+                if (mainFile && mainFile.size > 0 && mainFile.name) {
+                    formData.set('main_image', mainFile);
+                } else {
+                    formData.delete('main_image');
+                }
+            }
+            
+            // Handle gallery images
+            if (galleryInput && galleryInput.files.length > 0) {
+                // Remove any empty files from FormData
+                formData.delete('gallery_images[]');
+                
+                // Add only valid files
+                for (let i = 0; i < galleryInput.files.length; i++) {
+                    const file = galleryInput.files[i];
+                    if (file && file.size > 0 && file.name) {
+                        formData.append('gallery_images[]', file);
+                    }
+                }
+            }
+            
             // Log form data for debugging
+            console.log('Form data entries:');
+            let hasValidFiles = false;
             for (let [key, value] of formData.entries()) {
-                console.log(key, value);
+                if (value instanceof File) {
+                    console.log(key, 'File:', value.name, 'Size:', value.size, 'Type:', value.type);
+                    if (value.size > 0 && value.name) {
+                        hasValidFiles = true;
+                    }
+                } else {
+                    console.log(key, value);
+                }
+            }
+            
+            // Check if we have any valid files
+            if (!hasValidFiles) {
+                console.log('No valid files found in form data');
             }
 
             // Show loading state
