@@ -547,13 +547,6 @@ class VenueController extends Controller
                         ];
                     }, $request->file('gallery_images'))
                 ]);
-            } else {
-                Log::info('No gallery images in request', [
-                    'has_file_gallery_images' => $request->hasFile('gallery_images'),
-                    'all_files' => array_keys($request->allFiles()),
-                    'gallery_images_files' => $request->file('gallery_images')
-                ]);
-            }
                 
                 $existingGalleryCount = $venue->gallery()->count();
                 
@@ -581,7 +574,11 @@ class VenueController extends Controller
                     ]);
                 }
             } else {
-                Log::info('No gallery images in request');
+                Log::info('No gallery images in request', [
+                    'has_file_gallery_images' => $request->hasFile('gallery_images'),
+                    'all_files' => array_keys($request->allFiles()),
+                    'gallery_images_files' => $request->file('gallery_images')
+                ]);
             }
 
             // Handle venue spaces updates
