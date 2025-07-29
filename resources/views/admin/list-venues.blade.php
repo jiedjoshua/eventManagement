@@ -874,6 +874,54 @@
             }
         }
 
+        // Edit form image preview functionality
+        function initializeEditImagePreviews() {
+            // Edit main image preview
+            const editMainImageInput = document.getElementById('editVenueMainImage');
+            if (editMainImageInput) {
+                editMainImageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const preview = document.getElementById('editMainImagePreview');
+                            const previewImg = document.getElementById('editMainImagePreviewImg');
+                            previewImg.src = e.target.result;
+                            preview.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        document.getElementById('editMainImagePreview').classList.add('hidden');
+                    }
+                });
+            }
+
+            // Edit gallery images preview
+            const editGalleryImagesInput = document.getElementById('editVenueGalleryImages');
+            if (editGalleryImagesInput) {
+                editGalleryImagesInput.addEventListener('change', function(e) {
+                    const files = Array.from(e.target.files);
+                    if (files.length > 0) {
+                        // Show a simple message that new images are selected
+                        const message = document.createElement('div');
+                        message.className = 'bg-green-50 p-3 rounded-lg border border-green-200 mt-3';
+                        message.innerHTML = `
+                            <p class="text-sm font-semibold text-green-700">✅ ${files.length} new image(s) selected</p>
+                            <p class="text-xs text-green-600 mt-1">These images will be added to the gallery when you click "Update Venue"</p>
+                        `;
+                        
+                        // Remove any existing message
+                        const existingMessage = editGalleryImagesInput.parentElement.querySelector('.bg-green-50');
+                        if (existingMessage) {
+                            existingMessage.remove();
+                        }
+                        
+                        editGalleryImagesInput.parentElement.appendChild(message);
+                    }
+                });
+            }
+        }
+
         // Modal functions
         function createVenue() {
             document.getElementById('createVenueModal').classList.remove('hidden');
@@ -1138,8 +1186,15 @@
                     <div class="space-y-4">
                         <div>
                             <label for="editVenueMainImage" class="block text-sm font-semibold text-gray-800 mb-2">Upload New Main Image</label>
-                            <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                            <div class="space-y-3">
+                                <input type="file" id="editVenueMainImage" name="main_image" accept="image/*"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
+                                <div id="editMainImagePreview" class="hidden">
+                                    <p class="text-sm font-semibold text-green-700 mb-2">✅ New Image Selected:</p>
+                                    <img id="editMainImagePreviewImg" src="" alt="New Main Image Preview" class="w-32 h-24 object-cover rounded-lg border border-green-200">
+                                    <p class="text-xs text-green-600 mt-1">This image will replace the current main image when you click "Update Venue"</p>
+                                </div>
+                            </div>
                         </div>
                         
                         ${venue.main_image ? `
@@ -1269,6 +1324,9 @@
             // Initialize location search for edit form
             setTimeout(() => {
                 initializeLocationSearch('editVenueLocationSearch', 'editLocationSearchResults', 'editVenueAddress', 'editVenueLatitude', 'editVenueLongitude');
+                
+                // Initialize edit form image preview
+                initializeEditImagePreviews();
             }, 100);
         }
 
@@ -1505,12 +1563,12 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showSuccess(data.message);
+                        showSuccess('Venue updated successfully! The new image has been uploaded and saved.');
                         closeEditModal();
                         // Reload the page to show the updated venue
                         setTimeout(() => {
                             window.location.reload();
-                        }, 1500);
+                        }, 2000);
                     } else {
                         showError(data.message || 'Failed to update venue');
                     }
