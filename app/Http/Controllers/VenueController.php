@@ -436,7 +436,9 @@ class VenueController extends Controller
             'venue_id' => $venue->id,
             'request_data' => $request->all(),
             'files' => $request->hasFile('main_image') ? 'main_image present' : 'no main_image',
-            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0
+            'gallery_files' => $request->hasFile('gallery_images') ? count($request->file('gallery_images')) : 0,
+            'content_type' => $request->header('Content-Type'),
+            'content_length' => $request->header('Content-Length')
         ]);
         
         $request->validate([
@@ -471,6 +473,13 @@ class VenueController extends Controller
 
             // Handle main image update
             if ($request->hasFile('main_image')) {
+                Log::info('Processing main image update', [
+                    'venue_id' => $venue->id,
+                    'file_name' => $request->file('main_image')->getClientOriginalName(),
+                    'file_size' => $request->file('main_image')->getSize(),
+                    'file_mime' => $request->file('main_image')->getMimeType()
+                ]);
+                
                 // Delete old image if it exists in public directory
                 if ($venue->main_image && file_exists(public_path(str_replace('public/', '', $venue->main_image)))) {
                     unlink(public_path(str_replace('public/', '', $venue->main_image)));
@@ -488,6 +497,13 @@ class VenueController extends Controller
                 $mainImagePath = 'public/img/' . $mainImageName;
                 $mainImage->move(public_path('img'), $mainImageName);
                 $data['main_image'] = $mainImagePath;
+                
+                Log::info('Main image updated successfully', [
+                    'venue_id' => $venue->id,
+                    'new_path' => $mainImagePath
+                ]);
+            } else {
+                Log::info('No main image file provided for update', ['venue_id' => $venue->id]);
             }
 
             // Handle gallery image removals
@@ -519,6 +535,11 @@ class VenueController extends Controller
 
             // Handle new gallery images
             if ($request->hasFile('gallery_images')) {
+                Log::info('Processing gallery images update', [
+                    'venue_id' => $venue->id,
+                    'gallery_files_count' => count($request->file('gallery_images'))
+                ]);
+                
                 $existingGalleryCount = $venue->gallery()->count();
                 
                 // Create gallery directory if it doesn't exist
@@ -528,6 +549,14 @@ class VenueController extends Controller
                 }
                 
                 foreach ($request->file('gallery_images') as $index => $image) {
+                    Log::info('Processing gallery image', [
+                        'venue_id' => $venue->id,
+                        'index' => $index,
+                        'file_name' => $image->getClientOriginalName(),
+                        'file_size' => $image->getSize(),
+                        'file_mime' => $image->getMimeType()
+                    ]);
+                    
                     $galleryImageName = time() . '_' . ($existingGalleryCount + $index) . '_' . $image->getClientOriginalName();
                     $galleryImagePath = 'public/img/gallery/' . $galleryImageName;
                     $image->move(public_path('img/gallery'), $galleryImageName);
@@ -538,6 +567,13 @@ class VenueController extends Controller
                         'sort_order' => $existingGalleryCount + $index + 1,
                     ]);
                 }
+                
+                Log::info('Gallery images updated successfully', [
+                    'venue_id' => $venue->id,
+                    'added_count' => count($request->file('gallery_images'))
+                ]);
+            } else {
+                Log::info('No gallery images provided for update', ['venue_id' => $venue->id]);
             }
 
             // Handle venue spaces updates
