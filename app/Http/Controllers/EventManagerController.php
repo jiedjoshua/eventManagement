@@ -454,6 +454,7 @@ class EventManagerController extends Controller
     public function paymentHistory(Request $request)
     {
         $query = \App\Models\Payment::with(['booking.user', 'user'])
+            ->where('payment_type', '!=', 'refund') // Exclude refunds from payment history
             ->orderBy('paid_at', 'desc');
 
         // Search by payment reference, event name, or customer name
