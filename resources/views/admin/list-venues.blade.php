@@ -1285,6 +1285,22 @@
         document.getElementById('editVenueForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
+            // Prevent multiple submissions
+            const submitButton = this.querySelector('button[type="submit"]');
+            if (submitButton.disabled) {
+                console.log('Form submission already in progress');
+                return;
+            }
+            
+            // Add timestamp to prevent duplicate submissions
+            const timestamp = Date.now();
+            console.log('Form submission started at:', timestamp);
+            
+            // Disable submit button and show loading state
+            submitButton.disabled = true;
+            submitButton.textContent = 'Updating...';
+            submitButton.classList.add('opacity-50');
+
             const formData = new FormData(this);
             
             // Add the _method field for PUT request
@@ -1295,6 +1311,29 @@
             for (let [key, value] of formData.entries()) {
                 console.log(key + ': ' + value);
             }
+            
+            // Check for file uploads
+            const mainImageFile = formData.get('main_image');
+            const galleryFiles = formData.getAll('gallery_images[]');
+            console.log('Main image file:', mainImageFile ? mainImageFile.name : 'No file');
+            console.log('Gallery files count:', galleryFiles.length);
+            
+            // Debug file details
+            if (mainImageFile) {
+                console.log('Main image details:', {
+                    name: mainImageFile.name,
+                    size: mainImageFile.size,
+                    type: mainImageFile.type
+                });
+            }
+            
+            galleryFiles.forEach((file, index) => {
+                console.log(`Gallery file ${index}:`, {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type
+                });
+            });
             
             // Check if required fields are present
             const requiredFields = ['name', 'type', 'capacity', 'price_range', 'description', 'address'];
@@ -1310,6 +1349,21 @@
                 return;
             }
 
+            console.log('Sending request to:', `/admin/venues/${currentVenueId}`);
+            console.log('Request method:', 'POST');
+            console.log('FormData size:', formData.entries().length);
+            console.log('FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(`${key}: File - ${value.name} (${value.size} bytes, ${value.type})`);
+                } else {
+                    console.log(`${key}: ${value}`);
+                }
+            }
+            
+            const requestStartTime = Date.now();
+            console.log('Sending fetch request at:', requestStartTime);
+            
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
@@ -1319,7 +1373,10 @@
                     }
                 })
                 .then(response => {
+                    const responseTime = Date.now();
+                    console.log('Response received at:', responseTime);
                     console.log('Response status:', response.status);
+                    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
                     return response.json();
                 })
                 .then(data => {
@@ -1340,8 +1397,18 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    showError('Failed to update venue');
+                    const errorTime = Date.now();
+                    console.error('Fetch error at:', errorTime);
+                    console.error('Error details:', error);
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
+                    showError('Failed to update venue: ' + error.message);
+                })
+                .finally(() => {
+                    // Re-enable submit button
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Update Venue';
+                    submitButton.classList.remove('opacity-50');
                 });
         });
 
