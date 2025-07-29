@@ -284,7 +284,7 @@
                             <label for="venueMainImage" class="block text-sm font-semibold text-gray-800 mb-2">Main Image *</label>
                             <input type="file" id="venueMainImage" name="main_image" required accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-800">
-                            <p class="mt-1 text-sm text-gray-600">Accepted formats: JPEG, PNG, GIF, WebP (max 10MB) - Large files are supported for high-quality images</p>
+                            <p class="mt-1 text-sm text-gray-600">Accepted formats: JPEG, PNG, GIF, WebP (max 10MB)</p>
                             <div id="createMainImagePreview" class="mt-2 hidden">
                                 <p class="text-sm font-medium text-gray-700 mb-1">Image Preview:</p>
                                 <img id="createMainImagePreviewImg" src="" alt="Preview" class="w-32 h-24 object-cover rounded-lg border border-gray-300">
@@ -1138,7 +1138,7 @@
                     <label for="editVenueMainImage" class="block text-sm font-medium text-gray-700">Main Image</label>
                     <input type="file" id="editVenueMainImage" name="main_image" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image. Accepted formats: JPEG, PNG, GIF, WebP (max 10MB) - Large files are supported for high-quality images</p>
+                    <p class="mt-1 text-sm text-gray-500">Leave empty to keep current image. Accepted formats: JPEG, PNG, GIF, WebP (max 10MB)</p>
                     ${venue.main_image ? `<img src="/${venue.main_image}" alt="Current" class="mt-2 w-32 h-24 object-cover rounded-lg">` : ''}
                     <div id="editMainImagePreview" class="mt-2 hidden">
                         <p class="text-sm font-medium text-gray-700 mb-1">New Image Preview:</p>
