@@ -1179,6 +1179,7 @@
                 imageElement.remove();
                 
                 console.log('Image marked for removal:', imageId);
+                console.log('Removed images value:', removedImages.value);
             }
         }
 
@@ -1313,6 +1314,9 @@
                 return;
             }
 
+            // Add _method field to simulate PUT request
+            formData.append('_method', 'PUT');
+            
             fetch(`/admin/venues/${currentVenueId}`, {
                     method: 'POST',
                     body: formData,
